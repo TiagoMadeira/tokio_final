@@ -19,7 +19,7 @@ jobs:
         uses:  ./.github/actions/test_service
         with:
           jwt_secret: ${{secrets.JWT_KEY}}
-          service_path: "/auth_service"
+          service_path: "auth_service"
 
   test-post-service:
     runs-on: ubuntu-latest
@@ -30,18 +30,18 @@ jobs:
       - name: test post service
         uses:  ./.github/actions/test_service
         with:
-          service_path: "/post_service"
+          service_path: "post_service"
 
   test-rest-service:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        
+
       - name: test rest service
         uses:  ./.github/actions/test_service
         with:
-          service_path: "/rest_service"
+          service_path: "rest_service"
 
   # trivy-scan-dev:
   #   runs-on: ubuntu-latest
