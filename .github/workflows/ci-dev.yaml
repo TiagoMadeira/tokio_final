@@ -57,7 +57,10 @@ jobs:
     needs: [ test-auth-service, test-post-service, test-rest-service ]
     environment: development
     steps:
-      - name: Login to Docker Hub
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build push dev
         uses: ./.github/actions/build-push
         with:
           docker-file-path: ${{vars.AUTH_SERVICE_DOCKERFILE}}
