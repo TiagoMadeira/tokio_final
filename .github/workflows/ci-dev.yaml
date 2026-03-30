@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: test auth service
-        uses:  .github/actions/test_service.yaml
+        uses:  ./.github/actions/test_service.yaml
         with:
           jwt_secret: ${{secrets.JWT_KEY}}
           service_path: "/auth_service"
@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: test post service
-        uses:  .github/actions/test_service.yaml
+        uses:  ./.github/actions/test_service.yaml
         with:
           service_path: "/post_service"
 
@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: test rest service
-        uses:  .github/actions/test_service.yaml
+        uses:  ./.github/actions/test_service.yaml
         with:
           service_path: "/rest_service"
 
@@ -49,7 +49,7 @@ jobs:
     environment: development
     steps:
       - name: Login to Docker Hub
-        uses: .github/actions/build-push
+        uses: ./.github/actions/build-push
         with:
           docker-file-path: ${{vars.AUTH_SERVICE_DOCKERFILE}}
           dockerhub-usernane: ${{vars.DOCKER_USERNAME}}
