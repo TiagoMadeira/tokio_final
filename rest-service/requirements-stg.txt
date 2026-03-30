@@ -1,0 +1,9 @@
+fastapi[standard]
+pydantic-settings
+requests
+pytest
+opentelemetry-sdk
+opentelemetry-api
+opentelemetry-exporter-otlp-proto-grpc
+opentelemetry-instrumentation-requests
+opentelemetry-instrumentation-fastapi

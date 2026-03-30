@@ -1,0 +1,32 @@
+name: determine environment
+
+on:
+  workflow_call:
+    outputs:
+      selected-environment:
+        description: "Environment to be used in workflow"
+        value: ${{ jobs.determine-environment.outputs.selected-environment }}
+    
+jobs:
+  determine-environment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        id: extract_branch
+      - name: Select environment
+        id: select-environment
+        run: |
+          if [ "${{ steps.extract_branch.outputs.branch }}" == "master" ]; then
+            echo "production"
+            echo "selected-environment=production" >> "$GITHUB_OUTPUT"
+          elif [ "${{ steps.extract_branch.outputs.branch }}" == "development" ]; then
+            echo "staging"
+            echo "selected-environment=staging" >> "$GITHUB_OUTPUT"
+          else
+            echo "development"
+            echo "selected-environment=development" >> "$GITHUB_OUTPUT"
+          fi
+    outputs:
+      selected-environment: ${{ steps.select-environment.outputs.selected-environment }}

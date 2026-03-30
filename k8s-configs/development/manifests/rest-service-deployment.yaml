@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: rest-service-deployment
+    namespace: development
+    labels:
+      app: rest-service
+spec:
+  selector:
+    matchLabels:
+      app: rest-service
+  template:
+    metadata:
+      labels:
+        app: rest-service
+    spec:
+      containers:
+      - name: rest-service
+        image: tiagomadeiradock/tokio-rest-service:6562ca5
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            memory: 512Mi
+            cpu: "1"
+          requests:
+            memory: 256Mi
+            cpu: "0.1"
+        ports:
+          - containerPort: 8000
+        env:
+          - name: DEBUG
+            valueFrom:
+             configMapKeyRef:
+                name: rest-service-configmap
+                key: debug
+          - name: AUTH_SERVICE_URL
+            valueFrom:
+             configMapKeyRef:
+                name: rest-service-configmap
+                key: auth_service_url
+          - name: POST_SERVICE_URL
+            valueFrom:
+             configMapKeyRef:
+                name: rest-service-configmap
+                key: post_service_url
+          - name: OTEL_SERVICE_NAME
+            valueFrom:
+             configMapKeyRef:
+                name: rest-service-configmap
+                key: otel-service-name
+
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            valueFrom:
+             configMapKeyRef:
+                name: rest-service-configmap
+                key: otel-exporter-endpoint
+          
+          - name: OTEL_EXPORTER_OTLP_INSECURE 
+            valueFrom:
+             configMapKeyRef:
+                name: rest-service-configmap
+                key: otel-exporter-insecure
+
+          - name: OTEL_METRICS_EXPORTER
+            valueFrom:
+             configMapKeyRef:
+                name: rest-service-configmap
+                key: otel-metrics-exporter
+
+          - name: OTEL_LOGS_EXPORTER
+            valueFrom:
+             configMapKeyRef:
+                name: rest-service-configmap
+                key: otel-logs-exporter
+      imagePullSecrets:
+      - name: regcred
+              
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rest-internal-service
+  namespace: development
+spec:
+  selector:
+    app: rest-service
+  type: ClusterIP
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 8000

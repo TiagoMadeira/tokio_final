@@ -1,0 +1,9 @@
+fastapi[standard]
+pytest
+requests
+sqlmodel
+opentelemetry-sdk
+opentelemetry-api
+opentelemetry-exporter-otlp-proto-grpc
+opentelemetry-instrumentation-requests
+opentelemetry-instrumentation-fastapi
