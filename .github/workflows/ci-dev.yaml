@@ -93,6 +93,7 @@ jobs:
       - name: Build push dev
         uses: ./.github/actions/build-push
         with:
+          context_path: "auth_service"
           docker-file-path: ${{vars.AUTH_SERVICE_DOCKERFILE}}
           dockerhub-usernane: ${{vars.DOCKER_USERNAME}}
           dockerhub-access-token: ${{secrets.DOCKERHUB_ACCESS_TOKEN}}

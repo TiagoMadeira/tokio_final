@@ -18,6 +18,10 @@ inputs:
     required: true
     description: dockerhub repo name
 
+  context_path:
+    required: true
+    description: path to app we want to build
+
 runs:
   using: "composite"
   steps:
@@ -49,6 +53,7 @@ runs:
       - name: Build Docker image
         uses: docker/build-push-action@v6
         with:
+          context: ${{ inputs.context_path }}
           push: ${{ github.event_name != 'pull_request' }}
           tags:  ${{ steps.meta.outputs.tags }}
           file: ${{ inputs.docker-file-path }}
