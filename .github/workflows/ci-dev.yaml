@@ -43,18 +43,39 @@ jobs:
         with:
           service_path: "rest_service"
 
-  # trivy-scan-dev:
-  #   runs-on: ubuntu-latest
-  #   environment: development
-  #   steps:
-  #     - name: Trivi Scan
-  #       uses: .github/actions/trivy_scan
-  #       with:
-  #         requirements: ${{ vars.REQUIREMENTS_FILE }}
+  trivy-scan-auth-service-dev:
+     runs-on: ubuntu-latest
+     environment: development
+     steps:
+       - name: Trivi Scan
+         uses: .github/actions/trivy_scan
+         with:
+          requirements: ${{ vars.REQUIREMENTS_FILE }}
+          service_path: "auth_service"
+
+  trivy-scan-post-service-dev:
+     runs-on: ubuntu-latest
+     environment: development
+     steps:
+       - name: Trivi Scan
+         uses: .github/actions/trivy_scan
+         with:
+          requirements: ${{ vars.REQUIREMENTS_FILE }}
+          service_path: "post_service"
+  
+  trivy-scan-rest-service-dev:
+     runs-on: ubuntu-latest
+     environment: development
+     steps:
+       - name: Trivi Scan
+         uses: .github/actions/trivy_scan
+         with:
+          requirements: ${{ vars.REQUIREMENTS_FILE }}
+          service_path: "rest_service"
 
   build-push-auth-service-dev:
     runs-on: ubuntu-latest
-    needs: [ test-auth-service, test-post-service, test-rest-service ]
+    needs: [ test-auth-service, test-post-service, test-rest-service, trivy-scan-auth-service-dev, trivy-scan-post-service-dev, trivy-scan-rest-service-dev ]
     environment: development
     steps:
       - name: Checkout repository

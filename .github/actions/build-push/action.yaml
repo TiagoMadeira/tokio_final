@@ -25,7 +25,7 @@ runs:
         uses: docker/login-action@v3
         with:
           username: ${{ inputs.dockerhub-usernane }}
-          password: ${{ secrets.dockerhub-access-token }}
+          password: ${{ inputs.dockerhub-access-token }}
 
       - name: Extract metadata
         shell: bash
@@ -51,4 +51,4 @@ runs:
         with:
           push: ${{ github.event_name != 'pull_request' }}
           tags:  ${{ steps.meta.outputs.tags }}
-          file: ${{ vars.docker-file-path }}
+          file: ${{ inputs.docker-file-path }}
