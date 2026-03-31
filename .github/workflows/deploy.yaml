@@ -49,7 +49,7 @@ jobs:
           if [ "${{ github.event.inputs.service }}" == "rest-service" ]; then
             echo "${{ vars.REST_SERVICE_DOCKERHUB_REPOSITORY }}"
             echo "selected-repository=${{ vars.REST_SERVICE_DOCKERHUB_REPOSITORY }}" >> "$GITHUB_OUTPUT"
-          elif [ "${{ "${{ github.event.inputs.service }}" == "post-service" ]; then
+          elif [ "${{ github.event.inputs.service }}" == "post-service" ]; then
             echo "${{ vars.POST_SERVICE_DOCKERHUB_REPOSITORY }}"
             echo "selected-repository=${{ vars.POST_SERVICE_DOCKERHUB_REPOSITORY }}" >> "$GITHUB_OUTPUT"
           else
