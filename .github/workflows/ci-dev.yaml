@@ -47,9 +47,12 @@ jobs:
      runs-on: ubuntu-latest
      environment: development
      steps:
-       - name: Trivi Scan
-         uses: .github/actions/trivy_scan
-         with:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Trivi Scan
+        uses: ./.github/actions/trivy_scan
+        with:
           requirements: ${{ vars.REQUIREMENTS_FILE }}
           service_path: "auth_service"
 
@@ -57,9 +60,12 @@ jobs:
      runs-on: ubuntu-latest
      environment: development
      steps:
-       - name: Trivi Scan
-         uses: .github/actions/trivy_scan
-         with:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Trivi Scan
+        uses: ./.github/actions/trivy_scan
+        with:
           requirements: ${{ vars.REQUIREMENTS_FILE }}
           service_path: "post_service"
   
@@ -67,9 +73,12 @@ jobs:
      runs-on: ubuntu-latest
      environment: development
      steps:
-       - name: Trivi Scan
-         uses: .github/actions/trivy_scan
-         with:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Trivi Scan
+        uses: ./.github/actions/trivy_scan
+        with:
           requirements: ${{ vars.REQUIREMENTS_FILE }}
           service_path: "rest_service"
 
