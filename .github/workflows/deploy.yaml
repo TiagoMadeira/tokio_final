@@ -1,0 +1,72 @@
+name: deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        required: true
+        description: "Enviorment you wish to deploy to"
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+        default: staging
+      service:
+        required: true
+        description: "Service you wish to deploy"
+        type: choice
+        options:
+          - rest-service
+          - post-service
+          - auth-service
+      image:
+        type: string
+        required: true
+        description: "Tag or sha of the image you wish to deploy"
+
+
+jobs:
+  update-manifest:
+    environment: ${{github.event.inputs.environment}}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{secrets.TOKIO_GITOPS_TOKEN}}
+      
+      - name: setup git config
+        shell: bash
+        run: |
+          git config --global user.email tiagopmadeira@gmail.com
+          git config --global user.name TiagoMadeira
+          echo ${{github.event.inputs.image}}
+      
+      - name: Select repository
+        id: select-repository
+        run: |
+          if [ "${{ github.event.inputs.service }}" == "rest-service" ]; then
+            echo "${{ vars.REST_SERVICE_DOCKERHUB_REPOSITORY }}"
+            echo "selected-repository=${{ vars.REST_SERVICE_DOCKERHUB_REPOSITORY }}" >> "$GITHUB_OUTPUT"
+          elif [ "${{ "${{ github.event.inputs.service }}" == "post-service" ]; then
+            echo "${{ vars.POST_SERVICE_DOCKERHUB_REPOSITORY }}"
+            echo "selected-repository=${{ vars.POST_SERVICE_DOCKERHUB_REPOSITORY }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "${{ vars.AUTH_SERVICE_DOCKERHUB_REPOSITORY }}"
+            echo "selected-repository=${{ vars.AUTH_SERVICE_DOCKERHUB_REPOSITORY }}" >> "$GITHUB_OUTPUT"
+          fi
+      
+      - name: update gitops repository
+        shell: bash
+        run: |
+          cd k8s-configs/${{github.event.inputs.environment}}/manifests
+           
+          sed -i "s|image: ${{vars.DOCKER_USERNAME}}/${{ steps.select-repository.outputs.selected-repository }}:.*|image: ${{vars.DOCKER_USERNAME}}/${{ steps.select-repository.outputs.selected-repository }}:${{github.event.inputs.image}}|g" ${{github.event.inputs.service}}-deployment.yaml
+
+          #commit changes
+          git add ${{github.event.inputs.service}}-deployment.yaml
+          git commit -m "Deploy image ${{github.event.inputs.image}} to ${{github.event.inputs.environment}} environment on ${{github.event.inputs.service}}"
+          
+          #push
+          git push origin master
