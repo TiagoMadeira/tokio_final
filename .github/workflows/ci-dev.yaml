@@ -104,6 +104,9 @@ jobs:
     needs: [ test-auth-service, test-post-service, test-rest-service, trivy-scan-auth-service-dev, trivy-scan-post-service-dev, trivy-scan-rest-service-dev ]
     environment: development
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Login to Docker Hub
         uses: ./.github/actions/build-push
         with:
@@ -118,6 +121,9 @@ jobs:
     needs: [ test-auth-service, test-post-service, test-rest-service, trivy-scan-auth-service-dev, trivy-scan-post-service-dev, trivy-scan-rest-service-dev ]
     environment: development
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
       - name: Login to Docker Hub
         uses: ./.github/actions/build-push
         with:
