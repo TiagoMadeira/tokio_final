@@ -1,0 +1,38 @@
+name: test_auth_service
+description: Test auth service
+
+inputs:
+  jwt_secret:
+    description: requirement file to be used
+    required: false
+  service_path:
+    required: true
+    description: path to the service being tested
+    
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python  # Uses python version in .python-version file
+      uses: actions/setup-python@v6
+
+    - name: Set conditional env
+      shell: bash
+      run: |
+        if [ -n "${{ inputs.jwt_secret }}" ]; then
+          echo "SECRET_KEY=${{ inputs.jwt_secret }}" >> $GITHUB_ENV
+        fi
+
+    - name: setup virtual environment
+      shell: bash
+      run: |
+        cd ${{ inputs.service_path }}
+        python -m venv .venv
+        source .venv/bin/activate
+        pip install -r requirements-stg.txt
+        pytest
+        
+
+    
