@@ -30,7 +30,7 @@ runs:
       uses: aquasecurity/trivy-action@master
       with:
         scan-type: 'fs'
-        scan-ref: '.'
+        scan-ref: ${{ inputs.service_path }}
         format: 'table'
         exit-code: 1
         ignore-unfixed: true
