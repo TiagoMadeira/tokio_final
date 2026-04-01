@@ -34,6 +34,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          repository: TiagoMadeira/tokio-k8s-configs
           token: ${{secrets.TOKIO_GITOPS_TOKEN}}
       
       - name: setup git config
