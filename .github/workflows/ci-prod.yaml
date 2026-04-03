@@ -11,82 +11,18 @@ on:
       - '**'
 
 jobs:
-  test-auth-service:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+  test-services:
+    uses: ./.github/workflows/test-services.yaml
+    secrets: inherit
 
-      - name: test auth service
-        uses:  ./.github/actions/test_service
-        with:
-          jwt_secret: ${{secrets.JWT_KEY}}
-          service_path: "auth_service"
-
-  test-post-service:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: test post service
-        uses:  ./.github/actions/test_service
-        with:
-          service_path: "post_service"
-
-  test-rest-service:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: test rest service
-        uses:  ./.github/actions/test_service
-        with:
-          service_path: "rest_service"
-
-  trivy-scan-auth-service-prd:
-     runs-on: ubuntu-latest
-     environment: production
-     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Trivi Scan
-        uses: ./.github/actions/trivy_scan
-        with:
-          requirements: ${{ vars.REQUIREMENTS_FILE }}
-          service_path: "auth_service"
-
-  trivy-scan-post-service-prd:
-     runs-on: ubuntu-latest
-     environment: production
-     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Trivi Scan
-        uses: ./.github/actions/trivy_scan
-        with:
-          requirements: ${{ vars.REQUIREMENTS_FILE }}
-          service_path: "post_service"
-  
-  trivy-scan-rest-service-prd:
-     runs-on: ubuntu-latest
-     environment: production
-     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Trivi Scan
-        uses: ./.github/actions/trivy_scan
-        with:
-          requirements: ${{ vars.REQUIREMENTS_FILE }}
-          service_path: "rest_service"
+  trivy-scan-services:
+    uses: ./.github/workflows/trivy-scan-services.yaml
+    with:
+      environment: "production"
 
   build-push-auth-service-prd:
     runs-on: ubuntu-latest
-    needs: [ test-auth-service, test-post-service, test-rest-service, trivy-scan-auth-service-prd, trivy-scan-post-service-prd, trivy-scan-rest-service-prd ]
+    needs: [  test-services, trivy-scan-services ]
     environment: production
     steps:
       - name: Checkout repository
@@ -103,7 +39,7 @@ jobs:
 
   build-push-post-service-prd:
     runs-on: ubuntu-latest
-    needs: [ test-auth-service, test-post-service, test-rest-service, trivy-scan-auth-service-prd, trivy-scan-post-service-prd, trivy-scan-rest-service-prd ]
+    needs: [ test-services, trivy-scan-services ]
     environment: production
     steps:
       - name: Checkout repository
@@ -120,7 +56,7 @@ jobs:
 
   build-push-rest-service-prd:
     runs-on: ubuntu-latest
-    needs: [ test-auth-service, test-post-service, test-rest-service, trivy-scan-auth-service-prd, trivy-scan-post-service-prd, trivy-scan-rest-service-prd ]
+    needs: [ test-services, trivy-scan-services ]
     environment: production
     steps:
       - name: Checkout repository
