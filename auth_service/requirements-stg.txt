@@ -1,7 +1,7 @@
 fastapi[standard]
 pytest
 sqlmodel
-pyjwt
+pyjwt==2.11.0
 pwdlib[argon2]
 requests
 opentelemetry-sdk
