@@ -1,0 +1,40 @@
+name: test-services
+
+on:
+  workflow_dispatch:  
+  workflow_call:
+  
+jobs: 
+  test-auth-service:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: test auth service
+        uses:  ./.github/actions/test_service
+        with:
+          jwt_secret: ${{secrets.JWT_KEY}}
+          service_path: "auth_service"
+
+  test-post-service:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: test post service
+        uses:  ./.github/actions/test_service
+        with:
+          service_path: "post_service"
+
+  test-rest-service:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: test rest service
+        uses:  ./.github/actions/test_service
+        with:
+          service_path: "rest_service"
