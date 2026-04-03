@@ -10,26 +10,13 @@ on:
 
 jobs:
   test-services-stg:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-
-    - name: Test Services
-      uses: ./.github/worflows/test-services.yaml
-      with:
-        secrets: inherit
+    uses: ./.github/workflows/test-services.yaml
+    secrets: inherit
 
   trivy-scan-services-stg:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-    
-    - name: Trivy Scan Services
-      uses: ./.github/worflows/trivy-scan-services.yaml
-      with:
-        environment: "staging"
+    uses: ./.github/workflows/trivy-scan-services.yaml
+    with:
+      environment: "staging"
 
   build-push-auth-service-stg:
     runs-on: ubuntu-latest
