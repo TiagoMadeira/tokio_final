@@ -9,18 +9,18 @@ on:
       - development
 
 jobs:
-  test-services:
+  test-services-stg:
     uses: ./.github/worflows/test-services.yaml
     secrets: inherit
 
-  trivy-scan-services:
+  trivy-scan-services-stg:
     uses: ./.github/worflows/trivy-scan-services.yaml
     with:
       environment: "development"
 
   build-push-auth-service-stg:
     runs-on: ubuntu-latest
-    needs: [ test-auth-service, test-post-service, test-rest-service, trivy-scan-auth-service-stg, trivy-scan-post-service-stg, trivy-scan-rest-service-stg ]
+    needs: [ test-services-stg, trivy-scan-services-stg ]
     environment: staging
     steps:
       - name: Checkout repository
@@ -37,7 +37,7 @@ jobs:
 
   build-push-post-service-stg:
     runs-on: ubuntu-latest
-    needs: [ test-auth-service, test-post-service, test-rest-service, trivy-scan-auth-service-stg, trivy-scan-post-service-stg, trivy-scan-rest-service-stg ]
+    needs: [ test-services-stg, trivy-scan-services-stg ]
     environment: staging
     steps:
       - name: Checkout repository
@@ -54,7 +54,7 @@ jobs:
 
   build-push-rest-service-stg:
     runs-on: ubuntu-latest
-    needs: [ test-auth-service, test-post-service, test-rest-service, trivy-scan-auth-service-stg, trivy-scan-post-service-stg, trivy-scan-rest-service-stg ]
+    needs: [ test-services-stg, trivy-scan-services-stg ]
     environment: staging
     steps:
       - name: Checkout repository
