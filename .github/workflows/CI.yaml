@@ -11,6 +11,8 @@ on:
 jobs:
   dev:
     uses: ./.github/workflows/build-services.yaml
+    secrets:
+      dockerhub-access-token: ${{secrets.DOCKERHUB_ACCESS_TOKEN}}
 
   staging:
     runs-on: [this_pc_runner]
