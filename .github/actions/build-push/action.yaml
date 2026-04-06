@@ -32,7 +32,7 @@ runs:
           password: ${{ inputs.dockerhub-access-token }}
 
       - name: Extract metadata
-        shell: bash
+        shell: wsl {0}
         run: |
           echo "ref=${{ github.ref_name }}" >> $GITHUB_OUTPUT
           echo "short_sha=$(echo $GITHUB_SHA | cut -c1-7)" >> $GITHUB_OUTPUT
