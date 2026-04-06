@@ -16,16 +16,18 @@ jobs:
 
   staging:
     runs-on: [this_pc_runner]
-    environment: staging
     needs: [dev]
+    defaults:
+      run:
+        # Use the built-in wsl shell handler
+        shell: wsl bash --noprofile --norc -e -o pipefail $(wslpath '{0}')
+    environment: staging
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-
       - name: Check Minikube status
         id: status_check
- 
         continue-on-error: true 
         run: |
           if minikube status; then
@@ -36,13 +38,11 @@ jobs:
 
       - name: start minikube
         if: steps.status_check.outputs.active == 'false'
-        shell: bash
         run: |
           cd k8s-configs
           make minikube_start
       
       - name: start obeservability server
-        shell: bash
         run: |
           cd k8s-configs
           if ! kubectl get namespace observability ; then
@@ -50,7 +50,6 @@ jobs:
           fi
 
       - name: start staging server
-        shell: bash
         run: |
           cd k8s-configs
           if  kubectl get namespace staging ; then
@@ -67,13 +66,16 @@ jobs:
   production:
     runs-on: [self-hosted]
     needs: [staging]
+    defaults:
+      run:
+        # Use the built-in wsl shell handler
+        shell: wsl bash --noprofile --norc -e -o pipefail $(wslpath '{0}')
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Check Minikube status
         id: status_check
- 
         continue-on-error: true 
         run: |
           if minikube status; then
@@ -84,13 +86,11 @@ jobs:
 
       - name: start minikube
         if: steps.status_check.outputs.active == 'false'
-        shell: bash
         run: |
           cd k8s-configs
           make minikube_start
       
       - name: start production server
-        shell: bash
         run: |
           cd k8s-configs
           if  kubectl get namespace production; then
