@@ -15,7 +15,7 @@ jobs:
   #     dockerhub-access-token: ${{secrets.DOCKERHUB_ACCESS_TOKEN}}
 
   staging:
-    runs-on: [this_pc_runner]
+    runs-on: [pc_self_hosted]
     defaults:
       run:
         # Use the built-in wsl shell handler
@@ -58,7 +58,7 @@ jobs:
           jwt_secret: ${{secrets.JWT_KEY}}
 
   production:
-    runs-on: [self-hosted]
+    runs-on: [pc_self_hosted]
     needs: [staging]
     defaults:
       run:
