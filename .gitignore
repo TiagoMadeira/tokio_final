@@ -2,3 +2,5 @@
 *.md
 *.json
 .venv
+.env.local
+_pycache_
