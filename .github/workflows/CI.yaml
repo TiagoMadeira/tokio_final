@@ -10,14 +10,7 @@ on:
 
 jobs:
   dev:
-    runs-on: [this_pc_runner]
-    environment: production
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Build push dev
-        uses: ./.github/workflows/build-services
+    uses: ./.github/workflows/build-services.yaml
 
   staging:
     runs-on: [this_pc_runner]
