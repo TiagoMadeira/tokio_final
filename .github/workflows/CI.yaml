@@ -20,7 +20,7 @@ jobs:
     defaults:
       run:
         # Use the built-in wsl shell handler
-        shell: wsl {0}
+        shell: wsl bash --noprofile --norc -e -o pipefail $(wslpath '{0}')
     environment: staging
     steps:
       - name: Checkout repository
@@ -35,7 +35,6 @@ jobs:
           else
             echo "active=false" >> $GITHUB_OUTPUT
           fi
-
       - name: start minikube
         if: steps.status_check.outputs.active == 'false'
         run: |
