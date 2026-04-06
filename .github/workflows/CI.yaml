@@ -20,7 +20,7 @@ jobs:
     defaults:
       run:
         # Use the built-in wsl shell handler
-        shell: wsl bash --noprofile --norc -e -o pipefail $(wslpath '{0}')
+        shell: wsl {0}
     environment: staging
     steps:
       - name: Checkout repository
