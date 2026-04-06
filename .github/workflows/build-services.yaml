@@ -1,28 +1,15 @@
-name: CI
+name: build services
 
 on:
-  workflow_dispatch:
-  pull_request:
-    branches: [master]
-  push:
-    branches:
-      - master
-    tags:
-      - '**'
-
+  workflow_call:
+    secrets:
+      dockerhub-access-token:
+        required: true
+        description: dockerhub access token
+    
 jobs:
-  test-services:
-    uses: ./.github/workflows/test-services.yaml
-    secrets: inherit
-
-  trivy-scan-services:
-    uses: ./.github/workflows/trivy-scan-services.yaml
-    with:
-      environment: "production"
-
-  build-push-auth-service-prd:
-    runs-on: ubuntu-latest
-    needs: [  test-services, trivy-scan-services ]
+  build-push-auth-service:
+    runs-on: [este_pc_runner]
     environment: production
     steps:
       - name: Checkout repository
@@ -32,14 +19,13 @@ jobs:
         uses: ./.github/actions/build-push
         with:
           context_path: "auth_service"
-          docker-file-path: ${{vars.AUTH_SERVICE_DOCKERFILE}}
+          docker-file-path: "auth_service/dockerfile"
           dockerhub-usernane: ${{vars.DOCKER_USERNAME}}
-          dockerhub-access-token: ${{secrets.DOCKERHUB_ACCESS_TOKEN}}
+          dockerhub-access-token: ${{secrets.dockerhub-access-token}}
           dockerhub-repository: ${{vars.AUTH_SERVICE_DOCKERHUB_REPOSITORY}}
 
-  build-push-post-service-prd:
-    runs-on: ubuntu-latest
-    needs: [ test-services, trivy-scan-services ]
+  build-push-post-service:
+    runs-on: [este_pc_runner]
     environment: production
     steps:
       - name: Checkout repository
@@ -49,14 +35,13 @@ jobs:
         uses: ./.github/actions/build-push
         with:
           context_path: "post_service"
-          docker-file-path: ${{vars.POST_SERVICE_DOCKERFILE}}
+          docker-file-path: "post_service/dockerfile"
           dockerhub-usernane: ${{vars.DOCKER_USERNAME}}
-          dockerhub-access-token: ${{secrets.DOCKERHUB_ACCESS_TOKEN}}
+          dockerhub-access-token: ${{secrets.dockerhub-access-token}}
           dockerhub-repository: ${{vars.POST_SERVICE_DOCKERHUB_REPOSITORY}}
 
-  build-push-rest-service-prd:
-    runs-on: ubuntu-latest
-    needs: [ test-services, trivy-scan-services ]
+  build-push-rest-service:
+    runs-on: [este_pc_runner]
     environment: production
     steps:
       - name: Checkout repository
@@ -66,7 +51,7 @@ jobs:
         uses: ./.github/actions/build-push
         with:
           context_path: "rest_service"
-          docker-file-path: ${{vars.REST_SERVICE_DOCKERFILE}}
+          docker-file-path: "rest_service/dockerfile"
           dockerhub-usernane: ${{vars.DOCKER_USERNAME}}
-          dockerhub-access-token: ${{secrets.DOCKERHUB_ACCESS_TOKEN}}
+          dockerhub-access-token: ${{secrets.dockerhub-access-token}}
           dockerhub-repository: ${{vars.REST_SERVICE_DOCKERHUB_REPOSITORY}}

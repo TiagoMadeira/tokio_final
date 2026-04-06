@@ -2,6 +2,9 @@ name: test-services
 
 on:
   workflow_call:
+    secrets:
+      jwt_secret:
+        required: true
   
 jobs: 
   test-auth-service:
@@ -13,7 +16,7 @@ jobs:
       - name: test auth service
         uses:  ./.github/actions/test_service
         with:
-          jwt_secret: ${{secrets.JWT_KEY}}
+          jwt_secret: ${{secrets.jwt_secret}}
           service_path: "auth_service"
 
   test-post-service:
