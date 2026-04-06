@@ -12,7 +12,7 @@ on:
 jobs:   
   
   trivy-scan-auth-service-dev:
-     runs-on: ubuntu-latest
+     runs-on: self-hosted
      environment: ${{ inputs.environment }}
      steps:
       - name: Checkout repository
@@ -25,7 +25,7 @@ jobs:
           service_path: "auth_service"
 
   trivy-scan-post-service-dev:
-     runs-on: ubuntu-latest
+     runs-on: self-hosted
      environment: ${{ inputs.environment }}
      steps:
       - name: Checkout repository
@@ -38,7 +38,7 @@ jobs:
           service_path: "post_service"
   
   trivy-scan-rest-service-dev:
-     runs-on: ubuntu-latest
+     runs-on: self-hosted
      environment: ${{ inputs.environment }}
      steps:
       - name: Checkout repository

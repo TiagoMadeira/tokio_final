@@ -10,7 +10,7 @@ on:
 
 jobs:
   dev:
-    runs-on: [este_pc_runner]
+    runs-on: [self-hosted]
     environment: production
     steps:
       - name: Checkout repository
@@ -20,7 +20,7 @@ jobs:
         uses: ./.github/workflows/build-services
 
   staging:
-    runs-on: [este_pc_runner]
+    runs-on: [self-hosted]
     environment: staging
     needs: [dev]
     steps:
@@ -70,7 +70,7 @@ jobs:
           jwt_secret: ${{secrets.JWT_KEY}}
 
   production:
-    runs-on: [este_pc_runner]
+    runs-on: [self-hosted]
     needs: [staging]
     steps:
       - name: Checkout repository
