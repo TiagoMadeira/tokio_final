@@ -16,7 +16,6 @@ jobs:
 
   staging:
     runs-on: [this_pc_runner]
-    needs: [dev]
     defaults:
       run:
         # Use the built-in wsl shell handler
