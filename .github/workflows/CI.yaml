@@ -71,6 +71,7 @@ jobs:
 
   production:
     runs-on: [este_pc_runner]
+    needs: [staging]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
