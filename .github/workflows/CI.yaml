@@ -10,7 +10,7 @@ on:
 
 jobs:
   dev:
-    runs-on: [ubuntu-latest]
+    runs-on: [this_pc_runner]
     environment: production
     steps:
       - name: Checkout repository
@@ -20,7 +20,7 @@ jobs:
         uses: ./.github/workflows/build-services
 
   staging:
-    runs-on: [self-hosted]
+    runs-on: [this_pc_runner]
     environment: staging
     needs: [dev]
     steps:

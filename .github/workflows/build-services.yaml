@@ -9,7 +9,7 @@ on:
     
 jobs:
   build-push-auth-service:
-    runs-on: [self-hosted]
+    runs-on: [this_pc_runner]
     environment: production
     steps:
       - name: Checkout repository
@@ -25,7 +25,7 @@ jobs:
           dockerhub-repository: ${{vars.AUTH_SERVICE_DOCKERHUB_REPOSITORY}}
 
   build-push-post-service:
-    runs-on: [self-hosted]
+    runs-on: [this_pc_runner]
     environment: production
     steps:
       - name: Checkout repository
@@ -41,7 +41,7 @@ jobs:
           dockerhub-repository: ${{vars.POST_SERVICE_DOCKERHUB_REPOSITORY}}
 
   build-push-rest-service:
-    runs-on: [self-hosted]
+    runs-on: [this_pc_runner]
     environment: production
     steps:
       - name: Checkout repository
