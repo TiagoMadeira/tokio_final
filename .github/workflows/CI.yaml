@@ -1,0 +1,110 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [development]
+  push:
+    branches:
+      - development
+
+jobs:
+  dev:
+    runs-on: [ubuntu-latest]
+    environment: production
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build push dev
+        uses: ./.github/workflows/build-services
+
+  staging:
+    runs-on: [self-hosted]
+    environment: staging
+    needs: [dev]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+
+      - name: Check Minikube status
+        id: status_check
+ 
+        continue-on-error: true 
+        run: |
+          if minikube status; then
+            echo "active=true" >> $GITHUB_OUTPUT
+          else
+            echo "active=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: start minikube
+        if: steps.status_check.outputs.active == 'false'
+        shell: bash
+        run: |
+          cd k8s-configs
+          make minikube_start
+      
+      - name: start obeservability server
+        shell: bash
+        run: |
+          cd k8s-configs
+          if ! kubectl get namespace observability ; then
+            make start_jaeger_server
+          fi
+
+      - name: start staging server
+        shell: bash
+        run: |
+          cd k8s-configs
+          if  kubectl get namespace staging ; then
+            make update_staging
+          else
+            make start_staging_environment
+          fi
+
+      - name: Unit and integration testing
+        uses: ./.github/worflows/test-services.yaml
+        with: 
+          jwt_secret: ${{secrets.JWT_KEY}}
+
+  production:
+    runs-on: [self-hosted]
+    needs: [staging]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check Minikube status
+        id: status_check
+ 
+        continue-on-error: true 
+        run: |
+          if minikube status; then
+            echo "active=true" >> $GITHUB_OUTPUT
+          else
+            echo "active=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: start minikube
+        if: steps.status_check.outputs.active == 'false'
+        shell: bash
+        run: |
+          cd k8s-configs
+          make minikube_start
+      
+      - name: start production server
+        shell: bash
+        run: |
+          cd k8s-configs
+          if  kubectl get namespace production; then
+            make update_production
+          else
+            make start_production_environment
+          fi
+
+
+
+
+    
