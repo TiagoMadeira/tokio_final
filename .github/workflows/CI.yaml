@@ -3,10 +3,10 @@ name: CI
 on:
   workflow_dispatch:
   pull_request:
-    branches: [development]
+    branches: [master]
   push:
     branches:
-      - development
+      - master
 
 jobs:
   # dev:
