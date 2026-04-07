@@ -34,7 +34,7 @@ jobs:
         if: steps.status_check.outputs.active == 'false'
         run: |
           cd k8s-configs
-          make minikube_start
+          make start_minikube
       
       - name: start obeservability server
         run: |
