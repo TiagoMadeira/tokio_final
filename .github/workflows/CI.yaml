@@ -56,7 +56,7 @@ jobs:
           if  kubectl get namespace staging ; then
             make update_staging
           else
-            make start_staging_environment docker_name=${{vars.DOCKER_USERNAME}} docker_password=${{secrets.DOCKERHUB_ACCESS_TOKEN}} docker_email=${{DOCKER_EMAIL}}
+            make start_staging_environment docker_name=${{vars.DOCKER_USERNAME}} docker_password=${{secrets.DOCKERHUB_ACCESS_TOKEN}} docker_email=${{vars.DOCKER_EMAIL}}
           fi
 
       - name: Unit and integration testing
