@@ -1,0 +1,17 @@
+scan:
+  scanners:
+    - vuln
+    - secret
+  
+  skip-files:
+    - "./requirements.txt"
+  
+  file-patterns:
+    - "pip:requirements-stg.txt" 
+
+severity:
+  - HIGH
+  - CRITICAL
+
+vulnerability:
+  ignore-unfixed: true

@@ -1,0 +1,57 @@
+name: build services
+
+on:
+  workflow_call:
+    secrets:
+      dockerhub-access-token:
+        required: true
+        description: dockerhub access token
+    
+jobs:
+  build-push-auth-service:
+    runs-on: [ubuntu-24.04]
+    environment: production
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build push dev
+        uses: ./.github/actions/build-push
+        with:
+          context_path: "auth_service"
+          docker-file-path: "auth_service/dockerfile"
+          dockerhub-usernane: ${{vars.DOCKER_USERNAME}}
+          dockerhub-access-token: ${{secrets.dockerhub-access-token}}
+          dockerhub-repository: ${{vars.AUTH_SERVICE_DOCKERHUB_REPOSITORY}}
+
+  build-push-post-service:
+    runs-on: [ubuntu-24.04]
+    environment: production
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: ./.github/actions/build-push
+        with:
+          context_path: "post_service"
+          docker-file-path: "post_service/dockerfile"
+          dockerhub-usernane: ${{vars.DOCKER_USERNAME}}
+          dockerhub-access-token: ${{secrets.dockerhub-access-token}}
+          dockerhub-repository: ${{vars.POST_SERVICE_DOCKERHUB_REPOSITORY}}
+
+  build-push-rest-service:
+    runs-on: [ubuntu-24.04]
+    environment: production
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Login to Docker Hub
+        uses: ./.github/actions/build-push
+        with:
+          context_path: "rest_service"
+          docker-file-path: "rest_service/dockerfile"
+          dockerhub-usernane: ${{vars.DOCKER_USERNAME}}
+          dockerhub-access-token: ${{secrets.dockerhub-access-token}}
+          dockerhub-repository: ${{vars.REST_SERVICE_DOCKERHUB_REPOSITORY}}
