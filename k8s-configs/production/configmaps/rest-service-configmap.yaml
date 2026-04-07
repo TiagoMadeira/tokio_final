@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rest-service-configmap
+  namespace: production
+data:
+  auth_service_url: http://auth-internal-service.production.svc.cluster.local:8888
+  post_service_url: http://post-internal-service.production.svc.cluster.local:8080
+  otel-service-name: production-rest-service
+  otel-exporter-insecure: "true"
+  otel-exporter-endpoint: http://jaeger.observability.svc.cluster.local:4317
+  otel-metrics-exporter: none
+  otel-logs-exporter: none

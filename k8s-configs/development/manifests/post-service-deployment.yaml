@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: post-service-deployment
+    namespace: development
+    labels:
+      app: post-service
+spec:
+  selector:
+    matchLabels:
+      app: post-service
+  template:
+    metadata:
+      labels:
+        app: post-service
+    spec:
+      containers:
+      - name: post-service
+        image: tiagomadeiradock/tokio-post-service:25010e2
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            memory: 512Mi
+            cpu: "1"
+          requests:
+            memory: 256Mi
+            cpu: "0.1"
+        ports:
+          - name: http
+            protocol: TCP
+            containerPort: 8000
+        env:
+          - name: DEBUG
+            valueFrom:
+             configMapKeyRef:
+                name: post-service-configmap
+                key: debug
+          - name: AUTH_SERVICE_URL
+            valueFrom:
+             configMapKeyRef:
+                name: post-service-configmap
+                key: auth_service_url
+          - name: OTEL_SERVICE_NAME
+            valueFrom:
+             configMapKeyRef:
+                name: post-service-configmap
+                key: otel-service-name
+
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            valueFrom:
+             configMapKeyRef:
+                name: post-service-configmap
+                key: otel-exporter-endpoint
+          
+          - name: OTEL_EXPORTER_OTLP_INSECURE 
+            valueFrom:
+             configMapKeyRef:
+                name: post-service-configmap
+                key: otel-exporter-insecure
+
+          - name: OTEL_METRICS_EXPORTER
+            valueFrom:
+             configMapKeyRef:
+                name: post-service-configmap
+                key: otel-metrics-exporter
+
+          - name: OTEL_LOGS_EXPORTER
+            valueFrom:
+             configMapKeyRef:
+                name: post-service-configmap
+                key: otel-logs-exporter
+
+      imagePullSecrets:
+      - name: regcred
+              
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: post-internal-service
+  namespace: development
+spec:
+  selector:
+    app: post-service
+  type: ClusterIP
+  ports:
+    - port: 8080
+      protocol: TCP
+      targetPort: http
