@@ -1,0 +1,42 @@
+name: test-services
+
+on:
+  workflow_call:
+    secrets:
+      jwt_secret:
+        required: true
+  
+jobs: 
+  test-auth-service:
+    runs-on: this_pc_runner
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: test auth service
+        uses:  ./.github/actions/test_service
+        with:
+          jwt_secret: ${{secrets.jwt_secret}}
+          service_path: "auth_service"
+
+  test-post-service:
+    runs-on: this_pc_runner
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: test post service
+        uses:  ./.github/actions/test_service
+        with:
+          service_path: "post_service"
+
+  test-rest-service:
+    runs-on: this_pc_runner
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: test rest service
+        uses:  ./.github/actions/test_service
+        with:
+          service_path: "rest_service"
