@@ -97,7 +97,7 @@ jobs:
           if  kubectl get namespace production; then
             make update_production
           else
-            make start_production_environment docker_name=${{vars.DOCKER_USERNAME}} docker_password=${{secrets.DOCKERHUB_ACCESS_TOKEN}} docker_email=${{DOCKER_EMAIL}}
+            make start_production_environment docker_name=${{vars.DOCKER_USERNAME}} docker_password=${{secrets.DOCKERHUB_ACCESS_TOKEN}} docker_email=${{vars.DOCKER_EMAIL}}
           fi
 
 
