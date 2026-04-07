@@ -16,6 +16,7 @@ jobs:
 
   staging:
     runs-on: [self-hosted-ubuntu]
+    needs: [dev]
     defaults:
       run:
         # Use the built-in wsl shell handler
