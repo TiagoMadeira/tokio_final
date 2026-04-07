@@ -30,6 +30,8 @@ spec:
             protocol: TCP
             containerPort: 8000
         env:
+          - name: ENV
+            value: "prod"
           - name: AUTH_SERVICE_URL
             valueFrom:
              configMapKeyRef:

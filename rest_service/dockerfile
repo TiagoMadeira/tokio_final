@@ -4,4 +4,10 @@ RUN python3 -m venv .venv
 RUN . .venv/bin/activate
 RUN pip install -r requirements-prd.txt
 COPY . .
+# Make the script executable
+RUN chmod +x /entrypoint.sh
+# This variable is now for RUNTIME, not build time
+ENV ENV=prod
+ENTRYPOINT ["/entrypoint.sh"]
+
 CMD ["fastapi", "run", "app/main.py", "--host", "0.0.0.0" ]
