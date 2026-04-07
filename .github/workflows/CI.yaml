@@ -15,11 +15,11 @@ jobs:
   #     dockerhub-access-token: ${{secrets.DOCKERHUB_ACCESS_TOKEN}}
 
   staging:
-    runs-on: [pc_self_hosted]
+    runs-on: [self-hosted-ubuntu]
     defaults:
       run:
         # Use the built-in wsl shell handler
-        shell: wsl bash --noprofile --norc -e -o pipefail $(wslpath '{0}')
+        shell: bash
     environment: staging
     steps:
       - name: Checkout repository
@@ -58,7 +58,7 @@ jobs:
           jwt_secret: ${{secrets.JWT_KEY}}
 
   production:
-    runs-on: [pc_self_hosted]
+    runs-on: [self-hosted-ubuntu]
     needs: [staging]
     defaults:
       run:
