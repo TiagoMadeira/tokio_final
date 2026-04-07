@@ -5,7 +5,7 @@ docker_email = #Dockerhub account email
 
 start_minikube:
 	@echo starting minikube ...
-	minikube start
+	minikube start --driver=docker
 	@echo enable ingress
 	minikube addons enable ingress
 
