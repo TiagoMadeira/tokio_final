@@ -58,9 +58,16 @@ jobs:
           else
             make start_staging_environment docker_name=${{vars.DOCKER_USERNAME}} docker_password=${{secrets.DOCKERHUB_ACCESS_TOKEN}} docker_email=${{vars.DOCKER_EMAIL}}
           fi
+      
+      - name: Wait for pods in staging to be up and running
+        run: |
+          kubectl wait --namespace staging \
+          --for=condition=ready pod \
+          --all \
+          --timeout=120s
 
       - name: Unit and integration testing
-        uses: ./.github/worflows/test-services.yaml
+        uses: ./.github/workflows/test-services.yaml
         with: 
           jwt_secret: ${{secrets.JWT_KEY}}
 
