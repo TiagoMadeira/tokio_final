@@ -1,6 +1,6 @@
-docker_name = #Dockerhub account name
-docker_password = #Dockerhub access token
-docker_email = #Dockerhub account email
+docker_name = "" #Dockerhub account name
+docker_password = "" #Dockerhub access token
+docker_email = "" #Dockerhub account email
 
 
 start_minikube:

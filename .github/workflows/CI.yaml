@@ -56,7 +56,7 @@ jobs:
           if  kubectl get namespace staging ; then
             make update_staging
           else
-            make start_staging_environment
+            make start_staging_environment docker_name=${{vars.DOCKER_USERNAME}} docker_password=${{secrets.DOCKERHUB_ACCESS_TOKEN}} docker_email=${{DOCKER_EMAIL}}
           fi
 
       - name: Unit and integration testing
@@ -70,7 +70,7 @@ jobs:
     defaults:
       run:
         # Use the built-in wsl shell handler
-        shell: wsl bash --noprofile --norc -e -o pipefail $(wslpath '{0}')
+        shell: bash
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -97,7 +97,7 @@ jobs:
           if  kubectl get namespace production; then
             make update_production
           else
-            make start_production_environment
+            make start_production_environment docker_name=${{vars.DOCKER_USERNAME}} docker_password=${{secrets.DOCKERHUB_ACCESS_TOKEN}} docker_email=${{DOCKER_EMAIL}}
           fi
 
 
