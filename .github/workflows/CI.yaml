@@ -67,10 +67,26 @@ jobs:
           --all \
           --timeout=240s
 
-      - name: Unit and integration testing
-        uses: ./.github/workflows/test-services.yaml
-        with: 
-          jwt_secret: ${{secrets.JWT_KEY}}
+      - name:  auth service unit testing
+        uses:  ./.github/actions/test_service
+        with:
+          jwt_secret: ${{secrets.jwt_secret}}
+          service_path: "auth_service"
+
+      - name: post service unit testing
+        uses:  ./.github/actions/test_service
+        with:
+          service_path: "post_service"
+
+      - name: rest service unit and integration testing
+        uses:  ./.github/actions/test_service
+        with:
+          service_path: "rest_service"
+
+      # - name: Trivy scan services
+      #   uses: ./.github/workflows/trivy-scan-services.yaml
+      #   with: 
+      #     environment: staging
 
   production:
     runs-on: [self-hosted-ubuntu]
