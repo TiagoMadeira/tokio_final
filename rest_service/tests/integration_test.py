@@ -15,7 +15,7 @@ REST_SERVICE_URL = "http://localhost:8000"
 #########################################################Register Test##########################################################
 def test_register_user(api_client, valid_register_data):
     #test
-    response = api_client.post("/register", json=jsonable_encoder(valid_register_data))
+    response = api_client.post(f"{REST_SERVICE_URL}/register", json=jsonable_encoder(valid_register_data))
     #assert
     data = response.json()
     assert response.status_code == 200
@@ -25,9 +25,9 @@ def test_register_user(api_client, valid_register_data):
 
 def test_register_user_already_exists(api_client, valid_existing_register_data):
     #setup
-    api_client.post("/register", json=jsonable_encoder(valid_existing_register_data))
+    api_client.post(f"{REST_SERVICE_URL}/register", json=jsonable_encoder(valid_existing_register_data))
     #test
-    response = api_client.post("/register", json=jsonable_encoder(valid_existing_register_data))
+    response = api_client.post(f"{REST_SERVICE_URL}/register", json=jsonable_encoder(valid_existing_register_data))
     #assert
     assert response.status_code == 400
     assert response.json() == {
@@ -36,7 +36,7 @@ def test_register_user_already_exists(api_client, valid_existing_register_data):
 
 def test_register_password_not_matching(api_client, password_not_matching_register_data):
     #test
-    response = api_client.post("/register", json=password_not_matching_register_data)
+    response = api_client.post(f"{REST_SERVICE_URL}/register", json=password_not_matching_register_data)
     #assert
     assert response.status_code == 422
 
@@ -44,7 +44,7 @@ def test_register_password_not_matching(api_client, password_not_matching_regist
 
 def test_valid_login(api_client, valid_login_data ):
     #test
-    response = api_client.post("/login",
+    response = api_client.post(f"{REST_SERVICE_URL}/login",
                             data = valid_login_data,
                             headers = {"content-type": "application/x-www-form-urlencoded"})
     #assert
@@ -54,7 +54,7 @@ def test_valid_login(api_client, valid_login_data ):
     assert data["token_type"] == "bearer"
 
 def test_wrong_pass_login(api_client, wrong_pass_login_data):
-    response = api_client.post("/login",
+    response = api_client.post(f"{REST_SERVICE_URL}/login",
                     data= wrong_pass_login_data,
                     headers = {"content-type": "application/x-www-form-urlencoded"})
     
@@ -64,7 +64,7 @@ def test_wrong_pass_login(api_client, wrong_pass_login_data):
     }
 
 def test_wrong_user_login(api_client, wrong_pass_login_data):
-    response = api_client.post("/login",
+    response = api_client.post(f"{REST_SERVICE_URL}/login",
                     data= wrong_pass_login_data,
                     headers = {"content-type": "application/x-www-form-urlencoded"})
     
