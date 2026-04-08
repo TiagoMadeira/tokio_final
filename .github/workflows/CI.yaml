@@ -75,7 +75,7 @@ jobs:
       - name:  auth service unit testing
         uses:  ./.github/actions/test_service
         with:
-          jwt_secret: ${{secrets.jwt_secret}}
+          jwt_secret: ${{secrets.JWT_KEY}}
           service_path: "auth_service"
 
       - name: post service unit testing
