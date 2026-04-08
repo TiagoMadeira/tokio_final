@@ -69,7 +69,8 @@ jobs:
       
       - name: Prepare rest service fro integration testing
         run: |
-          kubectl port-forward service/rest-internal-service 8000:80 -n staging
+          kubectl port-forward service/rest-internal-service 8000:80 -n staging &
+          sleep 5 # Wait for the tunnel to initialize
 
       - name:  auth service unit testing
         uses:  ./.github/actions/test_service
