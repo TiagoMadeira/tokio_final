@@ -66,6 +66,10 @@ jobs:
           --for=condition=ready pod \
           --all \
           --timeout=240s
+      
+      - name: Prepare rest service fro integration testing
+        run: |
+          kubectl port-forward service/rest-internal-service 8000:80 -n staging
 
       - name:  auth service unit testing
         uses:  ./.github/actions/test_service

@@ -1,6 +1,7 @@
 fastapi[standard]
 pydantic-settings
 requests
+httpx
 pytest
 opentelemetry-sdk
 opentelemetry-api

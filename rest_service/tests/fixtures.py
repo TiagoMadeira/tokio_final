@@ -20,6 +20,20 @@ def valid_login_data():
     "password": "test_pass",
     }
 
+@pytest.fixture   
+def wrong_pass_login_data():
+    return {
+    "username": "existing_user",
+    "password": "wrong_pass",
+    }
+
+@pytest.fixture   
+def wrong_user_login_data():
+    return jsonable_encoder({
+    "username": "wrong_user",
+    "password": "test_pass",
+    })
+
 @pytest.fixture
 def valid_register_data():
     return {
@@ -29,6 +43,26 @@ def valid_register_data():
         "password": "test_pass",
         "confirm_password": "test_pass"
     }
+
+@pytest.fixture
+def valid_existing_register_data():
+    return {
+        "username": "existing_user",
+        "email": "existingemail@gmail.com",
+        "full_name":"existing user",
+        "password": "test_pass",
+        "confirm_password": "test_pass"
+    }
+
+@pytest.fixture
+def password_not_matching_register_data():
+    return jsonable_encoder({
+        "username": "valid",
+        "email": "validemail@gmail.com",
+        "full_name":"valid user",
+        "password": "test_pass",
+        "confirm_password": "not_matching"
+    })
 
 @pytest.fixture
 def valid_create_data():
