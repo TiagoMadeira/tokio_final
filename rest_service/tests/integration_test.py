@@ -38,7 +38,7 @@ def test_register_password_not_matching(api_client, password_not_matching_regist
     #test
     response = api_client.post(f"{REST_SERVICE_URL}/register", json=password_not_matching_register_data)
     #assert
-    assert response.status_code == 422
+    assert response.status_code == 400
 
 #########################################################Login Tests##########################################################
 
