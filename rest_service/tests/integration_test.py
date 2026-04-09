@@ -123,10 +123,10 @@ def test_create_already_existing_post(api_client, valid_create_data, valid_login
 
 ######################################################### Update POSTS Tests##########################################################
 
-def test_valid_update(api_client, valid_update_data, valid_diferent_login_data):
+def test_valid_update(api_client, valid_update_data, valid_login_data):
     #test setup
     login_response = api_client.post(f"{REST_SERVICE_URL}/login",
-                            data = valid_diferent_login_data,
+                            data = valid_login_data,
                             headers = {"content-type": "application/x-www-form-urlencoded"})
     
     response_json = login_response.json()
@@ -182,7 +182,7 @@ def test_valid_get_posts(api_client):
 
 def test_valid_get_posts_by_author(api_client):
     #test
-    response = api_client.get(f"{REST_SERVICE_URL}/posts/existing_user")
+    response = api_client.get(f"{REST_SERVICE_URL}/posts/valid_user")
     #assert
     data = response.json()
     assert response.status_code == 200
@@ -198,10 +198,10 @@ def test_get_users_posts_should_require_login(api_client):
     assert response.status_code == 401
     assert data["detail"] == "Not authenticated"
 
-def test_get_users_posts(api_client, valid_diferent_login_data):
+def test_get_users_posts(api_client, valid_login_data):
     #test_setup 
     login_response = api_client.post(f"{REST_SERVICE_URL}/login",
-                            data = valid_diferent_login_data,
+                            data = valid_login_data,
                             headers = {"content-type": "application/x-www-form-urlencoded"})
     
     response_json = login_response.json()
@@ -245,10 +245,10 @@ def test_not_found_post_delete(api_client, valid_login_data):
     assert response.status_code == 404
     assert data["detail"] == "Post not found!"
 
-def test_forbidden_delete(api_client, valid_login_data):
+def test_forbidden_delete(api_client, valid_diferent_login_data):
     #test setup
     login_response = api_client.post(f"{REST_SERVICE_URL}/login",
-                            data = valid_login_data,
+                            data = valid_diferent_login_data,
                             headers = {"content-type": "application/x-www-form-urlencoded"})
     
     response_json = login_response.json()
@@ -262,10 +262,10 @@ def test_forbidden_delete(api_client, valid_login_data):
     assert response.status_code == 403
     assert data["detail"] == "You are not the author!"
 
-def test_valid_delete(api_client, valid_diferent_login_data):
+def test_valid_delete(api_client, valid_login_data):
     #test setup
     login_response = api_client.post(f"{REST_SERVICE_URL}/login",
-                            data = valid_diferent_login_data,
+                            data = valid_login_data,
                             headers = {"content-type": "application/x-www-form-urlencoded"})
     
     response_json = login_response.json()

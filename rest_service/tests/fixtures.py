@@ -16,14 +16,14 @@ def mock_json_header():
 @pytest.fixture
 def valid_login_data():
     return {
-    "username": "existing_user",
+    "username": "valid",
     "password": "test_pass",
     }
 
 @pytest.fixture
-def valid_diferent_login_data():
+def valid_existing_login_data():
     return {
-    "username": "valid",
+    "username": "existing_user",
     "password": "test_pass",
     }
 
