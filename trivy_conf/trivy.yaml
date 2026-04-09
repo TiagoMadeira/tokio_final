@@ -4,8 +4,10 @@ scan:
    - secret
 
 severity:
+  - LOW
+  - MEDIUM
   - HIGH
   - CRITICAL
 
 vulnerability:
-  ignore-unfixed: true
+  ignore-unfixed: false
