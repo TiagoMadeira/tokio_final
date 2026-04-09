@@ -88,6 +88,10 @@ jobs:
         with:
           service_path: "rest_service"
 
+      - name: Clean staging enviroment for next run
+        run: |
+          kubectl delete namespace staging
+          
       # - name: Trivy scan services
       #   uses: ./.github/workflows/trivy-scan-services.yaml
       #   with: 
