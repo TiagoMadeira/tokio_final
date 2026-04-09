@@ -119,14 +119,14 @@ def test_create_already_existing_post(api_client, valid_create_data, valid_login
     response = api_client.post(f"{REST_SERVICE_URL}/post", json=jsonable_encoder(valid_create_data), headers={"authorization": f"{token_type} {access_tokem}"})
     data = response.json()
     assert response.status_code == 400
-    assert data["detail"] == "Post already exists"
+    assert data["detail"] == "Author cannot create posts with the same title"
 
 ######################################################### Update POSTS Tests##########################################################
 
-def test_valid_update(api_client, valid_update_data, valid_login_data):
+def test_valid_update(api_client, valid_update_data, valid_diferent_login_data):
     #test setup
     login_response = api_client.post(f"{REST_SERVICE_URL}/login",
-                            data = valid_login_data,
+                            data = valid_diferent_login_data,
                             headers = {"content-type": "application/x-www-form-urlencoded"})
     
     response_json = login_response.json()
@@ -139,7 +139,7 @@ def test_valid_update(api_client, valid_update_data, valid_login_data):
     assert response.status_code == 200
     assert data["title"] == valid_update_data["title"]
     assert data["content"] == valid_update_data["content"]
-    assert data["author"] == "existing user"
+    assert data["author"] == "existing_user"
 
 def test_update_needs_auth(api_client, valid_update_data):
 
@@ -164,7 +164,7 @@ def test_update_with_diferent_user(api_client, valid_update_data, valid_diferent
     #assert
     data = response.json()
     assert response.status_code == 403
-    assert data["detail"] == "You are not the author"
+    assert data["detail"] == "You are not the author!"
 
 ######################################################### Get POSTS Tests############################################################
 
@@ -181,8 +181,6 @@ def test_valid_get_posts(api_client):
     assert "id" in data[0]
 
 def test_valid_get_posts_by_author(api_client):
-   
-    client_url = "/posts/test_author"
     #test
     response = api_client.get(f"{REST_SERVICE_URL}/posts/valid_user")
     #assert
@@ -247,10 +245,10 @@ def test_not_found_post_delete(api_client, valid_login_data):
     assert response.status_code == 404
     assert data["detail"] == "Post not found!"
 
-def test_forbidden_delete(api_client, valid_diferent_login_data):
+def test_forbidden_delete(api_client, valid_login_data):
     #test setup
     login_response = api_client.post(f"{REST_SERVICE_URL}/login",
-                            data = valid_diferent_login_data,
+                            data = valid_login_data,
                             headers = {"content-type": "application/x-www-form-urlencoded"})
     
     response_json = login_response.json()
@@ -262,7 +260,7 @@ def test_forbidden_delete(api_client, valid_diferent_login_data):
     data = response.json()
     #assert
     assert response.status_code == 403
-    assert data["detail"] == "You are not the author"
+    assert data["detail"] == "You are not the author!"
 
 def test_valid_delete(api_client, valid_diferent_login_data):
     #test setup
@@ -278,7 +276,6 @@ def test_valid_delete(api_client, valid_diferent_login_data):
     response = api_client.delete(f"{REST_SERVICE_URL}/posts/1", headers={"authorization": f"{token_type} {access_tokem}"})
     data = response.json()
     #assert
-    assert response.status_code == 403
-    assert data["detail"] == "You are not the author"
+    assert response.status_code == 200
 
     

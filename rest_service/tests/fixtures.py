@@ -56,7 +56,7 @@ def valid_existing_register_data():
     return {
         "username": "existing_user",
         "email": "existingemail@gmail.com",
-        "full_name":"existing user",
+        "full_name":"existing_user",
         "password": "test_pass",
         "confirm_password": "test_pass"
     }
