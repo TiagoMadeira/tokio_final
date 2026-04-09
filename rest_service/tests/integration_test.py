@@ -5,7 +5,7 @@ from fastapi.encoders import jsonable_encoder
 from tests.conftest import  (skip_auth, api_client)
 from tests.fixtures import (valid_register_data, 
                             valid_login_data,
-                            valid_diferent_login_data,
+                            valid_existing_login_data,
                             valid_create_data,
                             valid_update_data,
                             wrong_pass_login_data,
