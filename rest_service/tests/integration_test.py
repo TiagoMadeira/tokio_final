@@ -5,6 +5,7 @@ from fastapi.encoders import jsonable_encoder
 from tests.conftest import  (skip_auth, api_client)
 from tests.fixtures import (valid_register_data, 
                             valid_login_data,
+                            valid_diferent_login_data,
                             wrong_pass_login_data,
                             wrong_user_login_data,
                             valid_existing_register_data,
@@ -72,3 +73,204 @@ def test_wrong_user_login(api_client, wrong_pass_login_data):
     assert response.json() == {
         "detail": "Incorrect username or password"
     }
+
+######################################################### Creat POSTS Tests##########################################################
+
+def test_valid_create(api_client, valid_create_data, valid_login_data ):
+    #test setup
+    login_response = api_client.post(f"{REST_SERVICE_URL}/login",
+                            data = valid_login_data,
+                            headers = {"content-type": "application/x-www-form-urlencoded"})
+    
+    access_tokem = login_response["acces_token"]
+    token_type = login_response["token_type"]
+    #test
+    response = api_client.post(f"{REST_SERVICE_URL}/post", json=jsonable_encoder(valid_create_data), headers={"authorization": f"{token_type} {access_tokem}"})
+    #assert
+    data = response.json()
+    assert response.status_code == 200
+    assert data["title"] == valid_create_data["title"]
+    assert data["content"] == valid_create_data["content"]
+    assert data["author"] == valid_login_data["username"]
+
+
+def test_create_post_need_auth(api_client, valid_create_data):
+    #test
+    response = api_client.post(f"{REST_SERVICE_URL}/post", json=jsonable_encoder(valid_create_data))
+    #assert
+    data = response.json()
+    assert response.status_code == 401
+    assert data["detail"] == "Not authenticated"
+
+
+def test_create_already_existing_post(api_client, valid_create_data, valid_login_data):
+    #test setup
+    login_response = api_client.post(f"{REST_SERVICE_URL}/login",
+                            data = valid_login_data,
+                            headers = {"content-type": "application/x-www-form-urlencoded"})
+    
+    access_tokem = login_response["acces_token"]
+    token_type = login_response["token_type"]
+    #test
+    response = api_client.post(f"{REST_SERVICE_URL}/post", json=jsonable_encoder(valid_create_data), headers={"authorization": f"{token_type} {access_tokem}"})
+    data = response.json()
+    assert response.status_code == 400
+    assert data["detail"] == "Post already exists"
+
+######################################################### Update POSTS Tests##########################################################
+
+def test_valid_update(api_client, valid_update_data, valid_login_data):
+    #test setup
+    login_response = api_client.post(f"{REST_SERVICE_URL}/login",
+                            data = valid_login_data,
+                            headers = {"content-type": "application/x-www-form-urlencoded"})
+    
+    access_tokem = login_response["acces_token"]
+    token_type = login_response["token_type"]
+    #test
+    response = api_client.patch(f"{REST_SERVICE_URL}/posts/1", json=jsonable_encoder(valid_update_data), headers={"authorization": f"{token_type} {access_tokem}"})
+    #assert
+    data = response.json()
+    assert response.status_code == 200
+    assert data["title"] == valid_update_data["title"]
+    assert data["content"] == valid_update_data["content"]
+    assert data["author"] == "existing user"
+
+def test_update_needs_auth(api_client, valid_update_data):
+
+    #test
+    response = api_client.patch(f"{REST_SERVICE_URL}/posts/1", json=jsonable_encoder(valid_update_data))
+    #assert
+    data = response.json()
+    assert response.status_code == 401
+    assert data["detail"] == "Not authenticated"
+
+def test_update_with_diferent_user(api_client, valid_update_data, valid_diferent_login_data):
+    #test setup
+    login_response = api_client.post(f"{REST_SERVICE_URL}/login",
+                            data = valid_diferent_login_data,
+                            headers = {"content-type": "application/x-www-form-urlencoded"})
+    
+    access_tokem = login_response["acces_token"]
+    token_type = login_response["token_type"]
+    #test
+    response = api_client.patch(f"{REST_SERVICE_URL}/posts/1", json=jsonable_encoder(valid_update_data), headers={"authorization": f"{token_type} {access_tokem}"})
+    #assert
+    data = response.json()
+    assert response.status_code == 403
+    assert data["detail"] == "You are not the author"
+
+
+######################################################### Get POSTS Tests############################################################
+
+def test_valid_get_posts(api_client):
+    #test
+    response = api_client.get(f"{REST_SERVICE_URL}/posts")
+    #assert
+    data = response.json()
+    assert response.status_code == 200
+    assert len(data) == 1
+    assert "title" in data[0]
+    assert "content" in data[0]
+    assert "author" in data[0]
+    assert "id" in data[0]
+
+def test_valid_get_posts_by_author(api_client):
+   
+    client_url = "/posts/test_author"
+    #test
+    response = api_client.get(f"{REST_SERVICE_URL}/posts/valid_user")
+    #assert
+    data = response.json()
+    assert response.status_code == 200
+    assert len(data) == 1
+    assert "title" in data[0]
+    assert "content" in data[0]
+    assert "author" in data[0]
+    assert "id" in data[0]
+
+def test_get_users_posts_should_require_login(api_client):
+    response = api_client.get(f"{REST_SERVICE_URL}/posts/valid_user")
+    data = response.json()
+    assert response.status_code == 401
+    assert data["detail"] == "Not authenticated"
+
+def test_get_users_posts(api_client, valid_login_data):
+    #test_setup 
+    login_response = api_client.post(f"{REST_SERVICE_URL}/login",
+                            data = valid_login_data,
+                            headers = {"content-type": "application/x-www-form-urlencoded"})
+    
+    access_tokem = login_response["acces_token"]
+    token_type = login_response["token_type"] 
+    #test
+    response = api_client.get(f"{REST_SERVICE_URL}/user_posts", headers={"authorization": f"{token_type} {access_tokem}"})
+
+    #assert
+    data = response.json()
+    assert response.status_code == 200
+    assert len(data) == 1
+    assert "title" in data[0]
+    assert "content" in data[0]
+    assert "author" in data[0]
+    assert "id" in data[0]
+
+
+
+#########################################################Delete POSTS Tests##########################################################
+
+def test_delete_should_require_auth(api_client ):
+    response = api_client.delete(f"{REST_SERVICE_URL}/posts/1")
+    data = response.json()
+    assert response.status_code == 401
+    assert data["detail"] == "Not authenticated"
+
+def test_not_found_post_delete(api_client, valid_login_data):
+    #test setup
+    login_response = api_client.post(f"{REST_SERVICE_URL}/login",
+                            data = valid_login_data,
+                            headers = {"content-type": "application/x-www-form-urlencoded"})
+    
+    access_tokem = login_response["acces_token"]
+    token_type = login_response["token_type"]    
+   
+    #test
+    response = api_client.delete(f"{REST_SERVICE_URL}/posts/999", headers={"authorization": f"{token_type} {access_tokem}"})
+    data = response.json()
+    #assert
+    assert response.status_code == 404
+    assert data["detail"] == "Post not found!"
+
+def test_forbidden_delete(api_client, valid_diferent_login_data):
+    #test setup
+    login_response = api_client.post(f"{REST_SERVICE_URL}/login",
+                            data = valid_diferent_login_data,
+                            headers = {"content-type": "application/x-www-form-urlencoded"})
+    
+    access_tokem = login_response["acces_token"]
+    token_type = login_response["token_type"]    
+   
+    #test
+    response = api_client.delete(f"{REST_SERVICE_URL}/posts/1", headers={"authorization": f"{token_type} {access_tokem}"})
+    data = response.json()
+    #assert
+    assert response.status_code == 403
+    assert data["detail"] == "You are not the author"
+
+def test_valid_delete(api_client, valid_diferent_login_data):
+    #test setup
+    login_response = api_client.post(f"{REST_SERVICE_URL}/login",
+                            data = valid_diferent_login_data,
+                            headers = {"content-type": "application/x-www-form-urlencoded"})
+    
+    access_tokem = login_response["acces_token"]
+    token_type = login_response["token_type"]    
+   
+    #test
+    response = api_client.delete(f"{REST_SERVICE_URL}/posts/1", headers={"authorization": f"{token_type} {access_tokem}"})
+    data = response.json()
+    #assert
+    assert response.status_code == 403
+    assert data["detail"] == "You are not the author"
+
+    

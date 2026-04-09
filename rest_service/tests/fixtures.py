@@ -20,6 +20,13 @@ def valid_login_data():
     "password": "test_pass",
     }
 
+@pytest.fixture
+def valid_diferent_login_data():
+    return {
+    "username": "valid",
+    "password": "test_pass",
+    }
+
 @pytest.fixture   
 def wrong_pass_login_data():
     return {
@@ -39,7 +46,7 @@ def valid_register_data():
     return {
         "username": "valid",
         "email": "validemail@gmail.com",
-        "full_name":"valid user",
+        "full_name":"valid_user",
         "password": "test_pass",
         "confirm_password": "test_pass"
     }
