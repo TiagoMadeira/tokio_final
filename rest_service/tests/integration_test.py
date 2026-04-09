@@ -160,7 +160,6 @@ def test_update_with_diferent_user(api_client, valid_update_data, valid_diferent
     assert response.status_code == 403
     assert data["detail"] == "You are not the author"
 
-
 ######################################################### Get POSTS Tests############################################################
 
 def test_valid_get_posts(api_client):
@@ -214,8 +213,6 @@ def test_get_users_posts(api_client, valid_login_data):
     assert "content" in data[0]
     assert "author" in data[0]
     assert "id" in data[0]
-
-
 
 #########################################################Delete POSTS Tests##########################################################
 
