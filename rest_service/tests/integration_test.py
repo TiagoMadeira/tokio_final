@@ -6,6 +6,8 @@ from tests.conftest import  (skip_auth, api_client)
 from tests.fixtures import (valid_register_data, 
                             valid_login_data,
                             valid_diferent_login_data,
+                            valid_create_data,
+                            valid_update_data,
                             wrong_pass_login_data,
                             wrong_user_login_data,
                             valid_existing_register_data,
@@ -82,8 +84,9 @@ def test_valid_create(api_client, valid_create_data, valid_login_data ):
                             data = valid_login_data,
                             headers = {"content-type": "application/x-www-form-urlencoded"})
     
-    access_tokem = login_response["acces_token"]
-    token_type = login_response["token_type"]
+    response_json = login_response.json()
+    access_tokem = response_json["access_token"]
+    token_type = response_json["token_type"]
     #test
     response = api_client.post(f"{REST_SERVICE_URL}/post", json=jsonable_encoder(valid_create_data), headers={"authorization": f"{token_type} {access_tokem}"})
     #assert
@@ -109,8 +112,9 @@ def test_create_already_existing_post(api_client, valid_create_data, valid_login
                             data = valid_login_data,
                             headers = {"content-type": "application/x-www-form-urlencoded"})
     
-    access_tokem = login_response["acces_token"]
-    token_type = login_response["token_type"]
+    response_json = login_response.json()
+    access_tokem = response_json["access_token"]
+    token_type = response_json["token_type"]
     #test
     response = api_client.post(f"{REST_SERVICE_URL}/post", json=jsonable_encoder(valid_create_data), headers={"authorization": f"{token_type} {access_tokem}"})
     data = response.json()
@@ -125,8 +129,9 @@ def test_valid_update(api_client, valid_update_data, valid_login_data):
                             data = valid_login_data,
                             headers = {"content-type": "application/x-www-form-urlencoded"})
     
-    access_tokem = login_response["acces_token"]
-    token_type = login_response["token_type"]
+    response_json = login_response.json()
+    access_tokem = response_json["access_token"]
+    token_type = response_json["token_type"]
     #test
     response = api_client.patch(f"{REST_SERVICE_URL}/posts/1", json=jsonable_encoder(valid_update_data), headers={"authorization": f"{token_type} {access_tokem}"})
     #assert
@@ -151,8 +156,9 @@ def test_update_with_diferent_user(api_client, valid_update_data, valid_diferent
                             data = valid_diferent_login_data,
                             headers = {"content-type": "application/x-www-form-urlencoded"})
     
-    access_tokem = login_response["acces_token"]
-    token_type = login_response["token_type"]
+    response_json = login_response.json()
+    access_tokem = response_json["access_token"]
+    token_type = response_json["token_type"]
     #test
     response = api_client.patch(f"{REST_SERVICE_URL}/posts/1", json=jsonable_encoder(valid_update_data), headers={"authorization": f"{token_type} {access_tokem}"})
     #assert
@@ -200,8 +206,10 @@ def test_get_users_posts(api_client, valid_login_data):
                             data = valid_login_data,
                             headers = {"content-type": "application/x-www-form-urlencoded"})
     
-    access_tokem = login_response["acces_token"]
-    token_type = login_response["token_type"] 
+    response_json = login_response.json()
+    access_tokem = response_json["access_token"]
+    token_type = response_json["token_type"]
+
     #test
     response = api_client.get(f"{REST_SERVICE_URL}/user_posts", headers={"authorization": f"{token_type} {access_tokem}"})
 
@@ -228,8 +236,9 @@ def test_not_found_post_delete(api_client, valid_login_data):
                             data = valid_login_data,
                             headers = {"content-type": "application/x-www-form-urlencoded"})
     
-    access_tokem = login_response["acces_token"]
-    token_type = login_response["token_type"]    
+    response_json = login_response.json()
+    access_tokem = response_json["access_token"]
+    token_type = response_json["token_type"]  
    
     #test
     response = api_client.delete(f"{REST_SERVICE_URL}/posts/999", headers={"authorization": f"{token_type} {access_tokem}"})
@@ -244,8 +253,9 @@ def test_forbidden_delete(api_client, valid_diferent_login_data):
                             data = valid_diferent_login_data,
                             headers = {"content-type": "application/x-www-form-urlencoded"})
     
-    access_tokem = login_response["acces_token"]
-    token_type = login_response["token_type"]    
+    response_json = login_response.json()
+    access_tokem = response_json["access_token"]
+    token_type = response_json["token_type"]     
    
     #test
     response = api_client.delete(f"{REST_SERVICE_URL}/posts/1", headers={"authorization": f"{token_type} {access_tokem}"})
@@ -260,8 +270,9 @@ def test_valid_delete(api_client, valid_diferent_login_data):
                             data = valid_diferent_login_data,
                             headers = {"content-type": "application/x-www-form-urlencoded"})
     
-    access_tokem = login_response["acces_token"]
-    token_type = login_response["token_type"]    
+    response_json = login_response.json()
+    access_tokem = response_json["access_token"]
+    token_type = response_json["token_type"]   
    
     #test
     response = api_client.delete(f"{REST_SERVICE_URL}/posts/1", headers={"authorization": f"{token_type} {access_tokem}"})
