@@ -4,3 +4,4 @@
 *.venv
 **/.env.local
 _pycache_/
+*.db
