@@ -94,7 +94,7 @@ def test_valid_create(api_client, valid_create_data, valid_login_data ):
     assert response.status_code == 200
     assert data["title"] == valid_create_data["title"]
     assert data["content"] == valid_create_data["content"]
-    assert data["author"] == valid_login_data["username"]
+    assert data["author"] == "valid_user"
 
 
 def test_create_post_need_auth(api_client, valid_create_data):
@@ -139,7 +139,7 @@ def test_valid_update(api_client, valid_update_data, valid_login_data):
     assert response.status_code == 200
     assert data["title"] == valid_update_data["title"]
     assert data["content"] == valid_update_data["content"]
-    assert data["author"] == "existing_user"
+    assert data["author"] == "valid_user"
 
 def test_update_needs_auth(api_client, valid_update_data):
 
@@ -150,10 +150,10 @@ def test_update_needs_auth(api_client, valid_update_data):
     assert response.status_code == 401
     assert data["detail"] == "Not authenticated"
 
-def test_update_with_diferent_user(api_client, valid_update_data, valid_diferent_login_data):
+def test_update_with_diferent_user(api_client, valid_update_data, valid_existing_login_data):
     #test setup
     login_response = api_client.post(f"{REST_SERVICE_URL}/login",
-                            data = valid_diferent_login_data,
+                            data = valid_existing_login_data,
                             headers = {"content-type": "application/x-www-form-urlencoded"})
     
     response_json = login_response.json()
@@ -245,10 +245,10 @@ def test_not_found_post_delete(api_client, valid_login_data):
     assert response.status_code == 404
     assert data["detail"] == "Post not found!"
 
-def test_forbidden_delete(api_client, valid_diferent_login_data):
+def test_forbidden_delete(api_client, valid_existing_login_data):
     #test setup
     login_response = api_client.post(f"{REST_SERVICE_URL}/login",
-                            data = valid_diferent_login_data,
+                            data = valid_existing_login_data,
                             headers = {"content-type": "application/x-www-form-urlencoded"})
     
     response_json = login_response.json()
