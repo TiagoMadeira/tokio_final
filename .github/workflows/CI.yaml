@@ -92,11 +92,13 @@ jobs:
         if: always()
         run: |
           kubectl delete namespace staging
-          
-      # - name: Trivy scan services
-      #   uses: ./.github/workflows/trivy-scan-services.yaml
-      #   with: 
-      #     environment: staging
+
+      - name: Trivi Scan
+        uses: ./.github/actions/trivy_scan
+        with:
+          trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
+          service_path: "."
+    
 
   production:
     runs-on: [self-hosted-ubuntu]
@@ -124,6 +126,14 @@ jobs:
         run: |
           cd k8s-configs
           make minikube_start
+
+      - name: Create Kubernetes TLS Secret
+        env:
+          TLS_CRT: ${{ secrets.SSL_CERT_BASE64 }}
+          TLS_KEY: ${{ secrets.SSL_KEY_BASE64 }}
+        run: |
+          # 3. Cleanup sensitive temporary files
+          rm tls.crt tls.key
       
       - name: start production server
         run: |
@@ -131,7 +141,12 @@ jobs:
           if  kubectl get namespace production; then
             make update_production
           else
+            # 1. Decode base64 secrets into temporary files
+            echo ${{ secrets.SSL_CERT_BASE64 }} | base64 --decode > tls.crt
+            echo ${{ secrets.SSL_KEY_BASE64 }} | base64 --decode > tls.key
             make start_production_environment docker_name=${{vars.DOCKER_USERNAME}} docker_password=${{secrets.DOCKERHUB_ACCESS_TOKEN}} docker_email=${{vars.DOCKER_EMAIL}}
+            # 3. Cleanup sensitive temporary files
+            rm tls.crt tls.key
           fi
 
 
