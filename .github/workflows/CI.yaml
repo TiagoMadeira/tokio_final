@@ -55,7 +55,7 @@ jobs:
         run: |
           cd k8s-configs
           if  kubectl get namespace staging ; then
-            make update_staging
+            make rollout_staging
           else
             make start_staging_environment docker_name=${{vars.DOCKER_USERNAME}} docker_password=${{secrets.DOCKERHUB_ACCESS_TOKEN}} docker_email=${{vars.DOCKER_EMAIL}}
           fi
@@ -131,7 +131,7 @@ jobs:
         run: |
           cd k8s-configs
           if  kubectl get namespace production; then
-            make update_production
+            make rollout_production
           else
             # 1. Decode base64 secrets into temporary files
             echo "${{ secrets.TLS_CERT }}" | base64 --decode > tls.crt
