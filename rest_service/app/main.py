@@ -19,4 +19,4 @@ if settings.ENABLE_MONOTORING:
 
 @app.get('/healthz')
 def healthz():
-    return JSONResponse( status_code=200 ,content = {"message": "Everything okay"})
+    return JSONResponse( status_code=200 ,content = {"message": "Everything super okay"})
