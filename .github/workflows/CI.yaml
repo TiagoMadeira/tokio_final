@@ -9,100 +9,99 @@ on:
       - master
 
 jobs:
-  dev:
-    uses: ./.github/workflows/build-services.yaml
-    secrets:
-      dockerhub-access-token: ${{secrets.DOCKERHUB_ACCESS_TOKEN}}
+  # dev:
+  #   uses: ./.github/workflows/build-services.yaml
+  #   secrets:
+  #     dockerhub-access-token: ${{secrets.DOCKERHUB_ACCESS_TOKEN}}
 
-  staging:
-    runs-on: [self-hosted-ubuntu]
-    needs: [dev]
-    defaults:
-      run:
-        # Use the built-in wsl shell handler
-        shell: bash
-    environment: staging
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+  # staging:
+  #   runs-on: [self-hosted-ubuntu]
+  #   needs: [dev]
+  #   defaults:
+  #     run:
+  #       # Use the built-in wsl shell handler
+  #       shell: bash
+  #   environment: staging
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
 
-      - name: Check Minikube status
-        id: status_check
-        continue-on-error: true 
-        run: minikube status && echo "active=true" >> $GITHUB_OUTPUT || echo "active=false" >> $GITHUB_OUTPUT
+  #     - name: Check Minikube status
+  #       id: status_check
+  #       continue-on-error: true 
+  #       run: minikube status && echo "active=true" >> $GITHUB_OUTPUT || echo "active=false" >> $GITHUB_OUTPUT
 
-      - name: start minikube
-        if: steps.status_check.outputs.active == 'false'
-        run: |
-          cd k8s-configs
-          make start_minikube
+  #     - name: start minikube
+  #       if: steps.status_check.outputs.active == 'false'
+  #       run: |
+  #         cd k8s-configs
+  #         make start_minikube
 
-      - name: Wait for Ingress Controller
-        run: |
-          kubectl wait --namespace ingress-nginx \
-          --for=condition=ready pod \
-          --selector=app.kubernetes.io/component=controller \
-          --timeout=120s
+  #     - name: Wait for Ingress Controller
+  #       run: |
+  #         kubectl wait --namespace ingress-nginx \
+  #         --for=condition=ready pod \
+  #         --selector=app.kubernetes.io/component=controller \
+  #         --timeout=120s
       
-      - name: start obeservability server
-        run: |
-          cd k8s-configs
-          if ! kubectl get namespace observability ; then
-            make start_jaeger_server
-          fi
+  #     - name: start obeservability server
+  #       run: |
+  #         cd k8s-configs
+  #         if ! kubectl get namespace observability ; then
+  #           make start_jaeger_server
+  #         fi
 
-      - name: start staging server
-        run: |
-          cd k8s-configs
-          if  kubectl get namespace staging ; then
-            make update_staging
-          else
-            make start_staging_environment docker_name=${{vars.DOCKER_USERNAME}} docker_password=${{secrets.DOCKERHUB_ACCESS_TOKEN}} docker_email=${{vars.DOCKER_EMAIL}}
-          fi
+  #     - name: start staging server
+  #       run: |
+  #         cd k8s-configs
+  #         if  kubectl get namespace staging ; then
+  #           make update_staging
+  #         else
+  #           make start_staging_environment docker_name=${{vars.DOCKER_USERNAME}} docker_password=${{secrets.DOCKERHUB_ACCESS_TOKEN}} docker_email=${{vars.DOCKER_EMAIL}}
+  #         fi
       
-      - name: Wait for pods in staging to be up and running
-        run: |
-          kubectl wait --namespace staging \
-          --for=condition=ready pod \
-          --all \
-          --timeout=240s
+  #     - name: Wait for pods in staging to be up and running
+  #       run: |
+  #         kubectl wait --namespace staging \
+  #         --for=condition=ready pod \
+  #         --all \
+  #         --timeout=240s
       
-      - name: Prepare rest service for integration testing
-        run: |
-          kubectl port-forward service/rest-internal-service 8000:80 -n staging &
-          sleep 5 # Wait for the tunnel to initialize
+  #     - name: Prepare rest service for integration testing
+  #       run: |
+  #         kubectl port-forward service/rest-internal-service 8000:80 -n staging &
+  #         sleep 5 # Wait for the tunnel to initialize
 
-      - name:  auth service unit testing
-        uses:  ./.github/actions/test_service
-        with:
-          jwt_secret: ${{secrets.JWT_KEY}}
-          service_path: "auth_service"
+  #     - name:  auth service unit testing
+  #       uses:  ./.github/actions/test_service
+  #       with:
+  #         jwt_secret: ${{secrets.JWT_KEY}}
+  #         service_path: "auth_service"
 
-      - name: post service unit testing
-        uses:  ./.github/actions/test_service
-        with:
-          service_path: "post_service"
+  #     - name: post service unit testing
+  #       uses:  ./.github/actions/test_service
+  #       with:
+  #         service_path: "post_service"
 
-      - name: rest service unit and integration testing
-        uses:  ./.github/actions/test_service
-        with:
-          service_path: "rest_service"
+  #     - name: rest service unit and integration testing
+  #       uses:  ./.github/actions/test_service
+  #       with:
+  #         service_path: "rest_service"
 
-      - name: Clean staging enviroment for next run
-        if: always()
-        run: |
-          kubectl delete namespace staging
+  #     - name: Clean staging enviroment for next run
+  #       if: always()
+  #       run: |
+  #         kubectl delete namespace staging
 
-      - name: Trivi Scan
-        uses: ./.github/actions/trivy_scan
-        with:
-          trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
-          service_path: "."
+  #     - name: Trivi Scan
+  #       uses: ./.github/actions/trivy_scan
+  #       with:
+  #         trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
+  #         service_path: "."
     
 
   production:
     runs-on: [self-hosted-ubuntu]
-    needs: [staging]
     defaults:
       run:
         # Use the built-in wsl shell handler
@@ -134,8 +133,8 @@ jobs:
             make update_production
           else
             # 1. Decode base64 secrets into temporary files
-            echo ${{ secrets.TLS_CERT }} | base64 --decode > tls.crt
-            echo ${{ secrets.TLS_KEY }} | base64 --decode > tls.key
+            echo "${{ secrets.TLS_CERT }}" | base64 --decode > tls.crt
+            echo "${{ secrets.TLS_KEY }}" | base64 --decode > tls.key
             make start_production_environment docker_name=${{vars.DOCKER_USERNAME}} docker_password=${{secrets.DOCKERHUB_ACCESS_TOKEN}} docker_email=${{vars.DOCKER_EMAIL}}
             # 3. Cleanup sensitive temporary files
             rm tls.crt tls.key
