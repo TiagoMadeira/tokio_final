@@ -67,7 +67,7 @@ jobs:
           --all \
           --timeout=240s
       
-      - name: Prepare rest service fro integration testing
+      - name: Prepare rest service for integration testing
         run: |
           kubectl port-forward service/rest-internal-service 8000:80 -n staging &
           sleep 5 # Wait for the tunnel to initialize
@@ -134,8 +134,8 @@ jobs:
             make update_production
           else
             # 1. Decode base64 secrets into temporary files
-            echo ${{ secrets.SSL_CERT_BASE64 }} | base64 --decode > tls.crt
-            echo ${{ secrets.SSL_KEY_BASE64 }} | base64 --decode > tls.key
+            echo ${{ secrets.TLS_CERT }} | base64 --decode > tls.crt
+            echo ${{ secrets.TLS_KEY }} | base64 --decode > tls.key
             make start_production_environment docker_name=${{vars.DOCKER_USERNAME}} docker_password=${{secrets.DOCKERHUB_ACCESS_TOKEN}} docker_email=${{vars.DOCKER_EMAIL}}
             # 3. Cleanup sensitive temporary files
             rm tls.crt tls.key
