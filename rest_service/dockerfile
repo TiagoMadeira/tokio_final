@@ -1,4 +1,4 @@
-FROM python:latest
+FROM python:3.12.3-slim
 COPY requirements-prd.txt requirements-prd.txt
 RUN python3 -m venv .venv
 RUN . .venv/bin/activate
