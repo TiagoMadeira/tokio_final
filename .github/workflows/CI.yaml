@@ -17,6 +17,9 @@ jobs:
   staging:
     runs-on: [self-hosted-ubuntu]
     needs: [dev]
+    permissions:
+      security-events: write
+      contents: read
     defaults:
       run:
         # Use the built-in wsl shell handler
@@ -49,6 +52,7 @@ jobs:
           SONAR_HOST_URL: "https://sonarcloud.io"
 
       - name: Checkout repository
+      
         uses: actions/checkout@v4
 
       - name: Check Minikube status
