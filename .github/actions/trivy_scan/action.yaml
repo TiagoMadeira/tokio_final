@@ -24,13 +24,13 @@ runs:
         trivy-config: ${{ inputs.trivy_config_path }}
         scan-type: 'fs'
         scan-ref: ${{ inputs.service_path }}
-        format: 'sarif'
-        output: 'trivy-results.sarif'
+        format: 'table'
+        #output: 'trivy-results.sarif'
         exit-code: 1
 
-    - name: Upload results to GitHub Security tab
-      uses: github/codeql-action/upload-sarif@v4
-      with:
-        category: ${{ inputs.trivy_category }}
-        sarif_file: 'trivy-results.sarif'
+    # - name: Upload results to GitHub Security tab
+    #   uses: github/codeql-action/upload-sarif@v4
+    #   with:
+    #     category: ${{ inputs.trivy_category }}
+    #     sarif_file: 'trivy-results.sarif'
           
