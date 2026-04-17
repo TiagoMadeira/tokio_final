@@ -23,6 +23,25 @@ jobs:
         shell: bash
     environment: staging
     steps:
+    
+      - name: Trivi Scan Auth Service
+        uses: ./.github/actions/trivy_scan
+        with:
+          trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
+          service_path: "auth_service"
+      
+      - name: Trivi Scan Post Service
+        uses: ./.github/actions/trivy_scan
+        with:
+          trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
+          service_path: "post_service"
+      
+      - name: Trivi Scan Rest Service
+        uses: ./.github/actions/trivy_scan
+        with:
+          trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
+          service_path: "rest_service"
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -93,23 +112,7 @@ jobs:
         run: |
           kubectl delete namespace staging
 
-      - name: Trivi Scan Auth Service
-        uses: ./.github/actions/trivy_scan
-        with:
-          trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
-          service_path: "auth_service"
-      
-      - name: Trivi Scan Post Service
-        uses: ./.github/actions/trivy_scan
-        with:
-          trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
-          service_path: "post_service"
-      
-      - name: Trivi Scan Rest Service
-        uses: ./.github/actions/trivy_scan
-        with:
-          trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
-          service_path: "rest_service"
+
     
 
   production:
