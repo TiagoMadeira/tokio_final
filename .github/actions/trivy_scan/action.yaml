@@ -5,6 +5,9 @@ inputs:
   service_path:
     description: path to the folder you want to be scanned
     required: true
+  trivy_category:
+    description: category
+    required: true
   trivy_config_path:
     description: path to trivy config
     required: true
@@ -28,5 +31,6 @@ runs:
     - name: Upload results to GitHub Security tab
       uses: github/codeql-action/upload-sarif@v4
       with:
+        category: ${{ inputs.trivy_category }}
         sarif_file: 'trivy-results.sarif'
           
