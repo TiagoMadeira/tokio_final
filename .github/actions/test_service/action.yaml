@@ -19,16 +19,20 @@ runs:
       uses: actions/setup-python@v6
 
     - name: Set conditional env
+      env:
+        JWT_SECRET: ${{ inputs.jwt_secret }}
       shell: bash
       run: |
-        if [ -n "${{ inputs.jwt_secret }}" ]; then
-          echo "SECRET_KEY=${{ inputs.jwt_secret }}" >> $GITHUB_ENV
+        if [ -n "$JWT_SECRET" ]; then
+          echo "SECRET_KEY=$JWT_SECRET" >> $GITHUB_ENV
         fi
 
     - name: setup virtual environment
+      env:
+        SERVICE_PATH: ${{ inputs.service_path }}
       shell: bash
       run: |
-        cd ${{ inputs.service_path }}
+        cd  $SERVICE_PATH
         python -m venv .venv
         source .venv/bin/activate
         pip install -r requirements-stg.txt
