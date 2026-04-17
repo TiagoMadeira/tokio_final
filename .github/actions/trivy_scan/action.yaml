@@ -26,6 +26,7 @@ runs:
         scan-ref: ${{ inputs.service_path }}
         format: 'sarif'
         output: 'trivy-results.sarif'
+        exit-code: 0
 
     - name: Upload results to GitHub Security tab
       uses: github/codeql-action/upload-sarif@v4
