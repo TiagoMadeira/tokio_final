@@ -1,7 +1,13 @@
 scan:
   scanners:
-   - vuln
-   - secret
+    - vuln
+    - secret
+
+  # trivy.yaml
+  file-patterns:
+    - "pip:requirements-prd.txt"
+    - "pip:requirements-stg.txt"
+
 
 severity:
   - LOW
@@ -11,3 +17,4 @@ severity:
 
 vulnerability:
   ignore-unfixed: false
+
