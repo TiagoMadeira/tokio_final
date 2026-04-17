@@ -23,7 +23,7 @@ jobs:
         shell: bash
     environment: staging
     steps:
-    
+
       - name: Trivi Scan Auth Service
         uses: ./.github/actions/trivy_scan
         with:
@@ -41,6 +41,12 @@ jobs:
         with:
           trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
           service_path: "rest_service"
+
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v4
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: "https://sonarcloud.io"
 
       - name: Checkout repository
         uses: actions/checkout@v4
