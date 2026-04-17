@@ -14,12 +14,19 @@ runs:
   steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-
+  
     - name: Run Trivy scan
       uses: aquasecurity/trivy-action@master
       with:
         trivy-config: ${{ inputs.trivy_config_path }}
         scan-type: 'fs'
         scan-ref: ${{ inputs.service_path }}
-        format: 'table'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
         exit-code: 1
+
+    - name: Upload results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: 'trivy-results.sarif'
+          
