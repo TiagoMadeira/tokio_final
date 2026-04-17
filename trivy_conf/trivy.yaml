@@ -18,3 +18,5 @@ severity:
 vulnerability:
   ignore-unfixed: false
 
+db:
+  repository: public.ecr.aws/aquasecurity/trivy-db:2
