@@ -8,5 +8,5 @@ RUN . .venv/bin/activate
 RUN pip install -r requirements-prd.txt
 
 USER appuser
-COPY --chown=appuser:appuser --chmod=755 . .
+COPY --chown=appuser:appuser --chmod=744 . .
 CMD ["fastapi", "run", "app/main.py", "--host", "0.0.0.0" ]
