@@ -1,8 +1,12 @@
 FROM python:3.12.3-slim
+
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
 COPY requirements-prd.txt requirements-prd.txt
 RUN python3 -m venv .venv
 RUN . .venv/bin/activate
 RUN pip install -r requirements-prd.txt
-COPY . .
 
+USER appuser
+COPY --chown=appuser:appuser . .
 CMD ["fastapi", "run", "app/main.py", "--host", "0.0.0.0" ]
