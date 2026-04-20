@@ -3,5 +3,5 @@
 *.json
 *.venv
 **/.env.local
-_pycache_/
+**/__pycache__/
 *.db
