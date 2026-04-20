@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     ENABLE_MONOTORING: bool = True #default
     OTEL_EXPORTER_OTLP_ENDPOINT: str = "http://jaeger:4317"
     OTEL_SERVICE_NAME: str ="auth-service"
-    SECRET_KEY : str
+    SECRET_KEY : str = "sdaiushdlasdkufynvw38oiruw3owieasdenwsDFUYH"
     ALGORITHM : str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES : int = 30
     class Config:
