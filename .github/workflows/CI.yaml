@@ -122,10 +122,10 @@ jobs:
         with:
           service_path: "rest_service"
 
-      - name: Clean staging enviroment for next run
-        if: always()
-        run: |
-          kubectl delete namespace staging
+      # - name: Clean staging enviroment for next run
+      #   if: always()
+      #   run: |
+      #     kubectl delete namespace staging
 
 
     
