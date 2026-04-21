@@ -20,7 +20,7 @@ RUN pip install -r requirements-prd.txt
 USER appuser
 
 # 6. Copy the code into the WORKDIR (which is already owned by appuser)
-COPY --chown=appuser:appuser ./app .
+COPY --chown=appuser:appuser ./app ./app
 
 # 7. Use the venv explicitly in the CMD
 ENV PATH="/home/appuser/app/.venv/bin:$PATH"
