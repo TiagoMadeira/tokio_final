@@ -12,9 +12,9 @@ WORKDIR /home/appuser/app
 
 # 4. Install dependencies as root (standard practice for speed/caching)
 COPY requirements-prd.txt .
-RUN python3 -m venv .venv && \
-    .venv/bin/activate && \
-    .venv/bin/pip install --no-cache-dir -r requirements-prd.txt
+RUN python3 -m venv .venv
+RUN . .venv/bin/activate
+RUN pip install -r requirements-prd.txt
 
 # 5. Switch to the non-root user
 USER appuser
