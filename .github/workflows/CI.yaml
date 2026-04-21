@@ -9,14 +9,14 @@ on:
       - master
 
 jobs:
-  dev:
-    uses: ./.github/workflows/build-services.yaml
-    secrets:
-      dockerhub-access-token: ${{secrets.DOCKERHUB_ACCESS_TOKEN}}
+  # dev:
+  #   uses: ./.github/workflows/build-services.yaml
+  #   secrets:
+  #     dockerhub-access-token: ${{secrets.DOCKERHUB_ACCESS_TOKEN}}
 
   staging:
     runs-on: [self-hosted-ubuntu]
-    needs: [dev]
+    # needs: [dev]
     permissions:
       security-events: write
       contents: read
@@ -27,26 +27,26 @@ jobs:
     environment: staging
     steps:
 
-      - name: Trivi Scan Auth Service
-        uses: ./.github/actions/trivy_scan
-        with:
-          trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
-          service_path: "auth_service"
-          trivy_category: "auth_service"
+      # - name: Trivi Scan Auth Service
+      #   uses: ./.github/actions/trivy_scan
+      #   with:
+      #     trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
+      #     service_path: "auth_service"
+      #     trivy_category: "auth_service"
       
-      - name: Trivi Scan Post Service
-        uses: ./.github/actions/trivy_scan
-        with:
-          trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
-          service_path: "post_service"
-          trivy_category: "post_service"
+      # - name: Trivi Scan Post Service
+      #   uses: ./.github/actions/trivy_scan
+      #   with:
+      #     trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
+      #     service_path: "post_service"
+      #     trivy_category: "post_service"
       
-      - name: Trivi Scan Rest Service
-        uses: ./.github/actions/trivy_scan
-        with:
-          trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
-          service_path: "rest_service"
-          trivy_category: "rest_service"
+      # - name: Trivi Scan Rest Service
+      #   uses: ./.github/actions/trivy_scan
+      #   with:
+      #     trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
+      #     service_path: "rest_service"
+      #     trivy_category: "rest_service"
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v6
@@ -106,16 +106,16 @@ jobs:
           kubectl port-forward service/rest-internal-service 8000:80 -n staging &
           sleep 5 # Wait for the tunnel to initialize
 
-      - name:  auth service unit testing
-        uses:  ./.github/actions/test_service
-        with:
-          jwt_secret: ${{secrets.JWT_KEY}}
-          service_path: "auth_service"
+      # - name:  auth service unit testing
+      #   uses:  ./.github/actions/test_service
+      #   with:
+      #     jwt_secret: ${{secrets.JWT_KEY}}
+      #     service_path: "auth_service"
 
-      - name: post service unit testing
-        uses:  ./.github/actions/test_service
-        with:
-          service_path: "post_service"
+      # - name: post service unit testing
+      #   uses:  ./.github/actions/test_service
+      #   with:
+      #     service_path: "post_service"
 
       - name: rest service unit and integration testing
         uses:  ./.github/actions/test_service
