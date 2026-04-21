@@ -25,27 +25,26 @@ jobs:
         shell: bash
     environment: staging
     steps:
-
-      # - name: Trivi Scan Auth Service
-      #   uses: ./.github/actions/trivy_scan
-      #   with:
-      #     trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
-      #     service_path: "auth_service"
-      #     trivy_category: "auth_service"
+      - name: Trivi Scan Auth Service
+        uses: ./.github/actions/trivy_scan
+        with:
+          trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
+          service_path: "auth_service"
+          trivy_category: "auth_service"
       
-      # - name: Trivi Scan Post Service
-      #   uses: ./.github/actions/trivy_scan
-      #   with:
-      #     trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
-      #     service_path: "post_service"
-      #     trivy_category: "post_service"
+      - name: Trivi Scan Post Service
+        uses: ./.github/actions/trivy_scan
+        with:
+          trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
+          service_path: "post_service"
+          trivy_category: "post_service"
       
-      # - name: Trivi Scan Rest Service
-      #   uses: ./.github/actions/trivy_scan
-      #   with:
-      #     trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
-      #     service_path: "rest_service"
-      #     trivy_category: "rest_service"
+      - name: Trivi Scan Rest Service
+        uses: ./.github/actions/trivy_scan
+        with:
+          trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
+          service_path: "rest_service"
+          trivy_category: "rest_service"
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v6
@@ -54,7 +53,6 @@ jobs:
           SONAR_HOST_URL: "https://sonarcloud.io"
 
       - name: Checkout repository
-      
         uses: actions/checkout@v4
 
       - name: Check Minikube status
@@ -121,10 +119,10 @@ jobs:
         with:
           service_path: "rest_service"
 
-      # - name: Clean staging enviroment for next run
-      #   if: always()
-      #   run: |
-      #     kubectl delete namespace staging
+      - name: Clean staging enviroment for next run
+        if: always()
+        run: |
+          kubectl delete namespace staging
 
 
     

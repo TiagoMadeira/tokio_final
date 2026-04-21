@@ -3,8 +3,7 @@ FROM python:3.12.3-slim
 # 1. Create the user and group
 RUN groupadd -r appuser && useradd -r -g appuser appuser
 
-# 2. Create the app directory and set ownership as ROOT
-# This ensures SQLite can create journal files in the parent folder
+# 2. Create the app directory and set ownership as AppUser
 RUN mkdir -p /home/appuser/app && chown -R appuser:appuser /home/appuser/app
 
 # 3. Set the Working Directory
