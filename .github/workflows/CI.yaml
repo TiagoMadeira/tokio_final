@@ -25,6 +25,39 @@ jobs:
         shell: bash
     environment: staging
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python  # Uses python version in .python-version file
+        uses: actions/setup-python@v6
+
+      - name: Pip audit Auth Service  # Uses python version in .python-version file
+        run: |
+          cd  auth_service
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install pip-audit
+          pip-audit
+      
+      - name: Pip audit Post Service  # Uses python version in .python-version file
+        run: |
+          cd  post_service
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install pip-audit
+          pip-audit
+      
+      - name: Pip audit Rest Service # Uses python version in .python-version file
+        run: |
+          cd  rest_service
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install pip-audit
+          pip-audit
+
+
+
+
       - name: Trivi Scan Auth Service
         uses: ./.github/actions/trivy_scan
         with:
@@ -51,9 +84,6 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: "https://sonarcloud.io"
-
-      - name: Checkout repository
-        uses: actions/checkout@v4
 
       - name: Check Minikube status
         id: status_check
