@@ -36,7 +36,7 @@ jobs:
           cd  auth_service
           python -m venv .venv
           source .venv/bin/activate
-          python -m pip install pip==26.0 
+          python -m pip install pip==${{vars.PIP_VERSION}}
           pip install pip-audit
           pip-audit
       
@@ -45,7 +45,7 @@ jobs:
           cd  post_service
           python -m venv .venv
           source .venv/bin/activate
-          python -m pip install pip==26.0
+          python -m pip install pip==${{vars.PIP_VERSION}}
           pip install pip-audit
           pip-audit
       
@@ -54,7 +54,7 @@ jobs:
           cd  rest_service
           python -m venv .venv
           source .venv/bin/activate
-          python -m pip install pip==26.0
+          python -m pip install pip==${{vars.PIP_VERSION}}
           pip install pip-audit
           pip-audit
 
