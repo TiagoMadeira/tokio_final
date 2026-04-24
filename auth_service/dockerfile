@@ -1,5 +1,6 @@
 FROM python:3.12.3-slim
 
+ARG APP_ENV
 # 1. Create the user and group
 RUN groupadd -r appuser && useradd -r -g appuser appuser
 
@@ -11,10 +12,10 @@ RUN mkdir -p /home/appuser/app && chown -R appuser:appuser /home/appuser/app
 WORKDIR /home/appuser/app
 
 # 4. Install dependencies as root (standard practice for speed/caching)
-COPY requirements-prd.txt .
+COPY requirements-${APP_ENV}.txt .
 RUN python3 -m venv /home/appuser/app/.venv && \
     /home/appuser/app/.venv/bin/pip install --no-cache-dir --upgrade pip==26.0 && \
-    /home/appuser/app/.venv/bin/pip install --no-cache-dir -r requirements-prd.txt
+    /home/appuser/app/.venv/bin/pip install --no-cache-dir -r requirements-${APP_ENV}.txt
 
 # 5. Switch to the non-root user
 USER appuser

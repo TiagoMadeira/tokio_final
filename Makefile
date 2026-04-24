@@ -1,0 +1,131 @@
+docker_name = "" #Dockerhub account name
+docker_password = "" #Dockerhub access token
+docker_email = "" #Dockerhub account email
+
+start_minikube:
+	@echo starting minikube ...
+	minikube start --driver=docker
+	@echo enable ingress
+	minikube addons enable ingress
+
+start_jaeger_server:
+	@echo create observability namespace
+	kubectl create namespace observability
+	@echo applying configmap files
+	kubectl apply -f k8s-configs/observability/configmaps/jaeger-configmap.yaml
+	@echo applying deployment
+	kubectl apply -f k8s-configs/observability/manifests/jaeger-deployment.yaml
+	@echo applying ingress
+	kubectl apply -f k8s-configs/observability/ingress/jaeger-ingress.yaml
+
+start_local_development_server:
+	@echo Setup docker Minikube env
+	powershell -Command "& minikube -p minikube docker-env --shell powershell | Invoke-Expression" -ErrorAction SilentlyContinue
+	@echo Builing Rest Serice image
+	docker build --build-arg APP_ENV=dev -t tokio-rest-service:latest rest_service
+	@echo Builing Post Serice image
+	docker build --build-arg APP_ENV=dev -t tokio-post-service:latest post_service
+	@echo Builing Auth Serice image
+	docker build --build-arg APP_ENV=dev -t tokio-auth-service:latest auth_service
+	@echo Unset docker minikube env
+	powershell -Command "minikube docker-env -u | Invoke-Expression" -ErrorAction SilentlyContinue
+	@echo create development namespace
+	kubectl create namespace development
+	@echo appling pods secrets
+	kubectl create secret tls development-posts-com-tls --namespace development --cert=dev-tls.crt --key=dev-tls.key
+	kubectl apply -f k8s-configs/development/secrets/auth-service-secrets.yaml
+	@echo applying config files
+	kubectl apply -f k8s-configs/development/configmaps/auth-service-configmap.yaml
+	kubectl apply -f k8s-configs/development/configmaps/post-service-configmap.yaml
+	kubectl apply -f k8s-configs/development/configmaps/rest-service-configmap.yaml
+	@echo applying deployments
+	kubectl apply -f k8s-configs/development/manifests/rest-service-deployment.yaml
+	kubectl apply -f k8s-configs/development/manifests/post-service-deployment.yaml
+	kubectl apply -f k8s-configs/development/manifests/auth-service-deployment.yaml
+	@echo applying ingresses
+	kubectl apply -f k8s-configs/development/ingress/posts-ingress.yaml
+	minikube tunnel
+
+start_staging_environment:
+	@echo create staging namespace
+	kubectl create namespace staging
+	@echo creating docker registry secret
+	kubectl create secret docker-registry regcred --namespace staging --docker-server=https://index.docker.io/v1/ --docker-username=$(docker_name) --docker-password=$(docker_password) --docker-email=$(docker_email)
+	@echo appling pods secrets
+	kubectl apply -f staging/secrets/auth-service-secrets.yaml
+	@echo applying config files
+	kubectl apply -f k8s-configs/staging/configmaps/auth-service-configmap.yaml
+	kubectl apply -f k8s-configs/staging/configmaps/post-service-configmap.yaml
+	kubectl apply -f k8s-configs/staging/configmaps/rest-service-configmap.yaml
+	@echo applying deployments
+	kubectl apply -f k8s-configs/staging/manifests/rest-service-deployment.yaml
+	kubectl apply -f k8s-configs/staging/manifests/post-service-deployment.yaml
+	kubectl apply -f k8s-configs/staging/manifests/auth-service-deployment.yaml
+	@echo applying ingresses
+	kubectl apply -f k8s-configs/staging/ingress/posts-ingress.yaml
+
+start_production_environment:
+	@echo create production namespace
+	kubectl create namespace production
+	@echo creating docker registry secret
+	kubectl create secret docker-registry regcred --namespace production --docker-server=https://index.docker.io/v1/ --docker-username=$(docker_name) --docker-password=$(docker_password) --docker-email=$(docker_email)
+	@echo appling pods secrets
+	kubectl apply -f k8s-configs/production/secrets/auth-service-secrets.yaml
+	kubectl create secret tls posts-com-tls --namespace production --cert=tls.crt --key=tls.key
+	@echo applying config files
+	kubectl apply -f k8s-configs/production/configmaps/auth-service-configmap.yaml
+	kubectl apply -f k8s-configs/production/configmaps/post-service-configmap.yaml
+	kubectl apply -f k8s-configs/production/configmaps/rest-service-configmap.yaml
+	@echo applying deployments
+	kubectl apply -f k8s-configs/production/manifests/rest-service-deployment.yaml
+	kubectl apply -f k8s-configs/production/manifests/post-service-deployment.yaml
+	kubectl apply -f k8s-configs/production/manifests/auth-service-deployment.yaml
+	@echo applying ingresses
+	kubectl apply -f k8s-configs/production/ingress/posts-ingress.yaml
+
+rollout_local_development:
+	@echo Setup docker Minikube env
+	powershell -Command "& minikube -p minikube docker-env --shell powershell | Invoke-Expression" -ErrorAction SilentlyContinue
+	@echo Builing Rest Serice image
+	docker build -t tokio-rest-service:latest rest_service
+	@echo Builing Post Serice image
+	docker build -t tokio-post-service:latest post_service
+	@echo Builing Auth Serice image
+	docker build -t tokio-auth-service:latest auth_service
+	@echo Unset docker minikube env
+	powershell -Command "minikube docker-env -u | Invoke-Expression" -ErrorAction SilentlyContinue
+	@echo appling pods secrets
+	kubectl apply -f k8s-configs/development/secrets/auth-service-secrets.yaml
+	@echo applying config files
+	kubectl apply -f k8s-configs/development/configmaps/auth-service-configmap.yaml
+	kubectl apply -f k8s-configs/development/configmaps/post-service-configmap.yaml
+	kubectl apply -f k8s-configs/development/configmaps/rest-service-configmap.yaml
+	@echo rollout deployments
+	kubectl rollout restart deployment auth-service-deployment -n development
+	kubectl rollout restart deployment post-service-deployment -n development
+	kubectl rollout restart deployment rest-service-deployment -n development
+
+rollout_staging:
+	@echo applying config files
+	kubectl apply -f k8s-configs/staging/configmaps/auth-service-configmap.yaml
+	kubectl apply -f k8s-configs/staging/configmaps/post-service-configmap.yaml
+	kubectl apply -f k8s-configs/staging/configmaps/rest-service-configmap.yaml
+	@echo rollout deployments
+	kubectl rollout restart deployment auth-service-deployment -n staging
+	kubectl rollout restart deployment post-service-deployment -n staging
+	kubectl rollout restart deployment rest-service-deployment -n staging
+
+rollout_production:
+	@echo applying config files
+	kubectl apply -f k8s-configs/production/configmaps/auth-service-configmap.yaml
+	kubectl apply -f k8s-configs/production/configmaps/post-service-configmap.yaml
+	kubectl apply -f k8s-configs/production/configmaps/rest-service-configmap.yaml
+	@echo rollout deployments
+	kubectl rollout restart deployment auth-service-deployment -n production
+	kubectl rollout restart deployment post-service-deployment -n production
+	kubectl rollout restart deployment rest-service-deployment -n production
+	
+minikube_prune:
+	minikube ssh
+	docker system prune -af
+	exit

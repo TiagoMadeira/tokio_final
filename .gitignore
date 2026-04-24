@@ -4,4 +4,8 @@
 *.venv
 **/.env.local
 **/__pycache__/
+/trivy_results
+/pip_audit_results
 *.db
+*.key
+*.crt

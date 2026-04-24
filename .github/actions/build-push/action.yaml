@@ -58,3 +58,5 @@ runs:
           push: ${{ github.event_name != 'pull_request' }}
           tags:  ${{ steps.meta.outputs.tags }}
           file: ${{ inputs.docker-file-path }}
+          build-args: |
+            APP_ENV=prd
