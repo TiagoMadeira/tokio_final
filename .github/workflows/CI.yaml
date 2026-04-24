@@ -93,7 +93,6 @@ jobs:
       - name: start minikube
         if: steps.status_check.outputs.active == 'false'
         run: |
-          cd k8s-configs
           make start_minikube
 
       - name: Wait for Ingress Controller
@@ -105,7 +104,6 @@ jobs:
       
       - name: start obeservability server
         run: |
-          cd k8s-configs
           if ! kubectl get namespace observability ; then
             make start_jaeger_server
           fi
@@ -114,7 +112,6 @@ jobs:
         env:
           DOCKERHUB_ACCESS_TOKEN: ${{secrets.DOCKERHUB_ACCESS_TOKEN}}
         run: |
-          cd k8s-configs
           if  kubectl get namespace staging ; then
             make rollout_staging
           else
@@ -181,7 +178,6 @@ jobs:
       - name: start minikube
         if: steps.status_check.outputs.active == 'false'
         run: |
-          cd k8s-configs
           make minikube_start
       
       - name: start production server
@@ -190,7 +186,6 @@ jobs:
           TLS_CERT: ${{ secrets.TLS_CERT }}
           TLS_KEY: ${{ secrets.TLS_KEY }}
         run: |
-          cd k8s-configs
           if  kubectl get namespace production; then
             make rollout_production
           else
