@@ -1,10 +1,12 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from app.routers import auth, posts
 from app.config import settings
 from app.utils import otel_trace_init
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from opentelemetry.instrumentation.requests import RequestsInstrumentor
+
 
 app = FastAPI()
 app.include_router(auth.router)
@@ -16,6 +18,18 @@ if settings.ENABLE_MONOTORING:
     #Instrument the requests module
     RequestsInstrumentor().instrument()
     FastAPIInstrumentor().instrument_app(app)
+
+origins = [
+    "http://localhost:5173",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get('/healthz')
 def healthz():
