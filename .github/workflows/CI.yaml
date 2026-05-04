@@ -110,12 +110,19 @@ jobs:
 
       - name: start staging server
         env:
+          STAGING_BACKEND_TLS_CERT: ${{ secrets.STAGING_BACKEND_TLS_CERT }}
+          STAGING_BACKEND_TLS_KEY: ${{ secrets.STAGING_BACKEND_TLS_KEY }}
           DOCKERHUB_ACCESS_TOKEN: ${{secrets.DOCKERHUB_ACCESS_TOKEN}}
         run: |
           if  kubectl get namespace staging ; then
             make rollout_staging
           else
+            # 1. Decode base64 secrets into temporary files
+            echo "$STAGING_BACKEND_TLS_CERT" | base64 --decode > backend-tls.crt
+            echo "$STAGING_BACKEND_TLS_KEY" | base64 --decode > backend-tls.key
             make start_staging_environment docker_name=${{vars.DOCKER_USERNAME}} docker_password=$DOCKERHUB_ACCESS_TOKEN docker_email=${{vars.DOCKER_EMAIL}}
+            # 3. Cleanup sensitive temporary files
+            rm backend-tls.crt backend-tls.key
           fi
       
       - name: Wait for pods in staging to be up and running
@@ -127,6 +134,7 @@ jobs:
       
       - name: Prepare rest service for integration testing
         run: |
+         
           kubectl port-forward service/rest-internal-service 8000:80 -n staging &
           sleep 5 # Wait for the tunnel to initialize
 
