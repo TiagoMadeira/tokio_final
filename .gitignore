@@ -1,6 +1,5 @@
 *.png  
 *.md
-*.json
 *.venv
 **/.env.local
 **/__pycache__/
