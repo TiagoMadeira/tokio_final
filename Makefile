@@ -52,9 +52,9 @@ start_local_development_server:
 start_staging_environment:
 	@echo create staging namespace
 	kubectl create namespace staging
-	@echo creating docker registry secret
-	kubectl create secret docker-registry regcred --namespace staging --docker-server=https://index.docker.io/v1/ --docker-username=$(docker_name) --docker-password=$(docker_password) --docker-email=$(docker_email)
 	@echo appling pods secrets
+	kubectl create secret tls backend-tls-secret --namespace development --cert=backend-tls.crt --key=backend-tls.key
+	kubectl create secret docker-registry regcred --namespace staging --docker-server=https://index.docker.io/v1/ --docker-username=$(docker_name) --docker-password=$(docker_password) --docker-email=$(docker_email)
 	kubectl apply -f staging/secrets/auth-service-secrets.yaml
 	@echo applying config files
 	kubectl apply -f k8s-configs/staging/configmaps/auth-service-configmap.yaml
