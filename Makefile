@@ -19,31 +19,34 @@ start_jaeger_server:
 	kubectl apply -f k8s-configs/observability/ingress/jaeger-ingress.yaml
 
 start_local_development_server:
-	@echo Setup docker Minikube env
-	powershell -Command "& minikube -p minikube docker-env --shell powershell | Invoke-Expression" -ErrorAction SilentlyContinue
-	@echo Builing Rest Serice image
-	docker build --build-arg APP_ENV=dev -t tokio-rest-service:latest rest_service
-	@echo Builing Post Serice image
-	docker build --build-arg APP_ENV=dev -t tokio-post-service:latest post_service
-	@echo Builing Auth Serice image
-	docker build --build-arg APP_ENV=dev -t tokio-auth-service:latest auth_service
+	@echo Building images this might take a few minutes when runing for the first time
+	powershell -Command "& { \
+    minikube -p minikube docker-env --shell powershell | Invoke-Expression; \
+    docker build --build-arg APP_ENV=dev -t tokio-rest-service:latest rest_service; \
+    docker build --build-arg APP_ENV=dev -t tokio-post-service:latest post_service; \
+    docker build --build-arg APP_ENV=dev -t tokio-auth-service:latest auth_service; \
+    docker build -t frontend:latest frontend; \
+	}"
 	@echo Unset docker minikube env
 	powershell -Command "minikube docker-env -u | Invoke-Expression" -ErrorAction SilentlyContinue
 	@echo create development namespace
 	kubectl create namespace development
 	@echo appling pods secrets
-	kubectl create secret tls development-posts-com-tls --namespace development --cert=dev-tls.crt --key=dev-tls.key
+	kubectl create secret tls backend-tls-secret --namespace development --cert=backend-tls.crt --key=backend-tls.key
+	kubectl create secret tls frontend-development-posts-com-tls --namespace development --cert=dev-tls.crt --key=dev-tls.key
 	kubectl apply -f k8s-configs/development/secrets/auth-service-secrets.yaml
 	@echo applying config files
+	kubectl apply -f k8s-configs/development/configmaps/frontend-configmap.yaml
 	kubectl apply -f k8s-configs/development/configmaps/auth-service-configmap.yaml
 	kubectl apply -f k8s-configs/development/configmaps/post-service-configmap.yaml
 	kubectl apply -f k8s-configs/development/configmaps/rest-service-configmap.yaml
 	@echo applying deployments
+	kubectl apply -f k8s-configs/development/manifests/frontend-deployment.yaml
 	kubectl apply -f k8s-configs/development/manifests/rest-service-deployment.yaml
 	kubectl apply -f k8s-configs/development/manifests/post-service-deployment.yaml
 	kubectl apply -f k8s-configs/development/manifests/auth-service-deployment.yaml
 	@echo applying ingresses
-	kubectl apply -f k8s-configs/development/ingress/posts-ingress.yaml
+	kubectl apply -f k8s-configs/development/ingress/frontend-posts-ingress.yaml
 	minikube tunnel
 
 start_staging_environment:
@@ -84,14 +87,14 @@ start_production_environment:
 	kubectl apply -f k8s-configs/production/ingress/posts-ingress.yaml
 
 rollout_local_development:
-	@echo Setup docker Minikube env
-	powershell -Command "& minikube -p minikube docker-env --shell powershell | Invoke-Expression" -ErrorAction SilentlyContinue
-	@echo Builing Rest Serice image
-	docker build -t tokio-rest-service:latest rest_service
-	@echo Builing Post Serice image
-	docker build -t tokio-post-service:latest post_service
-	@echo Builing Auth Serice image
-	docker build -t tokio-auth-service:latest auth_service
+	@echo Building images this might take a few minutes when runing for the first time
+	powershell -Command "& { \
+    minikube -p minikube docker-env --shell powershell | Invoke-Expression; \
+    docker build --build-arg APP_ENV=dev -t tokio-rest-service:latest rest_service; \
+    docker build --build-arg APP_ENV=dev -t tokio-post-service:latest post_service; \
+    docker build --build-arg APP_ENV=dev -t tokio-auth-service:latest auth_service; \
+    docker build -t frontend:latest frontend; \
+	}"
 	@echo Unset docker minikube env
 	powershell -Command "minikube docker-env -u | Invoke-Expression" -ErrorAction SilentlyContinue
 	@echo appling pods secrets
