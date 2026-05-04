@@ -31,7 +31,7 @@ def test_valid_create(mock_post, skip_auth, valid_create_data, valid_create_resp
     mock_post.return_value.json.return_value = valid_create_response_data
     mock_post.return_value.status_code = 200
     #test
-    response = client.post("/post", json=jsonable_encoder(valid_create_data))
+    response = client.post("/posts", json=jsonable_encoder(valid_create_data))
     #assert
     data = response.json()
     client_url = "/post"
@@ -48,7 +48,7 @@ def test_create_existing_post(mock_post, skip_auth, existing_create_data, post_a
     #Mock setup
     mock_post.return_value.json.return_value = post_already_exists_response
     mock_post.return_value.status_code = 400
-    client_url = "/post"
+    client_url = "/posts"
     #test
     response = client.post(client_url, json=jsonable_encoder(existing_create_data))
     #assert
@@ -59,7 +59,7 @@ def test_create_existing_post(mock_post, skip_auth, existing_create_data, post_a
 
 
 def test_create_should_require_auth(valid_create_data):
-    response = client.post("/post", json=valid_create_data)
+    response = client.post("/posts", json=valid_create_data)
     data = response.json()
     assert response.status_code == 401
     assert data["detail"] == "Not authenticated"
