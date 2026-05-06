@@ -34,7 +34,7 @@ def test_valid_create(mock_post, skip_auth, valid_create_data, valid_create_resp
     response = client.post("/posts", json=jsonable_encoder(valid_create_data))
     #assert
     data = response.json()
-    client_url = "/posts"
+    client_url = "/post"
     assert response.status_code == 200
     assert data["title"] == valid_create_response_data["title"]
     assert data["content"] == valid_create_response_data["content"]
@@ -48,10 +48,10 @@ def test_create_existing_post(mock_post, skip_auth, existing_create_data, post_a
     #Mock setup
     mock_post.return_value.json.return_value = post_already_exists_response
     mock_post.return_value.status_code = 400
-    client_url = "/posts"
     #test
-    response = client.post(client_url, json=jsonable_encoder(existing_create_data))
+    response = client.post("/posts", json=jsonable_encoder(existing_create_data))
     #assert
+    client_url = "/post"
     data = response.json()
     assert response.status_code == 400
     assert data["detail"] == post_already_exists_response["detail"]
