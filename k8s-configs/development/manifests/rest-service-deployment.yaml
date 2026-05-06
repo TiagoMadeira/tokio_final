@@ -25,6 +25,10 @@ spec:
           requests:
             memory: 256Mi
             cpu: "0.1"
+        volumeMounts:
+          - name: certs
+            mountPath: "/etc/tls"
+            readOnly: true
         ports:
           - containerPort: 8000
         env:
@@ -72,6 +76,10 @@ spec:
              configMapKeyRef:
                 name: rest-service-configmap
                 key: otel-logs-exporter
+      volumes:
+      - name: certs
+        secret:
+          secretName: backend-tls-secret
               
 ---
 apiVersion: v1

@@ -1,0 +1,32 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: frontend-posts-ingress
+  namespace: development
+spec:
+  tls:
+    - secretName: frontend-development-posts-com-tls
+      hosts:
+        - frontend.development.posts.com
+  rules:
+  - host: frontend.development.posts.com
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: frontend-internal-service
+            port: 
+              number: 80
+  ingressClassName: nginx
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: IngressClass
+metadata: 
+  name: nginx
+  namespace: development
+spec:
+  controller: k8s.io/ingress-nginx
