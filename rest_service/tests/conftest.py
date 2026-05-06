@@ -5,7 +5,6 @@ import httpx
 from app.dependencies import verify_token
 from tests.dependencies import test_verify_token
 
-
 @pytest.fixture()
 def skip_auth():
     app.dependency_overrides[verify_token] = test_verify_token
@@ -14,5 +13,5 @@ def skip_auth():
 
 @pytest.fixture
 def api_client():
-    with httpx.Client() as client:
+    with httpx.Client(verify=False) as client:
         yield client
