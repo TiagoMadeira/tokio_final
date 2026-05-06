@@ -52,3 +52,18 @@ jobs:
           dockerhub-usernane: ${{vars.DOCKER_USERNAME}}
           dockerhub-access-token: ${{secrets.dockerhub-access-token}}
           dockerhub-repository: ${{vars.REST_SERVICE_DOCKERHUB_REPOSITORY}}
+  
+  build-push-frontend:
+    runs-on: [ubuntu-24.04]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Login to Docker Hub
+        uses: ./.github/actions/build-push
+        with:
+          context_path: "frontend"
+          docker-file-path: "frontend/dockerfile"
+          dockerhub-usernane: ${{vars.DOCKER_USERNAME}}
+          dockerhub-access-token: ${{secrets.dockerhub-access-token}}
+          dockerhub-repository: ${{vars.FRONTEND_DOCKERHUB_REPOSITORY}}
