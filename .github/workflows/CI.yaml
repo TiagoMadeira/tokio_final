@@ -16,7 +16,6 @@ jobs:
 
   staging:
     runs-on: [self-hosted-ubuntu]
-    needs: [dev]
     permissions:
       security-events: write
       contents: read
