@@ -34,7 +34,7 @@ def test_valid_create(mock_post, skip_auth, valid_create_data, valid_create_resp
     response = client.post("/posts", json=jsonable_encoder(valid_create_data))
     #assert
     data = response.json()
-    client_url = "/post"
+    client_url = "/posts"
     assert response.status_code == 200
     assert data["title"] == valid_create_response_data["title"]
     assert data["content"] == valid_create_response_data["content"]

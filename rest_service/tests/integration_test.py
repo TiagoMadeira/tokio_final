@@ -14,7 +14,7 @@ from tests.fixtures import (valid_register_data,
                             password_not_matching_register_data)
 
 # Define endpoints based on your port-forwarding or tunnel
-REST_SERVICE_URL = "http://localhost:8000"
+REST_SERVICE_URL = "https://localhost:8000"
 #########################################################Register Test##########################################################
 def test_register_user(api_client, valid_register_data):
     #test
@@ -88,7 +88,7 @@ def test_valid_create(api_client, valid_create_data, valid_login_data ):
     access_tokem = response_json["access_token"]
     token_type = response_json["token_type"]
     #test
-    response = api_client.post(f"{REST_SERVICE_URL}/post", json=jsonable_encoder(valid_create_data), headers={"authorization": f"{token_type} {access_tokem}"})
+    response = api_client.post(f"{REST_SERVICE_URL}/posts", json=jsonable_encoder(valid_create_data), headers={"authorization": f"{token_type} {access_tokem}"})
     #assert
     data = response.json()
     assert response.status_code == 200
@@ -99,7 +99,7 @@ def test_valid_create(api_client, valid_create_data, valid_login_data ):
 
 def test_create_post_need_auth(api_client, valid_create_data):
     #test
-    response = api_client.post(f"{REST_SERVICE_URL}/post", json=jsonable_encoder(valid_create_data))
+    response = api_client.post(f"{REST_SERVICE_URL}/posts", json=jsonable_encoder(valid_create_data))
     #assert
     data = response.json()
     assert response.status_code == 401
@@ -116,7 +116,7 @@ def test_create_already_existing_post(api_client, valid_create_data, valid_login
     access_tokem = response_json["access_token"]
     token_type = response_json["token_type"]
     #test
-    response = api_client.post(f"{REST_SERVICE_URL}/post", json=jsonable_encoder(valid_create_data), headers={"authorization": f"{token_type} {access_tokem}"})
+    response = api_client.post(f"{REST_SERVICE_URL}/posts", json=jsonable_encoder(valid_create_data), headers={"authorization": f"{token_type} {access_tokem}"})
     data = response.json()
     assert response.status_code == 400
     assert data["detail"] == "Author cannot create posts with the same title"
