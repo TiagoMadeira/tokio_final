@@ -2,7 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: frontend-posts-ingress
-  namespace: development
+  namespace: staging
 spec:
   tls:
     - secretName: frontend-staging-posts-com-tls
