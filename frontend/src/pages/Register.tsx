@@ -19,8 +19,6 @@ const RegisterPage: React.FC = () => {
     password: '',
     confirmPassword: ''
   });
-
-  const API_URL = import.meta.env.VITE_API_URL
   
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
