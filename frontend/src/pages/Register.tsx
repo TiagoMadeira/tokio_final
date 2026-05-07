@@ -79,24 +79,24 @@ const RegisterPage: React.FC = () => {
                 )}
             <form onSubmit={handleSubmit}>
                 <div className="form-group">
-                    <label>Username</label>
-                    <input className="form-control" type="text" name="username" value={formData.username} onChange={handleChange} required />
+                    <label htmlFor="username" >Username</label>
+                    <input className="form-control" type="text" id= "username" name="username" value={formData.username} onChange={handleChange} required />
                 </div>
                 <div className="form-group">
-                    <label>Full Name</label>
-                    <input className="form-control" type="text" name="full_name" value={formData.full_name} onChange={handleChange} required />
+                    <label htmlFor="full_name" >Full Name</label>
+                    <input className="form-control" type="text" id= "full_name" name="full_name" value={formData.full_name} onChange={handleChange} required />
                 </div>
                 <div className="form-group"> 
-                    <label>Email</label>
-                    <input className="form-control" type="email" name="email" value={formData.email} onChange={handleChange} required />
+                    <label htmlFor="email" >Email</label>
+                    <input className="form-control" type="email" id= "email" name="email" value={formData.email} onChange={handleChange} required />
                 </div>
                 <div className="form-group">
-                    <label>Password</label>
-                    <input className="form-control" type="password" name="password" value={formData.password} onChange={handleChange} required />
+                    <label htmlFor="password" >Password</label>
+                    <input className="form-control" type="password" id= "password" name="password" value={formData.password} onChange={handleChange} required />
                 </div>
                 <div className="form-group">
-                    <label>Confirm Password</label>
-                    <input className="form-control" type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} required />
+                    <label htmlFor="confirmPassword">Confirm Password</label>
+                    <input className="form-control" type="password" id= "confirmPassword" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} required />
                 </div>
                 <button type="submit" className="btn btn-primary">Register</button>
             </form>

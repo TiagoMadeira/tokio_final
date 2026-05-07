@@ -47,8 +47,9 @@ const EditPostModal = ({ post, onUpdate, onCancel }: Props) => {
             <form onSubmit={handleSubmit}>
               <div className="modal-body">
                 <div className="mb-3">
-                  <label className="form-label">Title</label>
+                  <label className="form-label" htmlFor="title">Title</label>
                   <input 
+                    id = "title"
                     className="form-control" 
                     value={formData.title}
                     onChange={e => setFormData({...formData, title: e.target.value})}
@@ -56,8 +57,9 @@ const EditPostModal = ({ post, onUpdate, onCancel }: Props) => {
                   />
                 </div>
                 <div className="mb-3">
-                  <label className="form-label">Content</label>
+                  <label className="form-label" htmlFor="content">Content</label>
                   <textarea 
+                     id = "content"
                     className="form-control" 
                     rows={4}
                     value={formData.content}

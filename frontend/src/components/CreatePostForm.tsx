@@ -34,8 +34,9 @@ const CreatePostForm = ({ onPostCreated }: Props) => {
     )}
     <form onSubmit={handleSubmit} className="card card-body mb-4 shadow-sm">
       <div className="mb-3">
-        <label className="form-label">Title</label>
-        <input 
+        <label className="form-label" htmlFor="title" >Title</label>
+        <input
+          id="title"
           className="form-control" 
           value={post.title}
           onChange={e => setPost({...post, title: e.target.value})}
@@ -43,8 +44,9 @@ const CreatePostForm = ({ onPostCreated }: Props) => {
         />
       </div>
       <div className="mb-3">
-        <label className="form-label">Content</label>
+        <label className="form-label" htmlFor="content">Content</label>
         <textarea 
+          id="content"
           className="form-control" 
           rows={3}
           value={post.content}

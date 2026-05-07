@@ -69,6 +69,7 @@ function Login () {
             <div className="form-group">
                 <label htmlFor="username">Username</label>
                 <input type="text" 
+                    id="username"
                     className="form-control" 
                     name="username" 
                     aria-describedby="emailHelp"
@@ -78,6 +79,7 @@ function Login () {
             <div className="form-group">
                 <label htmlFor="password">Password</label>
                 <input type="password"
+                    id="password"
                     className="form-control" 
                     name="password"
                     onChange={handleChange}
