@@ -160,6 +160,11 @@ jobs:
         with:
           service_path: "rest_service"
 
+      - name: Frontend unit and integration testing
+        run: |
+          cd frontend
+          npm run test
+
       - name: Clean staging enviroment for next run
         if: always()
         run: |
