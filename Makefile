@@ -55,18 +55,20 @@ start_staging_environment:
 	@echo appling pods secrets
 	kubectl create secret docker-registry regcred --namespace staging --docker-server=https://index.docker.io/v1/ --docker-username=$(docker_name) --docker-password=$(docker_password) --docker-email=$(docker_email)
 	kubectl create secret tls backend-tls-secret --namespace staging --cert=backend-tls.crt --key=backend-tls.key
-	kubectl create secret tls frontend-development-posts-com-tls --namespace staging --cert=frontend-tls.crt --key=frontend-tls.key
+	kubectl create secret tls frontend-staging-posts-com-tls --namespace staging --cert=frontend-tls.crt --key=frontend-tls.key
 	kubectl apply -f k8s-configs/staging/secrets/auth-service-secrets.yaml
 	@echo applying config files
+	kubectl apply -f k8s-configs/staging/configmaps/frontend-configmap.yaml
 	kubectl apply -f k8s-configs/staging/configmaps/auth-service-configmap.yaml
 	kubectl apply -f k8s-configs/staging/configmaps/post-service-configmap.yaml
 	kubectl apply -f k8s-configs/staging/configmaps/rest-service-configmap.yaml
 	@echo applying deployments
+	kubectl apply -f k8s-configs/staging/manifests/frontend-deployment.yaml
 	kubectl apply -f k8s-configs/staging/manifests/rest-service-deployment.yaml
 	kubectl apply -f k8s-configs/staging/manifests/post-service-deployment.yaml
 	kubectl apply -f k8s-configs/staging/manifests/auth-service-deployment.yaml
 	@echo applying ingresses
-	kubectl apply -f k8s-configs/staging/ingress/posts-ingress.yaml
+	kubectl apply -f k8s-configs/staging/ingress/frontend-posts-ingress.yaml
 
 start_production_environment:
 	@echo create production namespace

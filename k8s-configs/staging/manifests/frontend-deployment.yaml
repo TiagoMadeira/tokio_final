@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: frontend-deployment
+    namespace: development
+    labels:
+      app: frontend
+spec:
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: tiagomadeiradock/tokio-frontend:latest
+        imagePullPolicy: Never
+        resources:
+          limits:
+            memory: 512Mi
+            cpu: "1"
+          requests:
+            memory: 256Mi
+            cpu: "0.1"
+        ports:
+          - name: http
+            protocol: TCP
+            containerPort: 80
+        env:
+          - name: API_URL
+            valueFrom:
+             configMapKeyRef:
+                name: frontend-configmap
+                key: vite-api-url
+
+      imagePullSecrets:
+      - name: regcred
+       
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-internal-service
+  namespace: development
+spec:
+  selector:
+    app: frontend
+  type: ClusterIP
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 80

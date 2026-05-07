@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-configmap
+  namespace: development
+data:
+  vite-api-url: https://rest-internal-service.staging.svc.cluster.local:80

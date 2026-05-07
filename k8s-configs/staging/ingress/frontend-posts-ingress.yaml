@@ -1,18 +1,22 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: posts-ingress
-  namespace: staging
+  name: frontend-posts-ingress
+  namespace: development
 spec:
+  tls:
+    - secretName: frontend-staging-posts-com-tls
+      hosts:
+        - frontend.staging.posts.com
   rules:
-  - host: staging.posts.com
+  - host: frontend.staging.posts.com
     http:
       paths:
       - pathType: Prefix
         path: "/"
         backend:
           service:
-            name: rest-internal-service
+            name: frontend-internal-service
             port: 
               number: 80
   ingressClassName: nginx
