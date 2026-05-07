@@ -1,0 +1,29 @@
+name: test_frontend
+description: Test frontend
+
+inputs:
+  service_path:
+    required: true
+    description: path to the service being tested
+    
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+        cache: 'npm'
+
+    - name: Installing depencencies and testing
+      env:
+        SERVICE_PATH: ${{ inputs.service_path }}
+      shell: bash
+      run: |
+        cd  $SERVICE_PATH
+        npm ci    
+        npm run test
+        

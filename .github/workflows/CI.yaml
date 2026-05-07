@@ -160,10 +160,10 @@ jobs:
         with:
           service_path: "rest_service"
 
-      - name: Frontend unit and integration testing
-        run: |
-          cd frontend
-          npm run test
+      - name: frontend unit and integration testing
+        uses:  ./.github/actions/test_frontend
+        with:
+          service_path: "frontend"
 
       - name: Clean staging enviroment for next run
         if: always()
