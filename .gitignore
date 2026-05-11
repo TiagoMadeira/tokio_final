@@ -8,3 +8,15 @@
 *.db
 *.key
 *.crt
+
+#playwright
+frontend/test-results/
+frontend/playwright-report/
+frontend/blob-report/
+frontend/playwright/.cache/
+frontend/playwright/.auth/
+frontend/state.json
+
+#frontend
+frontend/.env
+frontend/node_modules
