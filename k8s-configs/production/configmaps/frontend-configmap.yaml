@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: frontend-configmap
-  namespace: development
+  namespace: production
 data:
   vite-api-url: https://rest-internal-service.production.svc.cluster.local:80
   otel-service-name: production-frontend
