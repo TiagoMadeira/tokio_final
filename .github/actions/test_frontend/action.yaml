@@ -25,7 +25,8 @@ runs:
       shell: bash
       run: |
         cd  $SERVICE_PATH
-        npm ci    
+        npm ci
+        npx playwright install --with-deps
         npm run test
         npx playwright test   
 
