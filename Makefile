@@ -77,17 +77,20 @@ start_production_environment:
 	kubectl create secret docker-registry regcred --namespace production --docker-server=https://index.docker.io/v1/ --docker-username=$(docker_name) --docker-password=$(docker_password) --docker-email=$(docker_email)
 	@echo appling pods secrets
 	kubectl apply -f k8s-configs/production/secrets/auth-service-secrets.yaml
-	kubectl create secret tls posts-com-tls --namespace production --cert=tls.crt --key=tls.key
+	kubectl create secret tls backend-tls-secret --namespace production --cert=prod-back-tls.crt --key=prod-back-tls.key
+	kubectl create secret tls frontend-production-posts-com-tls --namespace production --cert=prod-front-tls.crt --key=prod-front-tls.key
 	@echo applying config files
+	kubectl apply -f k8s-configs/production/configmaps/frontend-configmap.yaml
 	kubectl apply -f k8s-configs/production/configmaps/auth-service-configmap.yaml
 	kubectl apply -f k8s-configs/production/configmaps/post-service-configmap.yaml
 	kubectl apply -f k8s-configs/production/configmaps/rest-service-configmap.yaml
 	@echo applying deployments
+	kubectl apply -f k8s-configs/production/manifests/frontend-deployment.yaml
 	kubectl apply -f k8s-configs/production/manifests/rest-service-deployment.yaml
 	kubectl apply -f k8s-configs/production/manifests/post-service-deployment.yaml
 	kubectl apply -f k8s-configs/production/manifests/auth-service-deployment.yaml
 	@echo applying ingresses
-	kubectl apply -f k8s-configs/production/ingress/posts-ingress.yaml
+	kubectl apply -f k8s-configs/production/ingress/frontend-posts-ingress.yaml
 
 rollout_local_development:
 	@echo Building images this might take a few minutes when runing for the first time
@@ -123,10 +126,12 @@ rollout_staging:
 
 rollout_production:
 	@echo applying config files
+	kubectl apply -f k8s-configs/production/configmaps/frontend-configmap.yaml
 	kubectl apply -f k8s-configs/production/configmaps/auth-service-configmap.yaml
 	kubectl apply -f k8s-configs/production/configmaps/post-service-configmap.yaml
 	kubectl apply -f k8s-configs/production/configmaps/rest-service-configmap.yaml
 	@echo rollout deployments
+	kubectl rollout restart deployment frontend-deployment -n production
 	kubectl rollout restart deployment auth-service-deployment -n production
 	kubectl rollout restart deployment post-service-deployment -n production
 	kubectl rollout restart deployment rest-service-deployment -n production
