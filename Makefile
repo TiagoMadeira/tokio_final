@@ -106,20 +106,24 @@ rollout_local_development:
 	@echo appling pods secrets
 	kubectl apply -f k8s-configs/development/secrets/auth-service-secrets.yaml
 	@echo applying config files
+	kubectl apply -f k8s-configs/production/configmaps/frontend-configmap.yaml
 	kubectl apply -f k8s-configs/development/configmaps/auth-service-configmap.yaml
 	kubectl apply -f k8s-configs/development/configmaps/post-service-configmap.yaml
 	kubectl apply -f k8s-configs/development/configmaps/rest-service-configmap.yaml
 	@echo rollout deployments
+	kubectl rollout restart deployment frontend-deployment -n development
 	kubectl rollout restart deployment auth-service-deployment -n development
 	kubectl rollout restart deployment post-service-deployment -n development
 	kubectl rollout restart deployment rest-service-deployment -n development
 
 rollout_staging:
 	@echo applying config files
+	kubectl apply -f k8s-configs/staging/configmaps/frontend-configmap.yaml
 	kubectl apply -f k8s-configs/staging/configmaps/auth-service-configmap.yaml
 	kubectl apply -f k8s-configs/staging/configmaps/post-service-configmap.yaml
 	kubectl apply -f k8s-configs/staging/configmaps/rest-service-configmap.yaml
 	@echo rollout deployments
+	kubectl rollout restart deployment frontend-deployment -n staging
 	kubectl rollout restart deployment auth-service-deployment -n staging
 	kubectl rollout restart deployment post-service-deployment -n staging
 	kubectl rollout restart deployment rest-service-deployment -n staging
