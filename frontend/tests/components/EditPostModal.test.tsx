@@ -56,19 +56,21 @@ describe('EditPostModal', () => {
     });
   });
 
-  it('shows an alert on service error', async () => {
-    // Mock the window.alert because jsdom doesn't implement it
-    const alertMock = vi.spyOn(window, 'alert').mockImplementation(() => {});
-    vi.mocked(PostService.updatePost).mockRejectedValueOnce(new Error('Fail'));
+  it('shows an error alert message when the service fails', async () => {
+    const errorMessage = 'Server Error';
+    (PostService.updatePost as any).mockRejectedValueOnce(new Error(errorMessage));
 
     render(<EditPostModal post={mockPost} onUpdate={mockOnUpdate} onCancel={mockOnCancel} />);
     
     fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
 
+    // Verify the UI alert appears instead of window.alert
     await waitFor(() => {
-      expect(alertMock).toHaveBeenCalledWith("Error updating post.");
+      const alert = screen.getByRole('alert');
+      expect(alert).toBeInTheDocument();
+      expect(alert).toHaveTextContent(errorMessage);
     });
     
-    alertMock.mockRestore();
+    expect(mockOnUpdate).not.toHaveBeenCalled();
   });
 });

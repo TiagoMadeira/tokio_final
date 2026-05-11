@@ -11,17 +11,19 @@ interface Props {
 const EditPostModal = ({ post, onUpdate, onCancel }: Props) => {
   const [formData, setFormData] = useState<Post>({ ...post });
   const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     if (!post.id) return;
 
     setLoading(true);
+    setError(null); // Clear previous errors
     try {
       const updated = await PostService.updatePost(post.id, formData);
       onUpdate(updated);
-    } catch (err) {
-      alert("Error updating post.");
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -46,6 +48,12 @@ const EditPostModal = ({ post, onUpdate, onCancel }: Props) => {
             </div>
             <form onSubmit={handleSubmit}>
               <div className="modal-body">
+                 {/* Inline Error Alert */}
+                {error && (
+                  <div className="alert alert-danger py-2 small" role="alert">
+                    <strong>Error:</strong> {error}
+                  </div>
+                )}
                 <div className="mb-3">
                   <label className="form-label" htmlFor="title">Title</label>
                   <input 

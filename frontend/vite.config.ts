@@ -8,6 +8,18 @@ export default defineConfig({
     react(),
     babel({ presets: [reactCompilerPreset()] })
   ],
+  optimizeDeps: {
+    include: [
+      '@opentelemetry/api',
+      '@opentelemetry/sdk-trace-base',
+      '@opentelemetry/exporter-trace-otlp-http',
+      '@opentelemetry/context-zone',
+      '@opentelemetry/instrumentation',
+      '@opentelemetry/instrumentation-xml-http-request',
+      '@opentelemetry/semantic-conventions'
+    ],
+    exclude: ['@opentelemetry/resources', '@opentelemetry/sdk-trace-web']
+  },
   server: {
   port: 5173,
   strictPort: true,
