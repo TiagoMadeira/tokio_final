@@ -172,10 +172,10 @@ jobs:
         with:
           service_path: "frontend"
 
-      - name: Clean staging enviroment for next run
-        if: always()
-        run: |
-          kubectl delete namespace staging
+      # - name: Clean staging enviroment for next run
+      #   if: always()
+      #   run: |
+      #     kubectl delete namespace staging
 
 
     
