@@ -9,13 +9,14 @@ on:
       - master
 
 jobs:
-  # dev:
-  #   uses: ./.github/workflows/build-services.yaml
-  #   secrets:
-  #     dockerhub-access-token: ${{secrets.DOCKERHUB_ACCESS_TOKEN}}
+  dev:
+    uses: ./.github/workflows/build-services.yaml
+    secrets:
+      dockerhub-access-token: ${{secrets.DOCKERHUB_ACCESS_TOKEN}}
 
   staging:
     runs-on: [self-hosted-ubuntu]
+    needs: [dev]
     permissions:
       security-events: write
       contents: read
@@ -143,6 +144,12 @@ jobs:
          
           kubectl port-forward service/rest-internal-service 8000:80 -n staging &
           sleep 5 # Wait for the tunnel to initialize
+      
+      - name: Prepare frontend for e2e testing
+        run: |
+         
+          kubectl port-forward service/frontend-internal-service 3000:80 -n staging &
+          sleep 5 # Wait for the tunnel to initialize
 
       - name:  auth service unit testing
         uses:  ./.github/actions/test_service
@@ -160,7 +167,7 @@ jobs:
         with:
           service_path: "rest_service"
 
-      - name: frontend unit and integration testing
+      - name: frontend unit and integration testing and E2E
         uses:  ./.github/actions/test_frontend
         with:
           service_path: "frontend"

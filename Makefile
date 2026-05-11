@@ -47,7 +47,7 @@ start_local_development_server:
 	kubectl apply -f k8s-configs/development/manifests/auth-service-deployment.yaml
 	@echo applying ingresses
 	kubectl apply -f k8s-configs/development/ingress/frontend-posts-ingress.yaml
-	minikube tunnel
+	kubectl port-forward service/frontend-internal-service 3000:80 -n development
 
 start_staging_environment:
 	@echo create staging namespace

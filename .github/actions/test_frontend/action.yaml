@@ -27,4 +27,6 @@ runs:
         cd  $SERVICE_PATH
         npm ci    
         npm run test
+        npx playwright test   
+
         
