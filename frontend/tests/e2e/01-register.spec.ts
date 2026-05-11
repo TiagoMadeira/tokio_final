@@ -8,9 +8,9 @@ test.describe('Register Page', () => {
   test('should register a new user successfully and redirect to login', async ({ page }) => {
     // Generate a unique username/email to avoid "User already exists" errors in the real DB
     const testUser = {
-      username: `existing_user`,
-      fullName: 'Existing Use',
-      email: `existing@example.com`,
+      username: `front_existing_user`,
+      fullName: 'Front Existing Use',
+      email: `frontexisting@example.com`,
       password: 'Password123!',
     };
 
@@ -36,9 +36,9 @@ test.describe('Register Page', () => {
 
   test('should show error message from backend for duplicate registration', async ({ page }) => {
     // Use an existing user you know is already in your Minikube DB
-    await page.getByLabel('Username').fill('existing_user');
-    await page.getByLabel('Full Name').fill('Existing User');
-    await page.getByLabel('Email').fill('existing@example.com');
+    await page.getByLabel('Username').fill('front_existing_user');
+    await page.getByLabel('Full Name').fill('Front Existing Use');
+    await page.getByLabel('Email').fill('frontexisting@example.com');
     await page.getByLabel('Password', { exact: true }).fill('Password123!');
     await page.getByLabel('Confirm Password').fill('Password123!');
 

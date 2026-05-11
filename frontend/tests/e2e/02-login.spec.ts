@@ -8,7 +8,7 @@ test.describe('Login Page', () => {
 
   test('should login successfully with real backend', async ({ page }) => {
     // 1. Fill out with a REAL user that exists in your Minikube DB
-    await page.getByLabel('Username').fill('existing_user');
+    await page.getByLabel('Username').fill('front_existing_user');
     await page.getByLabel('Password').fill('Password123!');
 
     // 2. Submit the form
