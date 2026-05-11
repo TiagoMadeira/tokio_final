@@ -25,10 +25,8 @@ runs:
       shell: bash
       run: |
         cd  $SERVICE_PATH
-        sudo apt-get update
-        sudo apt-get install -y libnspr4 libnss3 libgbm1 libasound2
         npm ci
-        npx playwright install chromium
+        npx playwright install --with-deps chromium
         npm run test
         npx playwright test   
 
