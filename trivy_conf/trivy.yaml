@@ -8,6 +8,8 @@ scan:
     - "pip:requirements-prd.txt"
     - "pip:requirements-stg.txt"
 
+  skip-files:
+    - "state.json"
 
 severity:
   - LOW
