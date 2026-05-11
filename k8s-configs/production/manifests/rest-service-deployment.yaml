@@ -29,6 +29,10 @@ spec:
           - name: http
             protocol: TCP
             containerPort: 8000
+        volumeMounts:
+          - name: certs
+            mountPath: "/etc/tls"
+            readOnly: true
         env:
           - name: ENV
             value: "prod"
@@ -72,6 +76,10 @@ spec:
                 name: rest-service-configmap
                 key: otel-logs-exporter
 
+      volumes:
+      - name: certs
+        secret:
+          secretName: backend-tls-secret
       imagePullSecrets:
       - name: regcred
               
