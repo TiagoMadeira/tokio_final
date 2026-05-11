@@ -30,6 +30,8 @@ spec:
             protocol: TCP
             containerPort: 80
         env:
+          - name: NODE_ENV
+            value: "production"
           - name: API_URL
             valueFrom:
              configMapKeyRef:
