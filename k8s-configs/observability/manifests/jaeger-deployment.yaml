@@ -33,6 +33,7 @@ spec:
                 key: collector_otlp_enabled
         ports:
         - containerPort: 4317
+        - containerPort: 4318
         - containerPort: 6831
         - containerPort: 16686
         - containerPort: 14250
@@ -53,3 +54,6 @@ spec:
   - name: grpc
     port: 4317
     targetPort: 4317
+  - name: http
+    port: 4318
+    targetPort: 4318

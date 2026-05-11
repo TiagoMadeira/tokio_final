@@ -35,6 +35,17 @@ spec:
              configMapKeyRef:
                 name: frontend-configmap
                 key: vite-api-url
+          - name: VITE_OTEL_SERVICE_NAME
+            valueFrom:
+             configMapKeyRef:
+                name: frontend-configmap
+                key: otel-service-name
+
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            valueFrom:
+             configMapKeyRef:
+                name: frontend-configmap
+                key: otel-exporter-endpoint
        
 ---
 apiVersion: v1

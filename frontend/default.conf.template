@@ -17,4 +17,13 @@ server {
 
         proxy_redirect http:// https://;
     }
+
+     # New OTLP proxy for traces
+     location /v1/traces {
+        proxy_pass  ${OTEL_EXPORTER_OTLP_ENDPOINT};
+        proxy_set_header Content-Type "application/json";
+        # You need these because the browser is sending a standard web request
+        add_header 'Access-Control-Allow-Origin' '*';
+        add_header 'Access-Control-Allow-Headers' 'content-type,traceparent';
+    }
 }

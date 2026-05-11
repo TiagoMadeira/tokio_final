@@ -5,7 +5,7 @@ metadata:
   namespace: observability
 spec:
   rules:
-  - host: jaeger.com
+  - host: tokio.observability.jaeger.com
     http:
       paths:
       - pathType: Prefix
