@@ -179,10 +179,10 @@ jobs:
         with:
           service_path: "frontend"
 
-      # - name: Clean staging enviroment for next run
-      #   if: always()
-      #   run: |
-      #     kubectl delete namespace staging
+      - name: Clean staging enviroment for next run
+        if: always()
+        run: |
+          kubectl delete namespace staging
 
 
     
@@ -216,18 +216,22 @@ jobs:
       - name: start production server
         env: 
           DOCKERHUB_ACCESS_TOKEN: ${{secrets.DOCKERHUB_ACCESS_TOKEN}}
-          TLS_CERT: ${{ secrets.TLS_CERT }}
-          TLS_KEY: ${{ secrets.TLS_KEY }}
+          PROD_BACK_TLS_CERT: ${{ secrets.TLS_CERT }}
+          PROD_BACK_TLS_KEY: ${{ secrets.TLS_KEY }}
+          PROD_FRONT_TLS_CERT: ${{ secrets.PROD_FRONT_TLS_CERT }}
+          PROD_FRONT_TLS_KEY: ${{ secrets.PROD_FRONT_TLS_KEY }}
         run: |
           if  kubectl get namespace production; then
             make rollout_production
           else
             # 1. Decode base64 secrets into temporary files
-            echo "$TLS_CERT" | base64 --decode > tls.crt
-            echo "$TLS_KEY" | base64 --decode > tls.key
+            echo "$PROD_BACK_TLS_CERT" | base64 --decode > prod-back-tls.crt
+            echo "$PROD_BACK_TLS_KEY" | base64 --decode > prod-back-tls.key
+            echo "$PROD_FRONT_TLS_CERT" | base64 --decode > prod-front-tls.crt
+            echo "$PROD_FRONT_TLS_KEY" | base64 --decode > prod-front-tls.key
             make start_production_environment docker_name=${{vars.DOCKER_USERNAME}} docker_password=$DOCKERHUB_ACCESS_TOKEN docker_email=${{vars.DOCKER_EMAIL}}
             # 3. Cleanup sensitive temporary files
-            rm tls.crt tls.key
+            rm prod-back-tls.crt prod-back-tls.key prod-front-tls.crt prod-front-tls.key
           fi
 
 
