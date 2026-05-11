@@ -28,7 +28,7 @@ export default defineConfig({
   use: {
     baseURL: 'http://localhost:3000',
     browserName: 'chromium',
-    headless: false,
+    headless: true,
   },
 
   /* Configure projects for major browsers */
