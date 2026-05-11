@@ -26,7 +26,7 @@ runs:
       run: |
         cd  $SERVICE_PATH
         npm ci
-        npx playwright install chromium
+        sudo npx playwright install-deps chromium
         npm run test
         npx playwright test   
 
