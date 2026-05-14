@@ -39,7 +39,7 @@ spec:
             valueFrom:
              configMapKeyRef:
                 name: frontend-configmap
-                key: otel-service-name
+                key: vite-otel-service-name
 
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
             valueFrom:

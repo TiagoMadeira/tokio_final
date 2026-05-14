@@ -20,7 +20,7 @@ const exporter = new OTLPTraceExporter({
 
 const resource = defaultResource().merge(
   resourceFromAttributes({
-    [ATTR_SERVICE_NAME]: import.meta.env.VITE_OTEL_SERVICE_NAME || 'frontend-app',
+   [ATTR_SERVICE_NAME]: 'REPLACE_VITE_OTEL_SERVICE_NAME',
   })
 );
 
