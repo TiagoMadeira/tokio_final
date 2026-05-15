@@ -162,12 +162,8 @@ jobs:
       - name: Prepare frontend for e2e testing
         shell: bash
         run: |
-          # Change the Ingress service type to NodePort and bind static ports
-          kubectl patch service ingress-nginx-controller -n ingress-nginx --type='json' -p='[
-          {"op": "replace", "path": "/spec/type", "value": "NodePort"},
-          {"op": "replace", "path": "/spec/ports/0/nodePort", "value": 32080},
-          {"op": "replace", "path": "/spec/ports/1/nodePort", "value": 32443}
-          ]'
+          kubectl port-forward deployment/ingress-nginx-controller -n ingress-nginx 32080:80 &
+          sleep 5
 
       # - name:  auth service unit testing
       #   uses:  ./.github/actions/test_service
