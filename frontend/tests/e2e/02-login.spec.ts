@@ -2,39 +2,29 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Login Page', () => {
   test.beforeEach(async ({ page }) => {
-    // 1. Generate the valid W3C distributed tracing context strings
+       // 1. Generate clean W3C distributed tracking context blocks
     const traceId = Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
     const spanId = Array.from({ length: 16 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
     const traceparent = `00-${traceId}-${spanId}-01`;
 
-    // 2. Setup the network interception wrapper FIRST.
-    // This catches every single backend request the browser triggers automatically.
-    await page.route('**/*', async (route) => {
+    // 2. TARGET ONLY THE API ROUTES FOR INTERCEPTION
+    // This allows HTML, JS, and CSS files to bypass the proxy cleanly, avoiding rendering loops
+    await page.route('**/api/**', async (route) => {
         const request = route.request();
         const headers = { ...request.headers() };
 
-
-        // Force the Ingress domain matching criteria
+        // Inject the required domain destination so the Ingress knows where to go
         headers['Host'] = 'frontend.staging.posts.com';
-        // Only inject headers if the request is destined for the API
-        if (request.url().includes('/api/')) {
-            headers['traceparent'] = traceparent;
-            headers['tracestate'] = '';
-            headers['X-B3-TraceId'] = traceId;
-            headers['X-B3-SpanId'] = spanId;
-            headers['X-B3-Sampled'] = '1';
-        }
 
-        // Continue the request payload downstream with the new tracking headers
+        // Append the OpenTelemetry context tracing metrics
+        headers['traceparent'] = traceparent;
+        headers['tracestate'] = '';
+        headers['X-B3-TraceId'] = traceId;
+        headers['X-B3-SpanId'] = spanId;
+        headers['X-B3-Sampled'] = '1';
+
         await route.continue({ headers });
     });
-
-    // 3. Set the global page headers for the initial navigation hit
-    await page.setExtraHTTPHeaders({
-        'traceparent': traceparent,
-        'tracestate': ''
-    });
-
     // 4. LAST STEP: Now navigate to your app. 
     // The initial hit and all subsequent client actions will now carry the tracking data safely.
     await page.goto('/login'); 
