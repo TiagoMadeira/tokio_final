@@ -19,6 +19,9 @@ test.describe('Register Page', () => {
         const request = route.request();
         const headers = { ...request.headers() };
 
+
+         //Force the Ingress domain matching criteria
+        headers['Host'] = 'frontend.staging.posts.com';
         // Only inject headers if the request is destined for the API
         if (request.url().includes('/api/')) {
             headers['traceparent'] = traceparent;

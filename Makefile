@@ -123,15 +123,13 @@ start_production_environment:
 
 
 expose_production:
+	@echo production cluster will be exposed please add the following lines to the your hosts files:
+	@echo ::1 posts.com
+	@echo ::1 tokio.observability.jaeger.com
+	@echo "Starting Minikube Tunnel inside WSL natively..."
 	@powershell.exe -Command "\
-		$$WslIp = (wsl -d $(WSL_DISTRO) -e hostname -I).Trim().Split(' ')[0]; \
-		if (-not $$WslIp) { Write-Error 'Could not retrieve WSL IP address.'; exit 1 }; \
-		netsh interface portproxy reset; \
-		netsh interface portproxy add v4tov4 listenport=80 listenaddress=0.0.0.0 connectport=80 connectaddress=$$WslIp; \
-		netsh interface portproxy add v4tov4 listenport=443 listenaddress=0.0.0.0 connectport=443 connectaddress=$$WslIp;
-	@echo production cluster exposed please add the following lines to the your hosts files:
-	@echo 127.0.0.1 posts.com
-	@echo 127.0.0.1 tokio.observability.jaeger.com
+		wsl minikube tunnel;
+	
 
 rollout_local_development:
 	@echo Building images this might take a few minutes when runing for the first time
