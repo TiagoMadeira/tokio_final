@@ -118,6 +118,13 @@ jobs:
             make start_jaeger_server
           fi
 
+      - name: Wait for observability server to be up and running
+        run: |
+          kubectl wait --namespace observability \
+          --for=condition=ready pod \
+          --all \
+          --timeout=240s
+
       - name: start staging server
         env:
           STAGING_BACKEND_TLS_CERT: ${{ secrets.STAGING_BACKEND_TLS_CERT }}
