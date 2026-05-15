@@ -30,7 +30,6 @@ runs:
         npm ci
         npx playwright install chromium
         # Force Chromium to accept the self-signed cluster staging certs
-        export PLAYWRIGHT_IGNORE_HTTPS_ERRORS=true
         npm run test
         npx playwright test   
 
