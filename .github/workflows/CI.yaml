@@ -162,7 +162,7 @@ jobs:
       - name: Prepare frontend for e2e testing
         shell: bash
         run: |
-          kubectl port-forward deployment/ingress-nginx-controller -n ingress-nginx 32080:80 &
+          kubectl port-forward deployment/ingress-nginx-controller -n ingress-nginx 32443:443 &
           sleep 5
 
       # - name:  auth service unit testing
