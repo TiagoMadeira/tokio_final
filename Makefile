@@ -7,12 +7,15 @@ start_minikube:
 	minikube start --driver=docker
 	@echo enable ingress
 	minikube addons enable ingress
+	@echo wait ngingx ingress readiness
+	kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=120s
 
 start_jaeger_server:
 	@echo create observability namespace
 	kubectl create namespace observability
 	@echo applying configmap files
 	kubectl apply -f k8s-configs/observability/configmaps/jaeger-configmap.yaml
+	kubectl apply -f k8s-configs/observability/configmaps/jaeger-ui-config.yaml
 	@echo applying deployment
 	kubectl apply -f k8s-configs/observability/manifests/jaeger-deployment.yaml
 	@echo applying ingress
@@ -47,7 +50,31 @@ start_local_development_server:
 	kubectl apply -f k8s-configs/development/manifests/auth-service-deployment.yaml
 	@echo applying ingresses
 	kubectl apply -f k8s-configs/development/ingress/frontend-posts-ingress.yaml
-	kubectl port-forward service/frontend-internal-service 3000:80 -n development
+
+expose_services:
+	@echo "Waiting for services to be available "
+	kubectl wait --namespace development --for=condition=ready pod --all --timeout=240s
+	kubectl wait --namespace observability --for=condition=ready pod --all --timeout=240s
+	@echo "All services are ready!"
+	@echo Port fowarding app and observability server
+	start /B kubectl port-forward service/frontend-internal-service 3000:80 -n development > nul 2>&1
+	start /B kubectl port-forward service/jaeger 8000:16686 -n observability > nul 2>&1
+	@echo Opening Minikube tunnel
+	start /B minikube tunnel > nul 2>&1
+	@echo Portfoward and tunnel available!
+	@echo " Localhost Access:"
+	@echo "   - APP:    http://localhost:3000"
+	@echo "   - Jaeger:     http://localhost:8000"
+	@echo Please had the following lines to your hosts file for https domain access
+	@echo 127.0.0.1 frontend.development.posts.com
+	@echo 127.0.0.1 tokio.observability.jaeger.com
+	@pause
+
+	
+
+start_local_development:  start_minikube start_jaeger_server start_local_development_server expose_services
+
+
 
 start_staging_environment:
 	@echo create staging namespace
@@ -106,7 +133,7 @@ rollout_local_development:
 	@echo appling pods secrets
 	kubectl apply -f k8s-configs/development/secrets/auth-service-secrets.yaml
 	@echo applying config files
-	kubectl apply -f k8s-configs/production/configmaps/frontend-configmap.yaml
+	kubectl apply -f k8s-configs/development/configmaps/frontend-configmap.yaml
 	kubectl apply -f k8s-configs/development/configmaps/auth-service-configmap.yaml
 	kubectl apply -f k8s-configs/development/configmaps/post-service-configmap.yaml
 	kubectl apply -f k8s-configs/development/configmaps/rest-service-configmap.yaml
