@@ -47,7 +47,8 @@ test.describe('Register Page', () => {
 
     // Submit
     await page.getByRole('button', { name: 'Register' }).click();
-
+  
+    await page.waitForLoadState('networkidle'); 
     // Verify redirection to login after the 2-second timeout in your code
     await expect(page).toHaveURL(/\/login/, { timeout: 5000 });
   });
@@ -62,6 +63,7 @@ test.describe('Register Page', () => {
 
     await page.getByRole('button', { name: 'Register' }).click();
 
+    await page.waitForLoadState('networkidle'); 
     // Check for the error alert displayed in your UI
     const errorAlert = page.locator('.alert-danger');
     await expect(errorAlert).toBeVisible();
@@ -74,6 +76,7 @@ test.describe('Register Page', () => {
     // Attempt to submit empty form
     await page.getByRole('button', { name: 'Register' }).click();
 
+    await page.waitForLoadState('networkidle'); 
     // Check HTML5 validation - the browser should prevent submission
     const isUsernameInvalid = await page.$eval('#username', (el: HTMLInputElement) => !el.checkValidity());
     expect(isUsernameInvalid).toBe(true);

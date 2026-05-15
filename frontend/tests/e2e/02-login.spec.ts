@@ -24,6 +24,7 @@ test.describe('Login Page', () => {
     // 2. Submit the form
     await page.getByRole('button', { name: 'Submit' }).click();
 
+    await page.waitForLoadState('networkidle'); 
     // 3. Verify redirection (Waiting for the real network response)
     await expect(page).toHaveURL(/\/posts/, { timeout: 10000 });
 
@@ -40,6 +41,7 @@ test.describe('Login Page', () => {
     await page.getByLabel('Password').fill('wrong_password');
     await page.getByRole('button', { name: 'Submit' }).click();
 
+    await page.waitForLoadState('networkidle'); 
     // 2. Check for the alert message returned by your FastAPI/Node backend
     const errorAlert = page.locator('.alert-danger');
     await expect(errorAlert).toBeVisible();

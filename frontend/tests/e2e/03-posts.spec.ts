@@ -59,6 +59,7 @@ test.describe('Posts Management', () => {
     // 3. Click the Save button
     await modal.getByRole('button', { name: /save|update/i }).click();
 
+    await page.waitForLoadState('networkidle'); 
     // 4. Verify modal is removed
     await expect(modal).not.toBeVisible();
     await expect(page.getByText(updatedTitle)).toBeVisible();
