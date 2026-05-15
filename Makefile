@@ -2,6 +2,8 @@ docker_name = "" #Dockerhub account name
 docker_password = "" #Dockerhub access token
 docker_email = "" #Dockerhub account email
 
+WSL_DISTRO := Ubuntu
+
 start_minikube:
 	@echo starting minikube ...
 	minikube start --driver=docker
@@ -118,6 +120,18 @@ start_production_environment:
 	kubectl apply -f k8s-configs/production/manifests/auth-service-deployment.yaml
 	@echo applying ingresses
 	kubectl apply -f k8s-configs/production/ingress/frontend-posts-ingress.yaml
+
+
+expose_production:
+	@powershell.exe -Command "\
+		$$WslIp = (wsl -d $(WSL_DISTRO) -e hostname -I).Trim().Split(' ')[0]; \
+		if (-not $$WslIp) { Write-Error 'Could not retrieve WSL IP address.'; exit 1 }; \
+		netsh interface portproxy reset; \
+		netsh interface portproxy add v4tov4 listenport=80 listenaddress=0.0.0.0 connectport=80 connectaddress=$$WslIp; \
+		netsh interface portproxy add v4tov4 listenport=443 listenaddress=0.0.0.0 connectport=443 connectaddress=$$WslIp;
+	@echo production cluster exposed please add the following lines to the your hosts files:
+	@echo 127.0.0.1 posts.com
+	@echo 127.0.0.1 tokio.observability.jaeger.com
 
 rollout_local_development:
 	@echo Building images this might take a few minutes when runing for the first time
