@@ -4,6 +4,16 @@ test.describe('Login Page', () => {
   test.beforeEach(async ({ page }) => {
     // Ensure this matches your Minikube URL (e.g., http://localhost:3000)
     await page.goto('/login'); 
+    // Generate a valid W3C distributed tracing context header string
+    const traceId = Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+    const spanId = Array.from({ length: 16 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+    const traceparent = `00-${traceId}-${spanId}-01`;
+
+  // Attach the trace headers directly into the Playwright browser configuration
+    await page.setExtraHTTPHeaders({
+      'traceparent': traceparent,
+      'tracestate': ''
+  });
   });
 
   test('should login successfully with real backend', async ({ page }) => {

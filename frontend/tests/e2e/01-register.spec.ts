@@ -1,9 +1,27 @@
 import { test, expect } from '@playwright/test';
 
+
+
+
+
+
+
 test.describe('Register Page', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/register'); // Adjust to your actual registration route
+    
+    // Generate a valid W3C distributed tracing context header string
+    const traceId = Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+    const spanId = Array.from({ length: 16 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+    const traceparent = `00-${traceId}-${spanId}-01`;
+
+  // Attach the trace headers directly into the Playwright browser configuration
+    await page.setExtraHTTPHeaders({
+      'traceparent': traceparent,
+      'tracestate': ''
   });
+  });
+
 
   test('should register a new user successfully and redirect to login', async ({ page }) => {
     // Generate a unique username/email to avoid "User already exists" errors in the real DB

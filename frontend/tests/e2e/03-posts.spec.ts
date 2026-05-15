@@ -7,6 +7,17 @@ test.describe('Posts Management', () => {
 
     test.beforeEach(async ({ page }) => {
         await page.goto('/posts');
+
+        // Generate a valid W3C distributed tracing context header string
+      const traceId = Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+      const spanId = Array.from({ length: 16 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+      const traceparent = `00-${traceId}-${spanId}-01`;
+
+      // Attach the trace headers directly into the Playwright browser configuration
+      await page.setExtraHTTPHeaders({
+        'traceparent': traceparent,
+        'tracestate': ''
+      });
     });
 
   test('should create, edit, and delete a post', async ({ page }) => {
