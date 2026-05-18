@@ -159,11 +159,11 @@ jobs:
           kubectl port-forward service/rest-internal-service 8000:80 -n staging &
           sleep 5 # Wait for the tunnel to initialize
       
-      # - name: Prepare frontend for e2e testing
-      #   shell: bash
-      #   run: |
-      #     kubectl port-forward deployment/ingress-nginx-controller -n ingress-nginx 32443:443 &
-      #     sleep 5
+      - name: Prepare frontend for e2e testing
+        shell: bash
+        run: |
+          kubectl port-forward service/frontend-internal-service 3000:80 -n staging &
+          sleep 5
 
       # - name:  auth service unit testing
       #   uses:  ./.github/actions/test_service
@@ -181,10 +181,10 @@ jobs:
       #   with:
       #     service_path: "rest_service"
 
-      # - name: frontend unit and integration testing and E2E
-      #   uses:  ./.github/actions/test_frontend
-      #   with:
-      #     service_path: "frontend"
+      - name: frontend unit and integration testing and E2E
+        uses:  ./.github/actions/test_frontend
+        with:
+          service_path: "frontend"
 
       # - name: Clean staging enviroment for next run
       #   if: always()

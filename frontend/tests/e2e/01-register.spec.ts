@@ -20,7 +20,7 @@ test.describe('Register Page', () => {
         const headers = { ...request.headers() };
 
         // Inject the required domain destination so the Ingress knows where to go
-        headers['Host'] = 'frontend.staging.posts.com';
+        //headers['Host'] = 'frontend.staging.posts.com';
 
         // Append the OpenTelemetry context tracing metrics
         headers['traceparent'] = traceparent;
