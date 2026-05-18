@@ -8,11 +8,6 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Register Page', () => {
   test.beforeEach(async ({ page }) => {
-    // 1. Generate clean W3C distributed tracking context blocks
-    const traceId = Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
-    const spanId = Array.from({ length: 16 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
-    const traceparent = `00-${traceId}-${spanId}-01`;
-
       // 👇 PASTE THE DEBUGGING SCRIPTS HERE 👇
   // This catches standard console logs, console.error, and OpenTelemetry debug messages
   page.on('console', msg => {
@@ -30,24 +25,6 @@ test.describe('Register Page', () => {
   });
   // 👆 END OF DEBUGGING SCRIPTS 👆
 
-    // 2. TARGET ONLY THE API ROUTES FOR INTERCEPTION
-    // This allows HTML, JS, and CSS files to bypass the proxy cleanly, avoiding rendering loops
-    await page.route('**/api/**', async (route) => {
-        const request = route.request();
-        const headers = { ...request.headers() };
-
-        // Inject the required domain destination so the Ingress knows where to go
-        //headers['Host'] = 'frontend.staging.posts.com';
-
-        // Append the OpenTelemetry context tracing metrics
-        headers['traceparent'] = traceparent;
-        headers['tracestate'] = '';
-        headers['X-B3-TraceId'] = traceId;
-        headers['X-B3-SpanId'] = spanId;
-        headers['X-B3-Sampled'] = '1';
-
-        await route.continue({ headers });
-    });
     await page.goto('/register'); // Adjust to your actual registration route
     
    
