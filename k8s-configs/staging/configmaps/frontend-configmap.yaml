@@ -6,4 +6,4 @@ metadata:
 data:
   vite-api-url: https://rest-internal-service.staging.svc.cluster.local:80
   otel-service-name: staging-frontend
-  otel-exporter-endpoint: http://jaeger.observability.svc.cluster.local:4317
+  otel-exporter-endpoint: http://jaeger.observability.svc.cluster.local:4318
