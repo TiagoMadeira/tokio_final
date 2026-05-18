@@ -4,8 +4,25 @@ const api = axios.create({
   baseURL: '/api/', // Base path for the Nginx proxy
 });
 
+
 // Request Interceptor
 api.interceptors.request.use((config) => {
+  // ensure that base domain never changes
+  if (config.url) {
+    
+    const baseContext = window.location.origin;
+    const resolvedUrl = new URL(config.url, `${baseContext}/api/`);
+
+
+    if (resolvedUrl.origin !== baseContext) {
+      throw new Error("Security Violation: Unauthorized external request blocked.");
+    }
+
+    if (!resolvedUrl.pathname.startsWith('/api/')) {
+      throw new Error("Security Violation: Invalid URL pathway context.");
+    }
+  }
+
   const token = localStorage.getItem('authToken'); 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
