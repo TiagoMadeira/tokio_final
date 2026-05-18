@@ -12,7 +12,9 @@ RUN if [ "$NODE_ENV" = "production" ]; then \
       npm ci; \
     fi
 
-COPY ./app ./app
+COPY src/ ./src
+COPY public/ ./public
+COPY index.html vite.config.ts tsconfig.json ./
 
 RUN npx vite build --mode ${NODE_ENV}
 
