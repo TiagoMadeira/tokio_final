@@ -6,7 +6,22 @@ test.describe('Login Page', () => {
     const traceId = Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
     const spanId = Array.from({ length: 16 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
     const traceparent = `00-${traceId}-${spanId}-01`;
+         // 👇 PASTE THE DEBUGGING SCRIPTS HERE 👇
+  // This catches standard console logs, console.error, and OpenTelemetry debug messages
+  page.on('console', msg => {
+    console.log(`BROWSER LOG [${msg.type()}]: ${msg.text()}`);
+  });
 
+  // This catches uncaught JavaScript errors that cause the tracer to crash
+  page.on('pageerror', exception => {
+    console.error(`BROWSER EXCEPTION: ${exception.message}`);
+  });
+
+  // This catches hidden network failures (like CORS blocks or 404s on /v1/traces)
+  page.on('requestfailed', request => {
+    console.error(`BROWSER FAILED REQUEST: ${request.url()} - Error: ${request.failure()?.errorText}`);
+  });
+  // 👆 END OF DEBUGGING SCRIPTS 👆
     // 2. TARGET ONLY THE API ROUTES FOR INTERCEPTION
     // This allows HTML, JS, and CSS files to bypass the proxy cleanly, avoiding rendering loops
     await page.route('**/api/**', async (route) => {
@@ -14,7 +29,7 @@ test.describe('Login Page', () => {
         const headers = { ...request.headers() };
 
         // Inject the required domain destination so the Ingress knows where to go
-        headers['Host'] = 'frontend.staging.posts.com';
+        //headers['Host'] = 'frontend.staging.posts.com';
 
         // Append the OpenTelemetry context tracing metrics
         headers['traceparent'] = traceparent;
