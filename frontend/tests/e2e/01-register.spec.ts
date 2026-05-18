@@ -1,33 +1,11 @@
 import { test, expect } from '@playwright/test';
 
 
-
-
-
-
-
 test.describe('Register Page', () => {
   test.beforeEach(async ({ page }) => {
-      // 👇 PASTE THE DEBUGGING SCRIPTS HERE 👇
-  // This catches standard console logs, console.error, and OpenTelemetry debug messages
-  page.on('console', msg => {
-    console.log(`BROWSER LOG [${msg.type()}]: ${msg.text()}`);
-  });
-
-  // This catches uncaught JavaScript errors that cause the tracer to crash
-  page.on('pageerror', exception => {
-    console.error(`BROWSER EXCEPTION: ${exception.message}`);
-  });
-
-  // This catches hidden network failures (like CORS blocks or 404s on /v1/traces)
-  page.on('requestfailed', request => {
-    console.error(`BROWSER FAILED REQUEST: ${request.url()} - Error: ${request.failure()?.errorText}`);
-  });
-  // 👆 END OF DEBUGGING SCRIPTS 👆
-
+  
     await page.goto('/register'); // Adjust to your actual registration route
     
-   
   });
 
 
