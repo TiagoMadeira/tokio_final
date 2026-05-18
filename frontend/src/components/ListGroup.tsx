@@ -22,15 +22,19 @@ function ListGroup ({items, heading, onDeletePost, onEditPost}: Props) {
             ) : (
                 /* Use a responsive grid: 1 col on mobile, 2 on medium, 3 on large screens */
                 <div className="row g-4">
-                    {items.map((item) => (
-                        <div className="col-12 col-md-6 col-lg-4" key={item.id}>
+                    {items.map((item) => {
+                        
+                        const targetId = Number(item.id);
+                        return(
+                        
+                        <div className="col-12 col-md-6 col-lg-4" key={targetId}>
                             <PostItem 
                                 post={item} 
-                                onDelete={() => onDeletePost(item.id!)} 
+                                onDelete={() => onDeletePost(targetId!)} 
                                 onEdit={() => onEditPost(item)} 
                             />
                         </div>
-                    ))}
+                    )})}
                 </div>
             )}
         </div>
