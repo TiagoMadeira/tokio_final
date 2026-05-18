@@ -12,7 +12,7 @@ RUN if [ "$NODE_ENV" = "production" ]; then \
       npm ci; \
     fi
 
-COPY . .
+COPY ./app ./app
 
 RUN npx vite build --mode ${NODE_ENV}
 
