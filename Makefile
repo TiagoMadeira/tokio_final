@@ -3,37 +3,42 @@ docker_password = "" #Dockerhub access token
 docker_email = "" #Dockerhub account email
 
 WSL_DISTRO := Ubuntu
+WSL_USER := ubuntu
 
+################################################################################can ran locally################################################################################
 start_minikube:
-	@echo starting minikube ...
-	minikube start --driver=docker
-	@echo enable ingress
-	minikube addons enable ingress
-	@echo wait ngingx ingress readiness
-	kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=120s
+	@echo "Checking Minikube status..."
+	@if minikube status >/dev/null 2>&1; then \
+		echo "Minikube is already running."; \
+	else \
+		echo "Starting Minikube..."; \
+		minikube start --driver=docker; \
+		echo "Enabling Ingress addon..."; \
+		minikube addons enable ingress; \
+	fi
+	@echo "Waiting for nginx ingress readiness..."
+	@kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=120s
 
 start_jaeger_server:
-	@echo create observability namespace
-	kubectl create namespace observability
-	@echo applying configmap files
-	kubectl apply -f k8s-configs/observability/configmaps/jaeger-configmap.yaml
-	kubectl apply -f k8s-configs/observability/configmaps/jaeger-ui-config.yaml
-	@echo applying deployment
-	kubectl apply -f k8s-configs/observability/manifests/jaeger-deployment.yaml
-	@echo applying ingress
-	kubectl apply -f k8s-configs/observability/ingress/jaeger-ingress.yaml
+	@echo "Checking for observability namespace..."
+	@if ! kubectl get namespace observability >/dev/null 2>&1; then \
+		echo "Creating observability namespace..."; \
+		kubectl create namespace observability; \
+	fi
+	@echo "Applying configurations (idempotent)..."
+	@kubectl apply -f k8s-configs/observability/configmaps/jaeger-configmap.yaml
+	@kubectl apply -f k8s-configs/observability/configmaps/jaeger-ui-config.yaml
+	@kubectl apply -f k8s-configs/observability/manifests/jaeger-deployment.yaml
+	@kubectl apply -f k8s-configs/observability/ingress/jaeger-ingress.yaml
 
-start_local_development_server:
-	@echo Building images this might take a few minutes when runing for the first time
-	powershell -Command "& { \
-    minikube -p minikube docker-env --shell powershell | Invoke-Expression; \
-    docker build --build-arg APP_ENV=dev -t tokio-rest-service:latest rest_service; \
-    docker build --build-arg APP_ENV=dev -t tokio-post-service:latest post_service; \
-    docker build --build-arg APP_ENV=dev -t tokio-auth-service:latest auth_service; \
-    docker build -t frontend:latest frontend; \
-	}"
-	@echo Unset docker minikube env
-	powershell -Command "minikube docker-env -u | Invoke-Expression" -ErrorAction SilentlyContinue
+
+start_development_server:
+	@echo "Building images directly inside Minikube..."
+	@eval $$(minikube -p minikube docker-env) && \
+	docker build --build-arg APP_ENV=dev -t tokio-rest-service:latest rest_service && \
+	docker build --build-arg APP_ENV=dev -t tokio-post-service:latest post_service && \
+	docker build --build-arg APP_ENV=dev -t tokio-auth-service:latest auth_service && \
+	docker build -t frontend:latest frontend
 	@echo create development namespace
 	kubectl create namespace development
 	@echo appling pods secrets
@@ -53,30 +58,44 @@ start_local_development_server:
 	@echo applying ingresses
 	kubectl apply -f k8s-configs/development/ingress/frontend-posts-ingress.yaml
 
+rollout_development:
+	@echo Building images this might take a few minutes when runing for the first time
+	@echo "Building images directly inside Minikube..."
+	@eval $$(minikube -p minikube docker-env) && \
+	docker build --build-arg APP_ENV=dev -t tokio-rest-service:latest rest_service && \
+	docker build --build-arg APP_ENV=dev -t tokio-post-service:latest post_service && \
+	docker build --build-arg APP_ENV=dev -t tokio-auth-service:latest auth_service && \
+	docker build -t frontend:latest frontend
+	@echo appling pods secrets
+	kubectl apply -f k8s-configs/development/secrets/auth-service-secrets.yaml
+	@echo applying config files
+	kubectl apply -f k8s-configs/development/configmaps/frontend-configmap.yaml
+	kubectl apply -f k8s-configs/development/configmaps/auth-service-configmap.yaml
+	kubectl apply -f k8s-configs/development/configmaps/post-service-configmap.yaml
+	kubectl apply -f k8s-configs/development/configmaps/rest-service-configmap.yaml
+	@echo rollout deployments
+	kubectl rollout restart deployment frontend-deployment -n development
+	kubectl rollout restart deployment auth-service-deployment -n development
+	kubectl rollout restart deployment post-service-deployment -n development
+	kubectl rollout restart deployment rest-service-deployment -n development
+
 expose_services:
-	@echo "Waiting for services to be available "
-	kubectl wait --namespace development --for=condition=ready pod --all --timeout=240s
-	kubectl wait --namespace observability --for=condition=ready pod --all --timeout=240s
-	@echo "All services are ready!"
-	@echo Port fowarding app and observability server
-	start /B kubectl port-forward service/frontend-internal-service 3000:80 -n development > nul 2>&1
-	start /B kubectl port-forward service/jaeger 8000:16686 -n observability > nul 2>&1
-	@echo Opening Minikube tunnel
-	start /B minikube tunnel > nul 2>&1
-	@echo Portfoward and tunnel available!
-	@echo " Localhost Access:"
-	@echo "   - APP:    http://localhost:3000"
-	@echo "   - Jaeger:     http://localhost:8000"
-	@echo Please had the following lines to your hosts file for https domain access
-	@echo 127.0.0.1 frontend.development.posts.com
-	@echo 127.0.0.1 tokio.observability.jaeger.com
-	@pause
+	@echo exposing services please add the following lines to the your hosts files:
+	@echo ::1 posts.com //this is the production server
+	@echo ::1 tokio.observability.jaeger.com
+	@echo ::1 frontend.development.posts.com
+	@echo "Starting Minikube Tunnel"
+	minikube tunnel
 
 	
+start_local_development:  start_minikube start_jaeger_server start_development_server expose_services
 
-start_local_development:  start_minikube start_jaeger_server start_local_development_server expose_services
+minikube_prune:
+	minikube ssh
+	docker system prune -af
+	exit
 
-
+################################################## Used only in CI "################################################################################
 
 start_staging_environment:
 	@echo create staging namespace
@@ -122,39 +141,6 @@ start_production_environment:
 	kubectl apply -f k8s-configs/production/ingress/frontend-posts-ingress.yaml
 
 
-expose_production:
-	@echo production cluster will be exposed please add the following lines to the your hosts files:
-	@echo ::1 posts.com
-	@echo ::1 tokio.observability.jaeger.com
-	@echo "Starting Minikube Tunnel inside WSL natively..."
-	@powershell.exe -Command "\
-		wsl minikube tunnel;
-	
-
-rollout_local_development:
-	@echo Building images this might take a few minutes when runing for the first time
-	powershell -Command "& { \
-    minikube -p minikube docker-env --shell powershell | Invoke-Expression; \
-    docker build --build-arg APP_ENV=dev -t tokio-rest-service:latest rest_service; \
-    docker build --build-arg APP_ENV=dev -t tokio-post-service:latest post_service; \
-    docker build --build-arg APP_ENV=dev -t tokio-auth-service:latest auth_service; \
-    docker build -t frontend:latest frontend; \
-	}"
-	@echo Unset docker minikube env
-	powershell -Command "minikube docker-env -u | Invoke-Expression" -ErrorAction SilentlyContinue
-	@echo appling pods secrets
-	kubectl apply -f k8s-configs/development/secrets/auth-service-secrets.yaml
-	@echo applying config files
-	kubectl apply -f k8s-configs/development/configmaps/frontend-configmap.yaml
-	kubectl apply -f k8s-configs/development/configmaps/auth-service-configmap.yaml
-	kubectl apply -f k8s-configs/development/configmaps/post-service-configmap.yaml
-	kubectl apply -f k8s-configs/development/configmaps/rest-service-configmap.yaml
-	@echo rollout deployments
-	kubectl rollout restart deployment frontend-deployment -n development
-	kubectl rollout restart deployment auth-service-deployment -n development
-	kubectl rollout restart deployment post-service-deployment -n development
-	kubectl rollout restart deployment rest-service-deployment -n development
-
 rollout_staging:
 	@echo applying config files
 	kubectl apply -f k8s-configs/staging/configmaps/frontend-configmap.yaml
@@ -179,7 +165,3 @@ rollout_production:
 	kubectl rollout restart deployment post-service-deployment -n production
 	kubectl rollout restart deployment rest-service-deployment -n production
 	
-minikube_prune:
-	minikube ssh
-	docker system prune -af
-	exit
