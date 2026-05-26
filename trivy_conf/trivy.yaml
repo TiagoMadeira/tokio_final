@@ -20,5 +20,9 @@ severity:
 vulnerability:
   ignore-unfixed: false
 
+misconfiguration:
+  namespaces:
+    - tiagomadeiradock
+
 db:
   repository: public.ecr.aws/aquasecurity/trivy-db:2
