@@ -18,6 +18,8 @@ spec:
       - name: rest-service
         image: tokio-rest-service:latest
         imagePullPolicy: Never
+        securityContext:
+          allowPrivilegeEscalation: false
         resources:
           limits:
             memory: 512Mi

@@ -19,8 +19,9 @@ spec:
       containers:
       - name: auth-service
         image: tiagomadeiradock/tokio-auth-service:latest
-
         imagePullPolicy: Always
+        securityContext:
+          allowPrivilegeEscalation: false
         resources:
           limits:
             memory: 512Mi

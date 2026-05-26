@@ -18,6 +18,8 @@ spec:
       - name: post-service
         image: tiagomadeiradock/tokio-post-service:latest
         imagePullPolicy: Always
+        securityContext:
+          allowPrivilegeEscalation: false
         resources:
           limits:
             memory: 512Mi

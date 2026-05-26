@@ -88,7 +88,7 @@ expose_services:
 	minikube tunnel
 
 	
-start_development:  start_minikube start_jaeger_server start_development_server expose_services
+start_development: start_minikube start_jaeger_server start_development_server expose_services
 
 minikube_prune:
 	minikube ssh

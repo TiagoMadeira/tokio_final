@@ -18,6 +18,8 @@ spec:
       containers:
       - name: jaeger
         image: jaegertracing/all-in-one:latest
+        securityContext:
+          allowPrivilegeEscalation: false
         args: 
           - "--query.ui-config=/etc/jaeger-ui/jaeger-ui.json"
         volumeMounts:

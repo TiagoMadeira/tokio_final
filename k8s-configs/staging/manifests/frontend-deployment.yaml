@@ -18,6 +18,8 @@ spec:
       - name: frontend
         image: tiagomadeiradock/tokio-frontend:latest
         imagePullPolicy: Always
+        securityContext:
+          allowPrivilegeEscalation: false
         resources:
           limits:
             memory: 512Mi

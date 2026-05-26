@@ -18,6 +18,8 @@ spec:
       - name: auth-service
         image: tokio-auth-service:latest
         imagePullPolicy: Never
+        securityContext:
+          allowPrivilegeEscalation: false
         resources:
           limits:
             memory: 512Mi

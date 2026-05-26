@@ -18,6 +18,8 @@ spec:
       - name: frontend
         image: frontend:latest
         imagePullPolicy: Never
+        securityContext:
+          allowPrivilegeEscalation: false
         resources:
           limits:
             memory: 512Mi

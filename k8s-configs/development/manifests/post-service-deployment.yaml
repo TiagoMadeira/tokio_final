@@ -18,6 +18,8 @@ spec:
       - name: post-service
         image: tokio-post-service:latest
         imagePullPolicy: Never
+        securityContext:
+          allowPrivilegeEscalation: false
         resources:
           limits:
             memory: 512Mi
