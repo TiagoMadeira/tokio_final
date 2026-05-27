@@ -20,6 +20,9 @@ spec:
         imagePullPolicy: Always
         securityContext:
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
         resources:
           limits:
             memory: 512Mi
@@ -34,16 +37,25 @@ spec:
         env:
           - name: ENV
             value: "prod"
+
+          - name: ALGORITHM
+            valueFrom:
+              secretKeyRef:
+                name: auth-service-secrets
+                key: algorithm
+
           - name: ACCESS_TOKEN_EXPIRE_MINUTES
             valueFrom:
-             configMapKeyRef:
-                name: auth-service-configmap
+             secretKeyRef:
+                name: auth-service-secrets
                 key: access_token_expire_minutes
+
           - name: SECRET_KEY
             valueFrom:
               secretKeyRef:
                 name: auth-service-secrets
                 key: secret-key
+                
           - name: OTEL_SERVICE_NAME
             valueFrom:
              configMapKeyRef:
