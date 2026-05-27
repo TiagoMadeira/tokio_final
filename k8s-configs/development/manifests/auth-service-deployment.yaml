@@ -20,6 +20,9 @@ spec:
         imagePullPolicy: Never
         securityContext:
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
         resources:
           limits:
             memory: 512Mi
@@ -34,19 +37,27 @@ spec:
         env:
           - name: DEBUG
             valueFrom:
-             configMapKeyRef:
+              secretKeyRef:
                 name: auth-service-configmap
                 key: debug
+
           - name: ACCESS_TOKEN_EXPIRE_MINUTES
             valueFrom:
-             configMapKeyRef:
+              secretKeyRef:
                 name: auth-service-configmap
                 key: access_token_expire_minutes
+
           - name: SECRET_KEY
             valueFrom:
               secretKeyRef:
                 name: auth-service-secrets
                 key: secret-key
+
+          - name: ALGORITHM
+            valueFrom:
+              secretKeyRef:
+                name: auth-service-secrets
+                key: algorithm
           
           - name: OTEL_SERVICE_NAME
             valueFrom:

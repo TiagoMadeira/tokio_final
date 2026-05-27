@@ -20,6 +20,9 @@ spec:
         imagePullPolicy: Never
         securityContext:
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
         resources:
           limits:
             memory: 512Mi
