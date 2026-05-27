@@ -37,14 +37,14 @@ spec:
         env:
           - name: DEBUG
             valueFrom:
-              secretKeyRef:
+              configMapKeyRef:
                 name: auth-service-configmap
                 key: debug
 
           - name: ACCESS_TOKEN_EXPIRE_MINUTES
             valueFrom:
               secretKeyRef:
-                name: auth-service-configmap
+                name: auth-service-secrets
                 key: access_token_expire_minutes
 
           - name: SECRET_KEY
