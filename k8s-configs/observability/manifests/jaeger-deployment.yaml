@@ -15,11 +15,22 @@ spec:
       labels:
         app: jaeger
     spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
       containers:
       - name: jaeger
         image: jaegertracing/all-in-one:latest
         securityContext:
+          runAsUser: 10001        
+          runAsGroup: 10001    
           allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
+
         args: 
           - "--query.ui-config=/etc/jaeger-ui/jaeger-ui.json"
         volumeMounts:
