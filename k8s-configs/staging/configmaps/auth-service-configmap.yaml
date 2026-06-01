@@ -4,6 +4,7 @@ metadata:
   name: auth-service-configmap
   namespace: staging
 data:
+  database-url: "/home/appuser/app/data/database.db"
   otel-service-name: staging-auth-service
   otel-exporter-insecure: "true"
   otel-exporter-endpoint: http://jaeger.observability.svc.cluster.local:4317

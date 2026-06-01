@@ -15,16 +15,27 @@ spec:
         app: post-service
     spec:
       securityContext:
-        fsGroup: 999
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
       containers:
       - name: post-service
         image: tiagomadeiradock/tokio-post-service:latest
         imagePullPolicy: Always
+        workingDir: /home/appuser   
         securityContext:
+          runAsUser: 10001     # Matches the UID 10001 from your Dockerfile
+          runAsGroup: 10001 
           allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
           capabilities:
             drop:
               - ALL
+
+        volumeMounts:
+          - name: app-write-space
+            mountPath: /home/appuser/app/data
+
         resources:
           limits:
             memory: 512Mi
@@ -73,6 +84,10 @@ spec:
              configMapKeyRef:
                 name: post-service-configmap
                 key: otel-logs-exporter
+                
+      volumes:
+        - name: app-write-space
+          emptyDir: {}
 
       imagePullSecrets:
       - name: regcred
