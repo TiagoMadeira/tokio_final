@@ -27,6 +27,7 @@ spec:
           runAsUser: 10001     # Matches the UID 10001 from your Dockerfile
           runAsGroup: 10001    # Matches the GID 10001 from your Dockerfile
           allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
           capabilities:
             drop:
               - ALL
