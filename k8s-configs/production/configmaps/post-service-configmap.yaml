@@ -4,6 +4,7 @@ metadata:
   name: post-service-configmap
   namespace: production
 data:
+  database-url: "/home/appuser/app/data/database.db"
   auth_service_url: http://auth-internal-service.production.svc.cluster.local:8888
   otel-service-name: production-post-service
   otel-exporter-insecure: "true"

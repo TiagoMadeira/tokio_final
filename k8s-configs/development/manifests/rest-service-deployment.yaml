@@ -31,6 +31,7 @@ spec:
           capabilities:
             drop:
               - ALL
+              
         resources:
           limits:
             memory: 512Mi
