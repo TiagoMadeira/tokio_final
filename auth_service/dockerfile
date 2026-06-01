@@ -1,28 +1,30 @@
 FROM python:3.12.3-slim
 
 ARG APP_ENV
-# 1. Create the user and group
-RUN groupadd -r appuser && useradd -r -g appuser appuser
+RUN groupadd -g 10001 appuser && \
+    useradd -u 10001 -g 10001 -m -s /bin/bash appuser
 
-# 2. Create the app directory and set ownership as appuser
-# This ensures SQLite can create journal files in the folder
-RUN mkdir -p /home/appuser/app && chown -R appuser:appuser /home/appuser/app
+# 1. Set the working directory to the user's home folder root
+WORKDIR /home/appuser
 
-# 3. Set the Working Directory
-WORKDIR /home/appuser/app
+# 2. Copy requirements into the current folder (/home/appuser/)
+COPY --chown=appuser:appuser requirements-${APP_ENV}.txt .
 
-# 4. Install dependencies as root (standard practice for speed/caching)
-COPY requirements-${APP_ENV}.txt .
-RUN python3 -m venv /home/appuser/app/.venv && \
-    /home/appuser/app/.venv/bin/pip install --no-cache-dir --upgrade pip==26.0 && \
-    /home/appuser/app/.venv/bin/pip install --no-cache-dir -r requirements-${APP_ENV}.txt
+USER 10001
 
-# 5. Switch to the non-root user
-USER appuser
+ENV PYTHONDONTWRITEBYTECODE=1
 
-# 6. Copy the code into the WORKDIR (which is already owned by appuser)
+RUN pip install --no-cache-dir --upgrade pip==26.0 && \
+    pip install --no-cache-dir -r requirements-${APP_ENV}.txt
+
+# 3. Copy the folder itself, creating /home/appuser/app/
 COPY --chown=appuser:appuser ./app ./app
 
-# 7. Use the venv explicitly in the CMD
-ENV PATH="/home/appuser/app/.venv/bin:$PATH"
-CMD ["fastapi", "run", "app/main.py", "--host", "0.0.0.0"]
+# 4. Create the data subfolder inside the app folder for SQLite
+RUN mkdir -p /home/appuser/app/data
+
+# 5. Set PYTHONPATH to the parent directory
+ENV PYTHONPATH=/home/appuser
+
+# 6. Run uvicorn using module notation from /home/appuser
+CMD ["/usr/local/bin/python3", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

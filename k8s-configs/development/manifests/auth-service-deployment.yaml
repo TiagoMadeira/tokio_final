@@ -14,15 +14,28 @@ spec:
       labels:
         app: auth-service
     spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
       containers:
       - name: auth-service
         image: tokio-auth-service:latest
         imagePullPolicy: Never
+        workingDir: /home/appuser
         securityContext:
+          runAsUser: 10001     # Matches the UID 10001 from your Dockerfile
+          runAsGroup: 10001 
+          readOnlyRootFilesystem: true
           allowPrivilegeEscalation: false
           capabilities:
             drop:
               - ALL
+
+        volumeMounts:
+          - name: app-write-space
+            mountPath: /home/appuser/app/data
+
         resources:
           limits:
             memory: 512Mi
@@ -59,6 +72,12 @@ spec:
                 name: auth-service-secrets
                 key: algorithm
           
+          - name: DATABASE_URL
+            valueFrom:
+             configMapKeyRef:
+                name: auth-service-configmap
+                key: database-url
+
           - name: OTEL_SERVICE_NAME
             valueFrom:
              configMapKeyRef:
@@ -88,6 +107,10 @@ spec:
              configMapKeyRef:
                 name: auth-service-configmap
                 key: otel-logs-exporter
+
+      volumes:
+        - name: app-write-space
+          emptyDir: {}
 
               
 ---

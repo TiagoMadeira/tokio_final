@@ -14,15 +14,28 @@ spec:
       labels:
         app: post-service
     spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
       containers:
       - name: post-service
         image: tokio-post-service:latest
         imagePullPolicy: Never
+        workingDir: /home/appuser   
         securityContext:
+          runAsUser: 10001     # Matches the UID 10001 from your Dockerfile
+          runAsGroup: 10001 
           allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
           capabilities:
             drop:
               - ALL
+
+        volumeMounts:
+          - name: app-write-space
+            mountPath: /home/appuser/app/data
+
         resources:
           limits:
             memory: 512Mi
@@ -45,6 +58,13 @@ spec:
              configMapKeyRef:
                 name: post-service-configmap
                 key: auth_service_url
+
+          - name: DATABASE_URL
+            valueFrom:
+             configMapKeyRef:
+                name: post-service-configmap
+                key: database-url
+
           - name: OTEL_SERVICE_NAME
             valueFrom:
              configMapKeyRef:
@@ -74,6 +94,10 @@ spec:
              configMapKeyRef:
                 name: post-service-configmap
                 key: otel-logs-exporter
+
+      volumes:
+        - name: app-write-space
+          emptyDir: {}
               
 ---
 apiVersion: v1

@@ -35,10 +35,10 @@ start_jaeger_server:
 start_development_server:
 	@echo "Building images directly inside Minikube..."
 	@eval $$(minikube -p minikube docker-env) && \
-	docker build --build-arg APP_ENV=dev -t tokio-rest-service:latest rest_service && \
-	docker build --build-arg APP_ENV=dev -t tokio-post-service:latest post_service && \
-	docker build --build-arg APP_ENV=dev -t tokio-auth-service:latest auth_service && \
-	docker build -t frontend:latest frontend
+	docker build --no-cache --build-arg APP_ENV=dev -t tokio-rest-service:latest rest_service && \
+	docker build --no-cache --build-arg APP_ENV=dev -t tokio-post-service:latest post_service && \
+	docker build --no-cache --build-arg APP_ENV=dev -t tokio-auth-service:latest auth_service && \
+	docker build --no-cache -t frontend:latest frontend
 	@echo create development namespace
 	kubectl create namespace development
 	@echo appling pods secrets

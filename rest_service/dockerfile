@@ -3,7 +3,8 @@ FROM python:3.12.3-slim
 ARG APP_ENV
 
 # 1. Create the user and group
-RUN groupadd -r appuser && useradd -r -g appuser appuser
+RUN groupadd -g 10001 appuser && \
+    useradd -u 10001 -g 10001 -m -s /bin/bash appuser
 
 # 2. Create the app directory and set ownership as AppUser
 RUN mkdir -p /home/appuser/app && chown -R appuser:appuser /home/appuser/app
@@ -18,11 +19,12 @@ RUN python3 -m venv /home/appuser/app/.venv && \
     /home/appuser/app/.venv/bin/pip install --no-cache-dir -r requirements-${APP_ENV}.txt
 
 # 5. Switch to the non-root user
-USER appuser
+USER 10001
 
 # 6. Copy the code into the WORKDIR (which is already owned by appuser)
 COPY --chown=appuser:appuser --chmod=555 ./app ./app
 
 # 7. Use the venv explicitly in the CMD
 ENV PATH="/home/appuser/app/.venv/bin:$PATH"
+
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--ssl-keyfile", "/etc/tls/tls.key", "--ssl-certfile", "/etc/tls/tls.crt"]

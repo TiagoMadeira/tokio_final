@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     SECRET_KEY : str = "sdaiushdlasdkufynvw38oiruw3owieasdenwsDFUYH"
     ALGORITHM : str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES : int = 30
+    DATABASE_URL : str = "data/database.db"
     class Config:
         env_file = f".env.local"
         

@@ -14,11 +14,18 @@ spec:
       labels:
         app: rest-service
     spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+        fsGroup: 10001 
       containers:
       - name: rest-service
         image: tokio-rest-service:latest
         imagePullPolicy: Never
         securityContext:
+          runAsUser: 10001     # Matches the UID 10001 from your Dockerfile
+          runAsGroup: 10001    # Matches the GID 10001 from your Dockerfile
           allowPrivilegeEscalation: false
           capabilities:
             drop:

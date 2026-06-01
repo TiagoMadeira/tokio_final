@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     OTEL_EXPORTER_OTLP_ENDPOINT: str = "http://jaeger:4317"
     OTEL_SERVICE_NAME: str ="post-service"
     AUTH_SERVICE_URL : str = "http://127.0.0.1:8888"
+    DATABASE_URL : str = "data/database.db"
     class Config:
         env_file = f".env.local"
         

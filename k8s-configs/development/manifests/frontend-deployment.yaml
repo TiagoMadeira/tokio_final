@@ -14,11 +14,14 @@ spec:
       labels:
         app: frontend
     spec:
+      securityContext:
+        runAsNonRoot: true
       containers:
       - name: frontend
         image: frontend:latest
         imagePullPolicy: Never
         securityContext:
+          runAsUser: 101
           allowPrivilegeEscalation: false
           capabilities:
             drop:
