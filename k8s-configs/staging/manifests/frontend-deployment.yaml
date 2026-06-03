@@ -14,12 +14,18 @@ spec:
       labels:
         app: frontend
     spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
       containers:
       - name: frontend
         image: tiagomadeiradock/tokio-frontend:latest
         imagePullPolicy: Always
         securityContext:
+          runAsUser: 101
           allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
           capabilities:
             drop:
               - ALL
@@ -34,22 +40,45 @@ spec:
           - name: http
             protocol: TCP
             containerPort: 8080
+
+        volumeMounts:
+          - name: nginx-confd
+            mountPath: /etc/nginx/conf.d
+          - name: nginx-cache
+            mountPath: /var/cache/nginx
+          - name: nginx-pid
+            mountPath: /var/run
+          - name: nginx-tmp
+            mountPath: /tmp
+
         env:
-          - name: API_URL
+          - name: BACKEND_API_URL
             valueFrom:
-             configMapKeyRef:
+              configMapKeyRef:
                 name: frontend-configmap
-                key: vite-api-url
-          - name: VITE_OTEL_SERVICE_NAME
-            valueFrom:
-             configMapKeyRef:
-                name: frontend-configmap
-                key: otel-service-name
+                key: vite-backend-api-url
+
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
             valueFrom:
-             configMapKeyRef:
+              configMapKeyRef:
                 name: frontend-configmap
                 key: otel-exporter-endpoint
+
+          - name: VITE_OTEL_SERVICE_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: frontend-configmap
+                key: vite-otel-service-name
+
+      volumes:
+        - name: nginx-confd
+          emptyDir: {}
+        - name: nginx-cache
+          emptyDir: {}
+        - name: nginx-pid
+          emptyDir: {}
+        - name: nginx-tmp
+          emptyDir: {}
 
       imagePullSecrets:
       - name: regcred
