@@ -15,6 +15,7 @@ spec:
       labels:
         app: jaeger
     spec:
+      automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
         seccompProfile:
@@ -40,9 +41,11 @@ spec:
           requests:
             cpu: "10m"
             memory: "128Mi"
+            ephemeral-storage: "50Mi"
           limits:
             cpu: "20m"
             memory: "256Mi"   
+            ephemeral-storage: "200Mi"
         env:
           - name: COLLECTOR_OTLP_ENABLED
             valueFrom:
