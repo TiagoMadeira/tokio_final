@@ -14,23 +14,21 @@ RUN if [ "$NODE_ENV" = "production" ]; then \
 
 COPY src/ ./src
 COPY public/ ./public
-COPY index.html vite.config.ts tsconfig.json tsconfig.app.json tsconfig.node.json replace-env.sh ./
+COPY index.html vite.config.ts tsconfig.json tsconfig.app.json tsconfig.node.json ./
 
 RUN npx vite build --mode ${NODE_ENV}
 
 # Serve via Nginx
 FROM nginxinc/nginx-unprivileged:stable-alpine
+
 COPY default.conf.template /etc/nginx/templates/default.conf.template
+
+COPY config.js.template /etc/nginx/templates/config.js.template
+
 COPY --from=build /app/dist /usr/share/nginx/html
-COPY replace-env.sh /docker-entrypoint.d/replace-env.sh
 
 USER root
 
-# Fix Windows line endings and make it executable
-RUN sed -i 's/\r$//' /docker-entrypoint.d/replace-env.sh && \
-    chmod +x /docker-entrypoint.d/replace-env.sh
-
-RUN chown 101:101 /docker-entrypoint.d/replace-env.sh
 RUN chown -R 101:101 /usr/share/nginx/html
 
 EXPOSE 8080

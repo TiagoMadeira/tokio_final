@@ -20,7 +20,7 @@ const exporter = new OTLPTraceExporter({
 
 const resource = defaultResource().merge(
   resourceFromAttributes({
-   [ATTR_SERVICE_NAME]: 'REPLACE_VITE_OTEL_SERVICE_NAME',
+   [ATTR_SERVICE_NAME]: (window as any).ENV?.VITE_OTEL_SERVICE_NAME || "default-service-name",
   })
 );
 

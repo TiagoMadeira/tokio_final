@@ -1,0 +1,3 @@
+window.ENV = {
+  VITE_OTEL_SERVICE_NAME: "${VITE_OTEL_SERVICE_NAME}"
+};

@@ -1,3 +1,7 @@
+
+ignorefile: ../trivy_conf/.trivyignore
+config-data: ../trivy_conf/trivy-data.yaml
+
 scan:
   scanners:
     - vuln
@@ -23,12 +27,6 @@ vulnerability:
 misconfiguration:
   namespaces:
     - tiagomadeiradock
-
-data:
-  kubernetes:
-    all_trusted_repositories:
-      - "docker.io"
-      - "registry.k8s.io"
       
 db:
   repository: public.ecr.aws/aquasecurity/trivy-db:2
