@@ -9,14 +9,14 @@ on:
       - master
 
 jobs:
-  dev:
-    uses: ./.github/workflows/build-services.yaml
-    secrets:
-      dockerhub-access-token: ${{secrets.DOCKERHUB_ACCESS_TOKEN}}
+  # dev:
+  #   uses: ./.github/workflows/build-services.yaml
+  #   secrets:
+  #     dockerhub-access-token: ${{secrets.DOCKERHUB_ACCESS_TOKEN}}
 
   staging:
     runs-on: [self-hosted-ubuntu]
-    needs: [dev]
+    #needs: [dev]
     permissions:
       security-events: write
       contents: read
@@ -186,10 +186,10 @@ jobs:
         with:
           service_path: "frontend"
 
-      - name: Clean staging enviroment for next run
-        if: always()
-        run: |
-          kubectl delete namespace staging
+      # - name: Clean staging enviroment for next run
+      #   if: always()
+      #   run: |
+      #     kubectl delete namespace staging
 
 
     
