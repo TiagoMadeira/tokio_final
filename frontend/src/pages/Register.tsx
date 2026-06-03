@@ -42,7 +42,6 @@ const RegisterPage: React.FC = () => {
         confirm_password: formData.confirmPassword,
       });
       if (response.status === 201 || response.status === 200) {
-      console.log('User created:', response.data);
       
       // 2. Show a success message to the user
       alert("Registration successful! Redirecting to login...");
