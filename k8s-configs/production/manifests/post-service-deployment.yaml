@@ -50,11 +50,19 @@ spec:
         env:
           - name: ENV
             value: "prod"
+
           - name: AUTH_SERVICE_URL
             valueFrom:
              configMapKeyRef:
                 name: post-service-configmap
                 key: auth_service_url
+          
+          - name: DATABASE_URL
+            valueFrom:
+             configMapKeyRef:
+                name: post-service-configmap
+                key: database-url
+
           - name: OTEL_SERVICE_NAME
             valueFrom:
              configMapKeyRef:
