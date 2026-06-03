@@ -1,4 +1,5 @@
 import requests
+from urllib.parse import quote, urljoin
 from app.config import settings
 from app.schemas.auth import authRegister
 from app.schemas.posts import postCreate, postUpdate
@@ -43,7 +44,11 @@ def get_posts():
     handle_responses(res)
     
 def get_posts_by_author(author: str):
-    res = requests.get(POSTS_BASE_URL + author)
+
+    safe_author = quote(author)
+    target_url = urljoin(POSTS_BASE_URL, safe_author )
+    
+    res = requests.get(target_url)
     if res.status_code == 200:
         return res.json()
    
