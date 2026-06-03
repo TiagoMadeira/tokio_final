@@ -1,5 +1,7 @@
 import requests
+import re
 from urllib.parse import quote, urljoin
+from app.exceptions import BadRequestException
 from app.config import settings
 from app.schemas.auth import authRegister
 from app.schemas.posts import postCreate, postUpdate
@@ -45,10 +47,10 @@ def get_posts():
     
 def get_posts_by_author(author: str):
 
-    safe_author = quote(author)
-    target_url = urljoin(POSTS_BASE_URL, safe_author )
-    
-    res = requests.get(target_url)
+    if not re.match(r"^[a-zA-Z0-9\-]+$", author):
+        raise BadRequestException(detail="Only alfanumeric characters allowed for author name")
+
+    res = requests.get(POSTS_BASE_URL + author)
     if res.status_code == 200:
         return res.json()
    
