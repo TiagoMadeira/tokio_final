@@ -32,15 +32,15 @@ const EditPostModal = ({ post, onUpdate, onCancel }: Props) => {
   return (
     <>
       {/* Dark Backdrop */}
-      <div 
+      <button  
         className="modal-backdrop show" 
         style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} 
         onClick={onCancel}
-      ></div>
+      ></button >
 
       {/* Modal Dialog */}
-      <div className="modal show d-block" tabIndex={-1} role="dialog">
-        <div className="modal-dialog modal-dialog-centered" role="document">
+      <dialog className="modal show d-block" tabIndex={-1} role="dialog">
+        <div className="modal-dialog modal-dialog-centered">
           <div className="modal-content shadow-lg">
             <div className="modal-header">
               <h5 className="modal-title">Edit Post</h5>
@@ -87,7 +87,7 @@ const EditPostModal = ({ post, onUpdate, onCancel }: Props) => {
             </form>
           </div>
         </div>
-      </div>
+      </dialog>
     </>
   );
 };
