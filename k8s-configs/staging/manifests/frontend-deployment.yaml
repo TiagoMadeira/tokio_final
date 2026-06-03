@@ -25,7 +25,7 @@ spec:
         image: tiagomadeiradock/tokio-frontend:latest
         imagePullPolicy: Always
         securityContext:
-          runAsUser: 101
+          runAsUser: 10005
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
           capabilities:
