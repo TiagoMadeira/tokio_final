@@ -4,6 +4,6 @@ metadata:
   name: frontend-configmap
   namespace: production
 data:
-  vite-api-url: https://rest-internal-service.production.svc.cluster.local:80
+  vite-backend-api-url: https://rest-internal-service.production.svc.cluster.local:80
   otel-service-name: production-frontend
   otel-exporter-endpoint: http://jaeger.observability.svc.cluster.local:4318
