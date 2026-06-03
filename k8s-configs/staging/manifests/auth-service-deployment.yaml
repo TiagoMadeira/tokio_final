@@ -67,6 +67,12 @@ spec:
               secretKeyRef:
                 name: auth-service-secrets
                 key: secret-key
+
+          - name: DATABASE_URL
+            valueFrom:
+             configMapKeyRef:
+                name: auth-service-configmap
+                key: database-url
                 
           - name: OTEL_SERVICE_NAME
             valueFrom:
