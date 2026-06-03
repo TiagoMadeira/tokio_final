@@ -15,14 +15,14 @@ def create_post(data :postCreate, token):
     
     
 def delete_post(post_id :int , token):
-    res = requests.delete(POSTS_BASE_URL + post_id , headers = auth_header(token) )
+    res = requests.delete(POSTS_BASE_URL + "{0}".format(post_id) , headers = auth_header(token) )
     if res.status_code == 200:
         return res.json()
     
     handle_responses(res)
 
 def update_post(post_id :int, data :postUpdate, token):
-    res = requests.patch(POSTS_BASE_URL + post_id , data=data.model_dump_json(), headers = json_header() | auth_header(token) )
+    res = requests.patch(POSTS_BASE_URL + "{0}".format(post_id) , data=data.model_dump_json(), headers = json_header() | auth_header(token) )
     if res.status_code == 200:
         return res.json()
     
