@@ -1,6 +1,6 @@
 
-ignorefile: /trivy_conf/.trivyignore
-config-data: /trivy_conf/trivy-data.yaml
+ignorefile: trivy_conf/.trivyignore
+config-data: trivy_conf/trivy-data.yaml
 
 scan:
   scanners:
