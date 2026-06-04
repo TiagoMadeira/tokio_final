@@ -33,7 +33,7 @@ describe('EditPostModal', () => {
   it('calls onCancel when the Close or Cancel button is clicked', () => {
     render(<EditPostModal post={mockPost} onUpdate={mockOnUpdate} onCancel={mockOnCancel} />);
     
-    fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
+    fireEvent.click(screen.getByText('Cancel'));
     expect(mockOnCancel).toHaveBeenCalledTimes(1);
   });
 
@@ -45,8 +45,8 @@ describe('EditPostModal', () => {
 
     const titleInput = screen.getByLabelText(/title/i);
     fireEvent.change(titleInput, { target: { value: 'New Title' } });
-    
-    fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
+
+    fireEvent.click(screen.getByText('Save Changes'));
 
     await waitFor(() => {
       expect(PostService.updatePost).toHaveBeenCalledWith(mockPost.id, expect.objectContaining({
@@ -58,19 +58,20 @@ describe('EditPostModal', () => {
 
   it('shows an error alert message when the service fails', async () => {
     const errorMessage = 'Server Error';
+    // Ensure your mock rejects with an error object containing your message
     (PostService.updatePost as any).mockRejectedValueOnce(new Error(errorMessage));
 
     render(<EditPostModal post={mockPost} onUpdate={mockOnUpdate} onCancel={mockOnCancel} />);
-    
-    fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
 
-    // Verify the UI alert appears instead of window.alert
-    await waitFor(() => {
-      const alert = screen.getByRole('alert');
-      expect(alert).toBeInTheDocument();
-      expect(alert).toHaveTextContent(errorMessage);
-    });
-    
+    // 1. Target the form or click the button using a form submission
+    const saveButton = screen.getByRole('button', { name: /save changes/i, hidden: true});
+    fireEvent.click(saveButton);
+
+    // 2. Await the async DOM update properly using findByRole (cleaner than waitFor)
+    const alert = await screen.findByRole('alert', {hidden: true});
+
+    expect(alert).toBeInTheDocument();
+    expect(alert).toHaveTextContent(errorMessage);
     expect(mockOnUpdate).not.toHaveBeenCalled();
   });
 });
