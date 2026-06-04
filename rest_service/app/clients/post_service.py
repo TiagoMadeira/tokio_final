@@ -47,7 +47,7 @@ def get_posts():
     
 def get_posts_by_author(author: str):
 
-    if not re.match(r"^[a-zA-Z0-9\-]+$", author):
+    if not re.match(r"^[a-zA-Z0-9\-\_]+$", author):
         raise BadRequestException(detail="Only alfanumeric characters allowed for author name")
 
     res = requests.get(POSTS_BASE_URL + "/{0}".format(author))
