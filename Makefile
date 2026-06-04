@@ -32,13 +32,15 @@ start_jaeger_server:
 	@kubectl apply -f k8s-configs/observability/ingress/jaeger-ingress.yaml
 
 
-start_development_server:
+build_images:
 	@echo "Building images directly inside Minikube..."
 	@eval $$(minikube -p minikube docker-env) && \
 	docker build --no-cache --build-arg APP_ENV=dev -t tokio-rest-service:latest rest_service && \
 	docker build --no-cache --build-arg APP_ENV=dev -t tokio-post-service:latest post_service && \
 	docker build --no-cache --build-arg APP_ENV=dev -t tokio-auth-service:latest auth_service && \
 	docker build --no-cache -t frontend:latest frontend
+
+start_development_server:
 	@echo create development namespace
 	kubectl create namespace development
 	@echo appling pods secrets
@@ -88,7 +90,7 @@ expose_services:
 	minikube tunnel
 
 	
-start_development: start_minikube start_jaeger_server start_development_server expose_services
+start_development: start_minikube start_jaeger_server build_images start_development_server expose_services
 
 minikube_prune:
 	minikube ssh
