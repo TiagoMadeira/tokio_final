@@ -36,6 +36,7 @@ const EditPostModal = ({ post, onUpdate, onCancel }: Props) => {
         className="modal-backdrop show" 
         style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} 
         onClick={onCancel}
+        aria-label="Cancel" 
       ></button >
 
       {/* Modal Dialog */}
