@@ -37,7 +37,7 @@ jobs:
       - name: Pip audit Auth Service  # Uses python version in .python-version file
         run: |
           cd  auth_service
-          python -m venv .venvd
+          python -m venv .venv
           source .venv/bin/activate
           python -m pip install pip==${{vars.PIP_VERSION}}
           pip install pip-audit
