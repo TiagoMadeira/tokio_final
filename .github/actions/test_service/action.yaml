@@ -36,7 +36,7 @@ runs:
         python -m venv $SERVICE_PATH/.venv
         source $SERVICE_PATH/.venv/bin/activate
         
-        pip install -r requirements-stg.txt
+        pip install -r $SERVICE_PATH/requirements-stg.txt
         
         export PYTHONPATH=$SERVICE_PATH
         pytest $SERVICE_PATH/tests/ --cov=$SERVICE_PATH/app --cov-report=xml:$SERVICE_PATH/coverage.xml
