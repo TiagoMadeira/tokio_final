@@ -173,19 +173,27 @@ jobs:
         shell: bash
         run: |
           if [ -n "$JWT_SECRET" ]; then
-          echo "SECRET_KEY=$JWT_SECRET" >> $GITHUB_ENV
+            echo "SECRET_KEY=$JWT_SECRET" >> $GITHUB_ENV
           fi
 
-          python -m venv "$GITHUB_WORKSPACE/$SERVICE_PATH/.venv"
-          source "$GITHUB_WORKSPACE/$SERVICE_PATH/.venv/bin/activate"
+          # 1. Setup the virtual environment using simple paths
+          python -m venv $SERVICE_PATH/.venv
+          source $SERVICE_PATH/.venv/bin/activate
         
-          pip install -r "$GITHUB_WORKSPACE/$SERVICE_PATH/requirements-stg.txt"
+          pip install -r $SERVICE_PATH/requirements-stg.txt
         
-          export PYTHONPATH="$GITHUB_WORKSPACE/$SERVICE_PATH"
+          # 2. Tell Python where your modules are relative to the execution root
+          export PYTHONPATH=$PWD/$SERVICE_PATH
         
-          pytest "$GITHUB_WORKSPACE/$SERVICE_PATH/tests/" \
-            --cov="$GITHUB_WORKSPACE/$SERVICE_PATH/app" \
-            --cov-report=xml:"$GITHUB_WORKSPACE/$SERVICE_PATH/coverage.xml"
+          # 3. CRITICAL: Force pytest to write the XML to a generic root file name
+          # Using only the file name ensures it doesn't try to nest inside subfolders
+          pytest $SERVICE_PATH/tests/ \
+            --cov=$SERVICE_PATH/app \
+            --cov-report=xml:temp_auth_coverage.xml
+
+          # 4. MANUALLY MOVE THE FILE TO THE EXACT CORRECT TARGET
+          # This guarantees the file lands right inside your true repository subfolder
+          mv temp_auth_coverage.xml $SERVICE_PATH/coverage.xml
 
 
       - name: post service unit testing
