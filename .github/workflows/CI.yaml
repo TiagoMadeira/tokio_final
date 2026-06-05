@@ -165,10 +165,9 @@ jobs:
         run: |
           kubectl port-forward service/frontend-internal-service 3000:80 -n staging &
           sleep 5
-
-      - name:  auth service unit testing
+      - name: auth service unit testing
         env:
-          JWT_SECRET: ${{secrets.JWT_KEY}}
+          JWT_SECRET: ${{ secrets.JWT_KEY }}
           SERVICE_PATH: "auth_service"
         shell: bash
         run: |
@@ -176,25 +175,30 @@ jobs:
             echo "SECRET_KEY=$JWT_SECRET" >> $GITHUB_ENV
           fi
 
-          # 1. Setup the virtual environment using simple paths
-          python -m venv $SERVICE_PATH/.venv
-          source $SERVICE_PATH/.venv/bin/activate
+          # 1. Initialize the virtual environment directory structure
+          python3 -m venv $SERVICE_PATH/.venv
         
-          pip install -r $SERVICE_PATH/requirements-stg.txt
+          # 2. Install dependencies by calling the isolated pip binary directly
+          $SERVICE_PATH/.venv/bin/pip install -r $SERVICE_PATH/requirements-stg.txt
         
-          # 2. Tell Python where your modules are relative to the execution root
+          # 3. Anchor module tracking relative to your root workspace
           export PYTHONPATH=$PWD/$SERVICE_PATH
         
-          # 3. CRITICAL: Force pytest to write the XML to a generic root file name
-          # Using only the file name ensures it doesn't try to nest inside subfolders
-          pytest $SERVICE_PATH/tests/ \
+          # 4. CRITICAL: Execute pytest directly using the venv binary path.
+          # We force the XML report output directly to the root of the subfolder.
+          $SERVICE_PATH/.venv/bin/pytest $SERVICE_PATH/tests/ \
             --cov=$SERVICE_PATH/app \
-            --cov-report=xml:temp_auth_coverage.xml
+            --cov-report=xml:$SERVICE_PATH/coverage.xml
 
-          # 4. MANUALLY MOVE THE FILE TO THE EXACT CORRECT TARGET
-          # This guarantees the file lands right inside your true repository subfolder
-          mv temp_auth_coverage.xml $SERVICE_PATH/coverage.xml
 
+      - name: Global Coverage Diagnostics Verification
+        shell: bash
+        run: |
+          echo "=== Verifying actual file presence on disk ==="
+          ls -lh auth_service/coverage.xml
+          
+          echo "=== Confirming internal SonarCloud path formatting ==="
+          head -n 5 auth_service/coverage.xml
 
       - name: post service unit testing
         uses:  ./.github/actions/test_service
