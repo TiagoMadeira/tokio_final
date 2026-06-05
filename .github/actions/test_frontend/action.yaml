@@ -30,7 +30,7 @@ runs:
         sudo apt-get install -y libnspr4 libnss3 libgbm1 libasound2t64
         npm ci
         npx playwright install chromium
-        npm run test
+        npm run test -- --coverage --watch=false
         npx playwright test   
 
         
