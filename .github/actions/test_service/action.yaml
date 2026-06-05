@@ -32,14 +32,16 @@ runs:
         SERVICE_PATH: ${{ inputs.service_path }}
       shell: bash
       run: |
-        # Create and activate the venv inside the specific microservice folder
-        python -m venv $SERVICE_PATH/.venv
-        source $SERVICE_PATH/.venv/bin/activate
+        python -m venv "$GITHUB_WORKSPACE/$SERVICE_PATH/.venv"
+        source "$GITHUB_WORKSPACE/$SERVICE_PATH/.venv/bin/activate"
         
-        pip install -r $SERVICE_PATH/requirements-stg.txt
+        pip install -r "$GITHUB_WORKSPACE/$SERVICE_PATH/requirements-stg.txt"
         
-        export PYTHONPATH=$SERVICE_PATH
-        pytest $SERVICE_PATH/tests/ --cov=$SERVICE_PATH/app --cov-report=xml:$SERVICE_PATH/coverage.xml
+        export PYTHONPATH="$GITHUB_WORKSPACE/$SERVICE_PATH"
+        
+        pytest "$GITHUB_WORKSPACE/$SERVICE_PATH/tests/" \
+          --cov="$GITHUB_WORKSPACE/$SERVICE_PATH/app" \
+          --cov-report=xml:"$GITHUB_WORKSPACE/$SERVICE_PATH/coverage.xml"
         
 
     
