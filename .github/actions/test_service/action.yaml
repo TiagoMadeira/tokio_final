@@ -27,16 +27,19 @@ runs:
           echo "SECRET_KEY=$JWT_SECRET" >> $GITHUB_ENV
         fi
 
-    - name: setup virtual environment
+    - name: Setup isolated virtual environment and run tests
       env:
         SERVICE_PATH: ${{ inputs.service_path }}
       shell: bash
       run: |
-        cd  $SERVICE_PATH
-        python -m venv .venv
-        source .venv/bin/activate
+        # Create and activate the venv inside the specific microservice folder
+        python -m venv $SERVICE_PATH/.venv
+        source $SERVICE_PATH/.venv/bin/activate
+        
         pip install -r requirements-stg.txt
-        pytest --cov=app --cov-report=xml:coverage.xml
+        
+        export PYTHONPATH=$SERVICE_PATH
+        pytest $SERVICE_PATH/tests/ --cov=$SERVICE_PATH/app --cov-report=xml:$SERVICE_PATH/coverage.xml
         
 
     
