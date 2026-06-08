@@ -28,6 +28,7 @@ runs:
         format: 'sarif'
         output: 'trivy-results.sarif'
         cache-dir: '/tmp/trivy-cache-${{ inputs.service_path }}'
+        trivyignores: 'trivy_conf/.trivyignore'
         exit-code: 0
         
 
