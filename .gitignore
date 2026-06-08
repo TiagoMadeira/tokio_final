@@ -10,6 +10,9 @@
 *.crt
 /test_results
 
+**/coverage
+.coverage
+coverage.xml
 
 #playwright
 frontend/test-results/
