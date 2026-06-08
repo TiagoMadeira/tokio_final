@@ -27,6 +27,7 @@ runs:
         format: 'sarif'
         output: 'trivy-results.sarif'
         exit-code: 0
+        trivyopts: '--cache-dir /tmp/trivy-cache-${{ inputs.service_path }}'
 
     - name: Upload results to GitHub Security tab
       uses: github/codeql-action/upload-sarif@v4
