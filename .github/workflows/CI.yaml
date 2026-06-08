@@ -191,15 +191,6 @@ jobs:
             --cov-report=xml:$SERVICE_PATH/coverage.xml
 
 
-      - name: Global Coverage Diagnostics Verification
-        shell: bash
-        run: |
-          echo "=== Verifying actual file presence on disk ==="
-          ls -lh auth_service/coverage.xml
-          
-          echo "=== Confirming internal SonarCloud path formatting ==="
-          head -n 5 auth_service/coverage.xml
-
       - name: post service unit testing
         uses:  ./.github/actions/test_service
         with:
@@ -209,6 +200,19 @@ jobs:
         uses:  ./.github/actions/test_service
         with:
           service_path: "rest_service"
+
+      - name: Global Coverage Diagnostics Verification
+        shell: bash
+        run: |
+          echo "=== Verifying actual file presence on disk ==="
+          ls -lh auth_service/coverage.xml
+          ls -lh rest_service/coverage.xml
+          ls -lh post-service/coverage.xml
+          
+          echo "=== Confirming internal SonarCloud path formatting ==="
+          head -n 5 auth_service/coverage.xml
+          head -n 5 rest_service/coverage.xml
+          head -n 5 post_service/coverage.xml
 
       - name: frontend unit and integration testing and E2E
         uses:  ./.github/actions/test_frontend
@@ -221,6 +225,19 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: "https://sonarcloud.io"
+
+      - name: Global Coverage Diagnostics Verification
+        shell: bash
+        run: |
+          echo "=== Verifying actual file presence on disk ==="
+          ls -lh auth_service/coverage.xml
+          ls -lh rest_service/coverage.xml
+          ls -lh post-service/coverage.xml
+          
+          echo "=== Confirming internal SonarCloud path formatting ==="
+          head -n 5 auth_service/coverage.xml
+          head -n 5 rest_service/coverage.xml
+          head -n 5 post_service/coverage.xml
 
       - name: Clean staging enviroment for next run
         if: always()
