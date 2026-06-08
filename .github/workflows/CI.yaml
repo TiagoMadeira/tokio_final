@@ -177,6 +177,21 @@ jobs:
         with:
           service_path: "post_service"
 
+      - name: Global Coverage Diagnostics Verification
+        shell: bash
+        run: |
+          echo "=== Checking what exists inside post_service ==="
+          ls -la post_service/
+
+          echo "=== Verifying actual file presence on disk ==="
+          ls -lh post_service/coverage.xml
+          ls -lh auth_service/coverage.xml
+          
+          echo "=== Confirming internal SonarCloud path formatting ==="
+          head -n 5 auth_service/coverage.xml
+          head -n 5 post_service/coverage.xml
+
+
       - name: rest service unit and integration testing
         uses:  ./.github/actions/test_service
         with:
