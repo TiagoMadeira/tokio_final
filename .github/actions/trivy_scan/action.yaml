@@ -15,8 +15,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
 
     - name: Run Trivy scan
       uses: aquasecurity/trivy-action@v0.35.0
