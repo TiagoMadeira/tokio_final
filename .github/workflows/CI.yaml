@@ -187,7 +187,7 @@ jobs:
         run: |
           echo "=== Verifying actual file presence on disk ==="
           ls -lh rest_service/coverage.xml
-          ls -lh post-service/coverage.xml
+          ls -lh post_service/coverage.xml
           ls -lh auth_service/coverage.xml
           
           echo "=== Confirming internal SonarCloud path formatting ==="
@@ -206,7 +206,7 @@ jobs:
         run: |
           echo "=== Verifying actual file presence on disk ==="
           ls -lh rest_service/coverage.xml
-          ls -lh post-service/coverage.xml
+          ls -lh post_service/coverage.xml
           ls -lh auth_service/coverage.xml
           
           echo "=== Confirming internal SonarCloud path formatting ==="
@@ -226,7 +226,7 @@ jobs:
         run: |
           echo "=== Verifying actual file presence on disk ==="
           ls -lh rest_service/coverage.xml
-          ls -lh post-service/coverage.xml
+          ls -lh post_service/coverage.xml
           ls -lh auth_service/coverage.xml
           
           echo "=== Confirming internal SonarCloud path formatting ==="
