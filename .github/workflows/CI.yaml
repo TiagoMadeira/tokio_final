@@ -165,31 +165,12 @@ jobs:
         run: |
           kubectl port-forward service/frontend-internal-service 3000:80 -n staging &
           sleep 5
-      - name: auth service unit testing
-        env:
-          JWT_SECRET: ${{ secrets.JWT_KEY }}
-          SERVICE_PATH: "auth_service"
-        shell: bash
-        run: |
-          if [ -n "$JWT_SECRET" ]; then
-            echo "SECRET_KEY=$JWT_SECRET" >> $GITHUB_ENV
-          fi
 
-          # 1. Initialize the virtual environment directory structure
-          python3 -m venv $SERVICE_PATH/.venv
-        
-          # 2. Install dependencies by calling the isolated pip binary directly
-          $SERVICE_PATH/.venv/bin/pip install -r $SERVICE_PATH/requirements-stg.txt
-        
-          # 3. Anchor module tracking relative to your root workspace
-          export PYTHONPATH=$PWD/$SERVICE_PATH
-        
-          # 4. CRITICAL: Execute pytest directly using the venv binary path.
-          # We force the XML report output directly to the root of the subfolder.
-          $SERVICE_PATH/.venv/bin/pytest $SERVICE_PATH/tests/ \
-            --cov=$SERVICE_PATH/app \
-            --cov-report=xml:$SERVICE_PATH/coverage.xml
-
+      - name: auth service service unit testing
+        uses:  ./.github/actions/test_service
+        with:
+          service_path: "auth_service"
+          jwt_secret: ${{ secrets.JWT_KEY }}
 
       - name: post service unit testing
         uses:  ./.github/actions/test_service
@@ -205,9 +186,9 @@ jobs:
         shell: bash
         run: |
           echo "=== Verifying actual file presence on disk ==="
-          ls -lh auth_service/coverage.xml
           ls -lh rest_service/coverage.xml
           ls -lh post-service/coverage.xml
+          ls -lh auth_service/coverage.xml
           
           echo "=== Confirming internal SonarCloud path formatting ==="
           head -n 5 auth_service/coverage.xml
@@ -220,6 +201,20 @@ jobs:
           service_path: "frontend"
 
 
+      - name: Global Coverage Diagnostics Verification
+        shell: bash
+        run: |
+          echo "=== Verifying actual file presence on disk ==="
+          ls -lh rest_service/coverage.xml
+          ls -lh post-service/coverage.xml
+          ls -lh auth_service/coverage.xml
+          
+          echo "=== Confirming internal SonarCloud path formatting ==="
+          head -n 5 auth_service/coverage.xml
+          head -n 5 rest_service/coverage.xml
+          head -n 5 post_service/coverage.xml
+
+
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v6
         env:
@@ -230,9 +225,9 @@ jobs:
         shell: bash
         run: |
           echo "=== Verifying actual file presence on disk ==="
-          ls -lh auth_service/coverage.xml
           ls -lh rest_service/coverage.xml
           ls -lh post-service/coverage.xml
+          ls -lh auth_service/coverage.xml
           
           echo "=== Confirming internal SonarCloud path formatting ==="
           head -n 5 auth_service/coverage.xml
