@@ -185,6 +185,10 @@ jobs:
       - name: Global Coverage Diagnostics Verification
         shell: bash
         run: |
+          Verifying what is inside post_service
+          echo "=== Checking what exists inside post_service ==="
+          ls -la post_service/
+
           echo "=== Verifying actual file presence on disk ==="
           ls -lh rest_service/coverage.xml
           ls -lh post_service/coverage.xml
@@ -204,6 +208,10 @@ jobs:
       - name: Global Coverage Diagnostics Verification
         shell: bash
         run: |
+          Verifying what is inside post_service
+          echo "=== Checking what exists inside post_service ==="
+          ls -la post_service/
+
           echo "=== Verifying actual file presence on disk ==="
           ls -lh rest_service/coverage.xml
           ls -lh post_service/coverage.xml
@@ -214,7 +222,6 @@ jobs:
           head -n 5 rest_service/coverage.xml
           head -n 5 post_service/coverage.xml
 
-
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v6
         env:
@@ -224,6 +231,10 @@ jobs:
       - name: Global Coverage Diagnostics Verification
         shell: bash
         run: |
+          Verifying what is inside post_service
+          echo "=== Checking what exists inside post_service ==="
+          ls -la post_service/
+
           echo "=== Verifying actual file presence on disk ==="
           ls -lh rest_service/coverage.xml
           ls -lh post_service/coverage.xml
