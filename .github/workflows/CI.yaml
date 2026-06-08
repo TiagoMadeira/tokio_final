@@ -185,7 +185,6 @@ jobs:
       - name: Global Coverage Diagnostics Verification
         shell: bash
         run: |
-          Verifying what is inside post_service
           echo "=== Checking what exists inside post_service ==="
           ls -la post_service/
 
@@ -208,7 +207,6 @@ jobs:
       - name: Global Coverage Diagnostics Verification
         shell: bash
         run: |
-          Verifying what is inside post_service
           echo "=== Checking what exists inside post_service ==="
           ls -la post_service/
 
@@ -231,7 +229,6 @@ jobs:
       - name: Global Coverage Diagnostics Verification
         shell: bash
         run: |
-          Verifying what is inside post_service
           echo "=== Checking what exists inside post_service ==="
           ls -la post_service/
 
