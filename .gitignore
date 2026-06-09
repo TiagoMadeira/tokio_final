@@ -25,3 +25,6 @@ frontend/state.json
 #frontend
 frontend/.env
 frontend/node_modules
+
+#Results
+get-sonar-summary.py
