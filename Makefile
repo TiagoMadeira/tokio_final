@@ -97,6 +97,11 @@ minikube_prune:
 	docker system prune -af
 	exit
 
+
+fetch-sonar:
+	@python get-sonar-summary.py
+
+
 ################################################## Used only in CI "################################################################################
 
 start_staging_environment:
