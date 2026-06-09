@@ -34,32 +34,32 @@ jobs:
       - name: Set up Python  # Uses python version in .python-version file
         uses: actions/setup-python@v6
 
-      # - name: Pip audit Auth Service  # Uses python version in .python-version file
-      #   run: |
-      #     cd  auth_service
-      #     python -m venv .venv
-      #     source .venv/bin/activate
-      #     python -m pip install pip==${{vars.PIP_VERSION}}
-      #     pip install pip-audit
-      #     pip-audit -r requirements-prd.txt
+      - name: Pip audit Auth Service  # Uses python version in .python-version file
+        run: |
+          cd  auth_service
+          python -m venv .venv
+          source .venv/bin/activate
+          python -m pip install pip==${{vars.PIP_VERSION}}
+          pip install pip-audit
+          pip-audit -r requirements-prd.txt
       
-      # - name: Pip audit Post Service  # Uses python version in .python-version file
-      #   run: |
-      #     cd  post_service
-      #     python -m venv .venv
-      #     source .venv/bin/activate
-      #     python -m pip install pip==${{vars.PIP_VERSION}}
-      #     pip install pip-audit
-      #     pip-audit -r requirements-prd.txt
+      - name: Pip audit Post Service  # Uses python version in .python-version file
+        run: |
+          cd  post_service
+          python -m venv .venv
+          source .venv/bin/activate
+          python -m pip install pip==${{vars.PIP_VERSION}}
+          pip install pip-audit
+          pip-audit -r requirements-prd.txt
       
-      # - name: Pip audit Rest Service # Uses python version in .python-version file
-      #   run: |
-      #     cd  rest_service
-      #     python -m venv .venv
-      #     source .venv/bin/activate
-      #     python -m pip install pip==${{vars.PIP_VERSION}}
-      #     pip install pip-audit
-      #     pip-audit -r requirements-prd.txt
+      - name: Pip audit Rest Service # Uses python version in .python-version file
+        run: |
+          cd  rest_service
+          python -m venv .venv
+          source .venv/bin/activate
+          python -m pip install pip==${{vars.PIP_VERSION}}
+          pip install pip-audit
+          pip-audit -r requirements-prd.txt
 
       - name: Trivi Scan Auth Service
         uses: ./.github/actions/trivy_scan
