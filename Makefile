@@ -150,8 +150,8 @@ start_production_environment:
 	kubectl create secret docker-registry regcred --namespace production --docker-server=https://index.docker.io/v1/ --docker-username=$(docker_name) --docker-password=$(docker_password) --docker-email=$(docker_email)
 	@echo appling pods secrets
 	kubectl apply -f k8s-configs/production/secrets/auth-service-secrets.yaml
-	kubectl create secret tls backend-tls-secret --namespace production --cert=prod-back-tls.crt --key=prod-back-tls.key
-	kubectl create secret tls frontend-production-posts-com-tls --namespace production --cert=prod-front-tls.crt --key=prod-front-tls.key
+	kubectl create secret tls backend-tls-secret --namespace production --cert=prod-backend-tls.crt --key=prod-backend-tls.key
+	kubectl create secret tls frontend-production-posts-com-tls --namespace production --cert=prod-frontend-tls.crt --key=prod-frontend-tls.key
 	@echo applying config files
 	kubectl apply -f k8s-configs/production/configmaps/frontend-configmap.yaml
 	kubectl apply -f k8s-configs/production/configmaps/auth-service-configmap.yaml
