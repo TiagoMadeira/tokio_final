@@ -6,6 +6,13 @@ WSL_DISTRO := Ubuntu
 WSL_USER := ubuntu
 
 ################################################################################can ran locally################################################################################
+
+start_development: start_minikube install_chromium_dependencies start_jaeger_server build_images start_development_server expose_services
+
+start_staging_local: start_minikube install_chromium_dependencies start_jaeger_server start_local_staging_env expose_services
+
+start_production: start_minikube install_chromium_dependencies start_jaeger_server start_local_production_env expose_services
+
 start_minikube:
 	@echo "Checking Minikube status..."
 	@if minikube status >/dev/null 2>&1; then \
@@ -81,6 +88,17 @@ rollout_development:
 	kubectl rollout restart deployment post-service-deployment -n development
 	kubectl rollout restart deployment rest-service-deployment -n development
 
+install_chromium_dependencies:
+	@echo installing chromium dependencies for E2E tests
+	sudo apt-get update
+	sudo apt-get install -y libnspr4 libnss3 libgbm1 libasound2t64
+
+start_local_production_env:
+	@ (export $$(cat .make_env | xargs) && $(MAKE) start_production_environment docker_name=$$DOCKER_USERNAME docker_password=$$DOCKERHUB_ACCESS_TOKEN docker_email=$$DOCKER_EMAIL)
+
+start_local_staging_env:
+	@ (export $$(cat .make_env | xargs) && $(MAKE) start_staging_environment docker_name=$$DOCKER_USERNAME docker_password=$$DOCKERHUB_ACCESS_TOKEN docker_email=$$DOCKER_EMAIL)
+
 expose_services:
 	@echo exposing services please add the following lines to the your hosts files:
 	@echo ::1 posts.com //this is the production server
@@ -90,9 +108,9 @@ expose_services:
 	minikube tunnel
 
 	
-start_development: start_minikube start_jaeger_server build_images start_development_server expose_services
 
-minikube_prune:
+
+clean:
 	minikube ssh
 	docker system prune -af
 	exit

@@ -9,6 +9,7 @@
 *.key
 *.crt
 /test_results
+.make_env
 
 **/coverage
 .coverage
