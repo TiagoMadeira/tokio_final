@@ -11,7 +11,7 @@ start_development: start_minikube install_chromium_dependencies start_jaeger_ser
 
 start_staging_local: start_minikube install_chromium_dependencies start_jaeger_server start_local_staging_env expose_services
 
-start_production: start_minikube install_chromium_dependencies start_jaeger_server start_local_production_env expose_services
+start_production_local: start_minikube install_chromium_dependencies start_jaeger_server start_local_production_env expose_services
 
 start_minikube:
 	@echo "Checking Minikube status..."
@@ -127,8 +127,8 @@ start_staging_environment:
 	kubectl create namespace staging
 	@echo appling pods secrets
 	kubectl create secret docker-registry regcred --namespace staging --docker-server=https://index.docker.io/v1/ --docker-username=$(docker_name) --docker-password=$(docker_password) --docker-email=$(docker_email)
-	kubectl create secret tls backend-tls-secret --namespace staging --cert=backend-tls.crt --key=backend-tls.key
-	kubectl create secret tls frontend-staging-posts-com-tls --namespace staging --cert=frontend-tls.crt --key=frontend-tls.key
+	kubectl create secret tls backend-tls-secret --namespace staging --cert=staging-backend-tls.crt --key=staging-backend-tls.key
+	kubectl create secret tls frontend-staging-posts-com-tls --namespace staging --cert=staging-frontend-tls.crt --key=staging-frontend-tls.key
 	kubectl apply -f k8s-configs/staging/secrets/auth-service-secrets.yaml
 	@echo applying config files
 	kubectl apply -f k8s-configs/staging/configmaps/frontend-configmap.yaml

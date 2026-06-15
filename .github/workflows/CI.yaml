@@ -138,10 +138,10 @@ jobs:
             make rollout_staging
           else
             # 1. Decode base64 secrets into temporary files
-            echo "$STAGING_BACKEND_TLS_CERT" | base64 --decode > backend-tls.crt
-            echo "$STAGING_BACKEND_TLS_KEY" | base64 --decode > backend-tls.key
-            echo "$STAGING_BACKEND_TLS_CERT" | base64 --decode > frontend-tls.crt
-            echo "$STAGING_BACKEND_TLS_KEY" | base64 --decode > frontend-tls.key
+            echo "$STAGING_BACKEND_TLS_CERT" | base64 --decode > staging-backend-tls.crt
+            echo "$STAGING_BACKEND_TLS_KEY" | base64 --decode > staging-backend-tls.key
+            echo "$STAGING_BACKEND_TLS_CERT" | base64 --decode > staging-frontend-tls.crt
+            echo "$STAGING_BACKEND_TLS_KEY" | base64 --decode > staging-frontend-tls.key
             make start_staging_environment docker_name=${{vars.DOCKER_USERNAME}} docker_password=$DOCKERHUB_ACCESS_TOKEN docker_email=${{vars.DOCKER_EMAIL}}
             # 3. Cleanup sensitive temporary files
             rm backend-tls.crt backend-tls.key frontend-tls.crt frontend-tls.key
