@@ -16,6 +16,11 @@ scan:
 
   skip-files:
     - "state.json"
+  
+  skip-dirs:
+    - .venv
+    - venv
+    - __pycache__
 
 severity:
   - LOW
