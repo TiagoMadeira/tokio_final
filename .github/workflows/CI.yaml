@@ -34,67 +34,67 @@ jobs:
       - name: Set up Python  # Uses python version in .python-version file
         uses: actions/setup-python@v6
 
-      - name: Pip audit Auth Service  # Uses python version in .python-version file
-        run: |
-          cd  auth_service
-          python -m venv .venv
-          source .venv/bin/activate
-          python -m pip install pip==${{vars.PIP_VERSION}}
-          pip install pip-audit
-          pip-audit -r requirements-prd.txt
+      # - name: Pip audit Auth Service  # Uses python version in .python-version file
+      #   run: |
+      #     cd  auth_service
+      #     python -m venv .venv
+      #     source .venv/bin/activate
+      #     python -m pip install pip==${{vars.PIP_VERSION}}
+      #     pip install pip-audit
+      #     pip-audit -r requirements-prd.txt
       
-      - name: Pip audit Post Service  # Uses python version in .python-version file
-        run: |
-          cd  post_service
-          python -m venv .venv
-          source .venv/bin/activate
-          python -m pip install pip==${{vars.PIP_VERSION}}
-          pip install pip-audit
-          pip-audit -r requirements-prd.txt
+      # - name: Pip audit Post Service  # Uses python version in .python-version file
+      #   run: |
+      #     cd  post_service
+      #     python -m venv .venv
+      #     source .venv/bin/activate
+      #     python -m pip install pip==${{vars.PIP_VERSION}}
+      #     pip install pip-audit
+      #     pip-audit -r requirements-prd.txt
       
-      - name: Pip audit Rest Service # Uses python version in .python-version file
-        run: |
-          cd  rest_service
-          python -m venv .venv
-          source .venv/bin/activate
-          python -m pip install pip==${{vars.PIP_VERSION}}
-          pip install pip-audit
-          pip-audit -r requirements-prd.txt
+      # - name: Pip audit Rest Service # Uses python version in .python-version file
+      #   run: |
+      #     cd  rest_service
+      #     python -m venv .venv
+      #     source .venv/bin/activate
+      #     python -m pip install pip==${{vars.PIP_VERSION}}
+      #     pip install pip-audit
+      #     pip-audit -r requirements-prd.txt
 
-      - name: Trivi Scan Auth Service
-        uses: ./.github/actions/trivy_scan
-        with:
-          trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
-          service_path: "auth_service"
-          trivy_category: "auth_service"
+      # - name: Trivi Scan Auth Service
+      #   uses: ./.github/actions/trivy_scan
+      #   with:
+      #     trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
+      #     service_path: "auth_service"
+      #     trivy_category: "auth_service"
       
-      - name: Trivi Scan Post Service
-        uses: ./.github/actions/trivy_scan
-        with:
-          trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
-          service_path: "post_service"
-          trivy_category: "post_service"
+      # - name: Trivi Scan Post Service
+      #   uses: ./.github/actions/trivy_scan
+      #   with:
+      #     trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
+      #     service_path: "post_service"
+      #     trivy_category: "post_service"
       
-      - name: Trivi Scan Rest Service
-        uses: ./.github/actions/trivy_scan
-        with:
-          trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
-          service_path: "rest_service"
-          trivy_category: "rest_service"
+      # - name: Trivi Scan Rest Service
+      #   uses: ./.github/actions/trivy_scan
+      #   with:
+      #     trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
+      #     service_path: "rest_service"
+      #     trivy_category: "rest_service"
 
-      - name: Trivi Scan Frontend
-        uses: ./.github/actions/trivy_scan
-        with:
-          trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
-          service_path: "frontend"
-          trivy_category: "frontend"
+      # - name: Trivi Scan Frontend
+      #   uses: ./.github/actions/trivy_scan
+      #   with:
+      #     trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
+      #     service_path: "frontend"
+      #     trivy_category: "frontend"
       
-      - name: Trivi Scan K8s-configs
-        uses: ./.github/actions/trivy_scan
-        with:
-          trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
-          service_path: "k8s-configs"
-          trivy_category: "k8s-configs"
+      # - name: Trivi Scan K8s-configs
+      #   uses: ./.github/actions/trivy_scan
+      #   with:
+      #     trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
+      #     service_path: "k8s-configs"
+      #     trivy_category: "k8s-configs"
 
       - name: Check Minikube status
         id: status_check

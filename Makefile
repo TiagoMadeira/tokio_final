@@ -22,7 +22,7 @@ stop_staging:
 stop_production: 
 	kubectl delete namespace production
 
-setup_self_hosted_runner: install_runner install_chromium_dependencies
+setup_self_hosted_runner: install_runner install_CI_dependencies
 
 stop_runner:
 	@echo "Stopping runner execution..."
@@ -120,10 +120,10 @@ rollout_development:
 	kubectl rollout restart deployment post-service-deployment -n development
 	kubectl rollout restart deployment rest-service-deployment -n development
 
-install_chromium_dependencies:
-	@echo installing chromium dependencies for E2E tests
+install_CI_dependencies:
+	@echo installing CI dependencies 
 	sudo apt-get update
-	sudo apt-get install -y libnspr4 libnss3 libgbm1 libasound2
+	sudo apt-get install -y libnspr4 libnss3 libgbm1 libasound2 unzip
 
 install_runner:
 	@echo "Creating runner directory..."
