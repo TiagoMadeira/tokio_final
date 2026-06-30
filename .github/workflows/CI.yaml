@@ -201,7 +201,7 @@ jobs:
 
 
   production:
-    runs-on: [self-hosted-ubuntu]
+    runs-on: [self-hosted]
     needs: [staging]
     defaults:
       run:
