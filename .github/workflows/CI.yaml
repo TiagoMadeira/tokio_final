@@ -238,8 +238,8 @@ jobs:
             make rollout_production
           else
             # 1. Decode base64 secrets into temporary files
-            # echo "$PROD_BACK_TLS_CERT" | base64 --decode --ignore-garbage > prod-backend-tls.crt
-            echo "$PROD_BACK_TLS_KEY" | base64 --decode --ignore-garbage > prod-backend-tls.key
+            echo "$PROD_BACK_TLS_CERT" | base64 --decode --ignore-garbage > prod-backend-tls.crt
+            # echo "$PROD_BACK_TLS_KEY" | base64 --decode --ignore-garbage > prod-backend-tls.key
             # echo "$PROD_FRONT_TLS_CERT" | base64 --decode --ignore-garbage > prod-frontend-tls.crt
             echo "$PROD_FRONT_TLS_KEY" | base64 --decode --ignore-garbage > prod-frontend-tls.key
             make start_production_environment docker_name=${{vars.DOCKER_USERNAME}} docker_password=$DOCKERHUB_ACCESS_TOKEN docker_email=${{vars.DOCKER_EMAIL}}
