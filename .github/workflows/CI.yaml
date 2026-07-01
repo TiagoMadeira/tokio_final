@@ -9,200 +9,200 @@ on:
       - master
 
 jobs:
-  dev:
-    uses: ./.github/workflows/build-services.yaml
-    secrets:
-      dockerhub-access-token: ${{secrets.DOCKERHUB_ACCESS_TOKEN}}
+  # dev:
+  #   uses: ./.github/workflows/build-services.yaml
+  #   secrets:
+  #     dockerhub-access-token: ${{secrets.DOCKERHUB_ACCESS_TOKEN}}
 
-  staging:
-    runs-on: [self-hosted]
-    needs: [dev]
-    permissions:
-      security-events: write
-      contents: read
-    defaults:
-      run:
-        shell: bash
-    environment: staging
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          clean: true
-          fetch-depth: 0
+  # staging:
+  #   runs-on: [self-hosted]
+  #   needs: [dev]
+  #   permissions:
+  #     security-events: write
+  #     contents: read
+  #   defaults:
+  #     run:
+  #       shell: bash
+  #   environment: staging
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
+  #       with:
+  #         clean: true
+  #         fetch-depth: 0
 
-      - name: Set up Python  # Uses python version in .python-version file
-        uses: actions/setup-python@v6
+  #     - name: Set up Python  # Uses python version in .python-version file
+  #       uses: actions/setup-python@v6
 
-      - name: Pip audit Auth Service  # Uses python version in .python-version file
-        run: |
-          cd  auth_service
-          python -m venv .venv
-          source .venv/bin/activate
-          python -m pip install pip==${{vars.PIP_VERSION}}
-          pip install pip-audit
-          pip-audit -r requirements-prd.txt
+  #     - name: Pip audit Auth Service  # Uses python version in .python-version file
+  #       run: |
+  #         cd  auth_service
+  #         python -m venv .venv
+  #         source .venv/bin/activate
+  #         python -m pip install pip==${{vars.PIP_VERSION}}
+  #         pip install pip-audit
+  #         pip-audit -r requirements-prd.txt
       
-      - name: Pip audit Post Service  # Uses python version in .python-version file
-        run: |
-          cd  post_service
-          python -m venv .venv
-          source .venv/bin/activate
-          python -m pip install pip==${{vars.PIP_VERSION}}
-          pip install pip-audit
-          pip-audit -r requirements-prd.txt
+  #     - name: Pip audit Post Service  # Uses python version in .python-version file
+  #       run: |
+  #         cd  post_service
+  #         python -m venv .venv
+  #         source .venv/bin/activate
+  #         python -m pip install pip==${{vars.PIP_VERSION}}
+  #         pip install pip-audit
+  #         pip-audit -r requirements-prd.txt
       
-      - name: Pip audit Rest Service # Uses python version in .python-version file
-        run: |
-          cd  rest_service
-          python -m venv .venv
-          source .venv/bin/activate
-          python -m pip install pip==${{vars.PIP_VERSION}}
-          pip install pip-audit
-          pip-audit -r requirements-prd.txt
+  #     - name: Pip audit Rest Service # Uses python version in .python-version file
+  #       run: |
+  #         cd  rest_service
+  #         python -m venv .venv
+  #         source .venv/bin/activate
+  #         python -m pip install pip==${{vars.PIP_VERSION}}
+  #         pip install pip-audit
+  #         pip-audit -r requirements-prd.txt
 
-      - name: Trivi Scan Auth Service
-        uses: ./.github/actions/trivy_scan
-        with:
-          trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
-          service_path: "auth_service"
-          trivy_category: "auth_service"
+  #     - name: Trivi Scan Auth Service
+  #       uses: ./.github/actions/trivy_scan
+  #       with:
+  #         trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
+  #         service_path: "auth_service"
+  #         trivy_category: "auth_service"
       
-      - name: Trivi Scan Post Service
-        uses: ./.github/actions/trivy_scan
-        with:
-          trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
-          service_path: "post_service"
-          trivy_category: "post_service"
+  #     - name: Trivi Scan Post Service
+  #       uses: ./.github/actions/trivy_scan
+  #       with:
+  #         trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
+  #         service_path: "post_service"
+  #         trivy_category: "post_service"
       
-      - name: Trivi Scan Rest Service
-        uses: ./.github/actions/trivy_scan
-        with:
-          trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
-          service_path: "rest_service"
-          trivy_category: "rest_service"
+  #     - name: Trivi Scan Rest Service
+  #       uses: ./.github/actions/trivy_scan
+  #       with:
+  #         trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
+  #         service_path: "rest_service"
+  #         trivy_category: "rest_service"
 
-      - name: Trivi Scan Frontend
-        uses: ./.github/actions/trivy_scan
-        with:
-          trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
-          service_path: "frontend"
-          trivy_category: "frontend"
+  #     - name: Trivi Scan Frontend
+  #       uses: ./.github/actions/trivy_scan
+  #       with:
+  #         trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
+  #         service_path: "frontend"
+  #         trivy_category: "frontend"
       
-      - name: Trivi Scan K8s-configs
-        uses: ./.github/actions/trivy_scan
-        with:
-          trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
-          service_path: "k8s-configs"
-          trivy_category: "k8s-configs"
+  #     - name: Trivi Scan K8s-configs
+  #       uses: ./.github/actions/trivy_scan
+  #       with:
+  #         trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
+  #         service_path: "k8s-configs"
+  #         trivy_category: "k8s-configs"
 
-      - name: Check Minikube status
-        id: status_check
-        continue-on-error: true 
-        run: minikube status && echo "active=true" >> $GITHUB_OUTPUT || echo "active=false" >> $GITHUB_OUTPUT
+  #     - name: Check Minikube status
+  #       id: status_check
+  #       continue-on-error: true 
+  #       run: minikube status && echo "active=true" >> $GITHUB_OUTPUT || echo "active=false" >> $GITHUB_OUTPUT
 
-      - name: start minikube
-        if: steps.status_check.outputs.active == 'false'
-        run: |
-          make start_minikube
+  #     - name: start minikube
+  #       if: steps.status_check.outputs.active == 'false'
+  #       run: |
+  #         make start_minikube
 
-      - name: Wait for Ingress Controller
-        run: |
-          kubectl wait --namespace ingress-nginx \
-          --for=condition=ready pod \
-          --selector=app.kubernetes.io/component=controller \
-          --timeout=120s
+  #     - name: Wait for Ingress Controller
+  #       run: |
+  #         kubectl wait --namespace ingress-nginx \
+  #         --for=condition=ready pod \
+  #         --selector=app.kubernetes.io/component=controller \
+  #         --timeout=120s
       
-      - name: start obeservability server
-        run: |
-          if ! kubectl get namespace observability ; then
-            make start_jaeger_server
-          fi
+  #     - name: start obeservability server
+  #       run: |
+  #         if ! kubectl get namespace observability ; then
+  #           make start_jaeger_server
+  #         fi
 
-      - name: Wait for observability server to be up and running
-        run: |
-          kubectl wait --namespace observability \
-          --for=condition=ready pod \
-          --all \
-          --timeout=240s
+  #     - name: Wait for observability server to be up and running
+  #       run: |
+  #         kubectl wait --namespace observability \
+  #         --for=condition=ready pod \
+  #         --all \
+  #         --timeout=240s
 
-      - name: start staging server
-        env:
-          STAGING_BACKEND_TLS_CERT: ${{ secrets.STAGING_BACKEND_TLS_CERT }}
-          STAGING_BACKEND_TLS_KEY: ${{ secrets.STAGING_BACKEND_TLS_KEY }}
-          STAGING_FRONTEND_TLS_CERT: ${{ secrets.STAGING_FRONTEND_TLS_CERT }}
-          STAGING_FRONTEND_TLS_KEY: ${{ secrets.STAGING_FRONTEND_TLS_KEY }}
-          DOCKERHUB_ACCESS_TOKEN: ${{secrets.DOCKERHUB_ACCESS_TOKEN}}
-        run: |
-          if  kubectl get namespace staging ; then
-            make rollout_staging
-          else
-            # 1. Decode base64 secrets into temporary files
-            echo "$STAGING_BACKEND_TLS_CERT" | base64 --decode > staging-backend-tls.crt
-            echo "$STAGING_BACKEND_TLS_KEY" | base64 --decode > staging-backend-tls.key
-            echo "$STAGING_BACKEND_TLS_CERT" | base64 --decode > staging-frontend-tls.crt
-            echo "$STAGING_BACKEND_TLS_KEY" | base64 --decode > staging-frontend-tls.key
-            make start_staging_environment docker_name=${{vars.DOCKER_USERNAME}} docker_password=$DOCKERHUB_ACCESS_TOKEN docker_email=${{vars.DOCKER_EMAIL}}
-            # 3. Cleanup sensitive temporary files
-            rm staging-backend-tls.crt staging-backend-tls.key staging-frontend-tls.crt staging-frontend-tls.key
-          fi
+  #     - name: start staging server
+  #       env:
+  #         STAGING_BACKEND_TLS_CERT: ${{ secrets.STAGING_BACKEND_TLS_CERT }}
+  #         STAGING_BACKEND_TLS_KEY: ${{ secrets.STAGING_BACKEND_TLS_KEY }}
+  #         STAGING_FRONTEND_TLS_CERT: ${{ secrets.STAGING_FRONTEND_TLS_CERT }}
+  #         STAGING_FRONTEND_TLS_KEY: ${{ secrets.STAGING_FRONTEND_TLS_KEY }}
+  #         DOCKERHUB_ACCESS_TOKEN: ${{secrets.DOCKERHUB_ACCESS_TOKEN}}
+  #       run: |
+  #         if  kubectl get namespace staging ; then
+  #           make rollout_staging
+  #         else
+  #           # 1. Decode base64 secrets into temporary files
+  #           echo "$STAGING_BACKEND_TLS_CERT" | base64 --decode > staging-backend-tls.crt
+  #           echo "$STAGING_BACKEND_TLS_KEY" | base64 --decode > staging-backend-tls.key
+  #           echo "$STAGING_BACKEND_TLS_CERT" | base64 --decode > staging-frontend-tls.crt
+  #           echo "$STAGING_BACKEND_TLS_KEY" | base64 --decode > staging-frontend-tls.key
+  #           make start_staging_environment docker_name=${{vars.DOCKER_USERNAME}} docker_password=$DOCKERHUB_ACCESS_TOKEN docker_email=${{vars.DOCKER_EMAIL}}
+  #           # 3. Cleanup sensitive temporary files
+  #           rm staging-backend-tls.crt staging-backend-tls.key staging-frontend-tls.crt staging-frontend-tls.key
+  #         fi
       
-      - name: Wait for pods in staging to be up and running
-        run: |
-          kubectl wait --namespace staging \
-          --for=condition=ready pod \
-          --all \
-          --timeout=500s
+  #     - name: Wait for pods in staging to be up and running
+  #       run: |
+  #         kubectl wait --namespace staging \
+  #         --for=condition=ready pod \
+  #         --all \
+  #         --timeout=500s
       
-      - name: Prepare rest service for integration testing
-        run: |
+  #     - name: Prepare rest service for integration testing
+  #       run: |
          
-          kubectl port-forward service/rest-internal-service 8000:80 -n staging &
-          sleep 5 # Wait for the tunnel to initialize
+  #         kubectl port-forward service/rest-internal-service 8000:80 -n staging &
+  #         sleep 5 # Wait for the tunnel to initialize
       
-      - name: Prepare frontend for e2e testing
-        shell: bash
-        run: |
-          kubectl port-forward service/frontend-internal-service 3000:80 -n staging &
-          sleep 5
+  #     - name: Prepare frontend for e2e testing
+  #       shell: bash
+  #       run: |
+  #         kubectl port-forward service/frontend-internal-service 3000:80 -n staging &
+  #         sleep 5
 
-      - name: auth service service unit testing
-        uses:  ./.github/actions/test_service
-        with:
-          service_path: "auth_service"
-          jwt_secret: ${{ secrets.JWT_KEY }}
+  #     - name: auth service service unit testing
+  #       uses:  ./.github/actions/test_service
+  #       with:
+  #         service_path: "auth_service"
+  #         jwt_secret: ${{ secrets.JWT_KEY }}
 
-      - name: post service unit testing
-        uses:  ./.github/actions/test_service
-        with:
-          service_path: "post_service"
+  #     - name: post service unit testing
+  #       uses:  ./.github/actions/test_service
+  #       with:
+  #         service_path: "post_service"
 
-      - name: rest service unit and integration testing
-        uses:  ./.github/actions/test_service
-        with:
-          service_path: "rest_service"
+  #     - name: rest service unit and integration testing
+  #       uses:  ./.github/actions/test_service
+  #       with:
+  #         service_path: "rest_service"
 
-      - name: frontend unit and integration testing and E2E
-        uses:  ./.github/actions/test_frontend
-        with:
-          service_path: "frontend"
+  #     - name: frontend unit and integration testing and E2E
+  #       uses:  ./.github/actions/test_frontend
+  #       with:
+  #         service_path: "frontend"
 
 
-      - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v6
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: "https://sonarcloud.io"
+  #     - name: SonarQube Scan
+  #       uses: SonarSource/sonarqube-scan-action@v6
+  #       env:
+  #         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  #         SONAR_HOST_URL: "https://sonarcloud.io"
 
-      - name: Clean staging enviroment for next run
-        if: always()
-        run: |
-          kubectl delete namespace staging
+  #     - name: Clean staging enviroment for next run
+  #       if: always()
+  #       run: |
+  #         kubectl delete namespace staging
 
 
   production:
     runs-on: [self-hosted]
-    needs: [staging]
+    #needs: [staging]
     defaults:
       run:
         # Use the built-in wsl shell handler
@@ -238,9 +238,9 @@ jobs:
             make rollout_production
           else
             # 1. Decode base64 secrets into temporary files
-            echo "$PROD_BACK_TLS_CERT" | base64 --decode --ignore-garbage > prod-backend-tls.crt
-            echo "$PROD_BACK_TLS_KEY" | base64 --decode --ignore-garbage > prod-backend-tls.key
-            echo "$PROD_FRONT_TLS_CERT" | base64 --decode --ignore-garbage > prod-frontend-tls.crt
+            # echo "$PROD_BACK_TLS_CERT" | base64 --decode --ignore-garbage > prod-backend-tls.crt
+            # echo "$PROD_BACK_TLS_KEY" | base64 --decode --ignore-garbage > prod-backend-tls.key
+            # echo "$PROD_FRONT_TLS_CERT" | base64 --decode --ignore-garbage > prod-frontend-tls.crt
             echo "$PROD_FRONT_TLS_KEY" | base64 --decode --ignore-garbage > prod-frontend-tls.key
             make start_production_environment docker_name=${{vars.DOCKER_USERNAME}} docker_password=$DOCKERHUB_ACCESS_TOKEN docker_email=${{vars.DOCKER_EMAIL}}
             # 3. Cleanup sensitive temporary files
