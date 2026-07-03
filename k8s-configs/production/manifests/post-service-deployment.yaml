@@ -21,7 +21,7 @@ spec:
           type: RuntimeDefault
       containers:
       - name: post-service
-        image: tiagomadeiradock/tokio-post-service:latest
+        image: docker.io/tiagomadeiradock/tokio-post-service:latest
         imagePullPolicy: Always
         workingDir: /home/appuser   
         securityContext:

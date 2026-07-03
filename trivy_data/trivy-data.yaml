@@ -1,0 +1,6 @@
+ksv0125:
+  trusted_registries:
+    - "index.docker.io"
+    - "docker.io"
+    - "registry-1.docker.io"
+    - "index.docker.io/tiagomadeiradock"

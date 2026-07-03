@@ -21,7 +21,7 @@ spec:
           type: RuntimeDefault
       containers:
       - name: auth-service
-        image: tiagomadeiradock/tokio-auth-service:latest
+        image: docker.io/tiagomadeiradock/tokio-auth-service:latest
         imagePullPolicy: Always
         workingDir: /home/appuser
         securityContext:

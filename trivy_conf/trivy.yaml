@@ -1,6 +1,10 @@
 
 ignorefile: trivy_conf/.trivyignore
-config-data: trivy_conf/trivy-data.yaml
+
+rego:
+  # Same as '--config-data'
+  data:
+    - "./trivy_data"
 
 scan:
   scanners:
@@ -31,9 +35,5 @@ severity:
 vulnerability:
   ignore-unfixed: false
 
-misconfiguration:
-  namespaces:
-    - tiagomadeiradock
-      
 db:
   repository: public.ecr.aws/aquasecurity/trivy-db:2
