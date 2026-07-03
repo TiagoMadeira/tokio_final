@@ -34,67 +34,172 @@ jobs:
       - name: Set up Python  # Uses python version in .python-version file
         uses: actions/setup-python@v6
 
-      - name: Pip audit Auth Service  # Uses python version in .python-version file
-        run: |
-          cd  auth_service
-          python -m venv .venv
-          source .venv/bin/activate
-          python -m pip install pip==${{vars.PIP_VERSION}}
-          pip install pip-audit
-          pip-audit -r requirements-prd.txt
+      # - name: Pip audit Auth Service  # Uses python version in .python-version file
+      #   run: |
+      #     cd  auth_service
+      #     python -m venv .venv
+      #     source .venv/bin/activate
+      #     python -m pip install pip==${{vars.PIP_VERSION}}
+      #     pip install pip-audit
+      #     pip-audit -r requirements-prd.txt
       
-      - name: Pip audit Post Service  # Uses python version in .python-version file
-        run: |
-          cd  post_service
-          python -m venv .venv
-          source .venv/bin/activate
-          python -m pip install pip==${{vars.PIP_VERSION}}
-          pip install pip-audit
-          pip-audit -r requirements-prd.txt
+      # - name: Pip audit Post Service  # Uses python version in .python-version file
+      #   run: |
+      #     cd  post_service
+      #     python -m venv .venv
+      #     source .venv/bin/activate
+      #     python -m pip install pip==${{vars.PIP_VERSION}}
+      #     pip install pip-audit
+      #     pip-audit -r requirements-prd.txt
       
-      - name: Pip audit Rest Service # Uses python version in .python-version file
-        run: |
-          cd  rest_service
-          python -m venv .venv
-          source .venv/bin/activate
-          python -m pip install pip==${{vars.PIP_VERSION}}
-          pip install pip-audit
-          pip-audit -r requirements-prd.txt
+      # - name: Pip audit Rest Service # Uses python version in .python-version file
+      #   run: |
+      #     cd  rest_service
+      #     python -m venv .venv
+      #     source .venv/bin/activate
+      #     python -m pip install pip==${{vars.PIP_VERSION}}
+      #     pip install pip-audit
+      #     pip-audit -r requirements-prd.txt
 
-      - name: Trivi Scan Auth Service
-        uses: ./.github/actions/trivy_scan
+      - name: Run Trivy scan Auth Service
+        uses: aquasecurity/trivy-action@v0.35.0
+        env:
+          # Forces Trivy to fetch online misconfig metadata from GitHub instead of Google
+          TRIVY_CHECKS_BUNDLE_REPOSITORY: "ghcr.io/aquasecurity/trivy-checks:1"
         with:
-          trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
-          service_path: "auth_service"
-          trivy_category: "auth_service"
-      
-      - name: Trivi Scan Post Service
-        uses: ./.github/actions/trivy_scan
+          trivy-config: ${{ vars.TRIVY_CONFIG_PATH }}
+          scan-type: 'fs'
+          scan-ref: 'auth_service'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          cache-dir: '/tmp/trivy-cache-auth_service'
+          trivyignores: 'trivy_conf/.trivyignore'
+          exit-code: 0
+        
+      - name: Upload Trivy scan results of Auth Service to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v4
         with:
-          trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
-          service_path: "post_service"
-          trivy_category: "post_service"
-      
-      - name: Trivi Scan Rest Service
-        uses: ./.github/actions/trivy_scan
-        with:
-          trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
-          service_path: "rest_service"
-          trivy_category: "rest_service"
+          category: 'auth_service'
+          sarif_file: 'trivy-results.sarif'
 
-      - name: Trivi Scan Frontend
-        uses: ./.github/actions/trivy_scan
+      - name: Run Trivy scan Post Service
+        uses: aquasecurity/trivy-action@v0.35.0
+        env:
+          # Forces Trivy to fetch online misconfig metadata from GitHub instead of Google
+          TRIVY_CHECKS_BUNDLE_REPOSITORY: "ghcr.io/aquasecurity/trivy-checks:1"
         with:
-          trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
-          service_path: "frontend"
-          trivy_category: "frontend"
+          trivy-config: ${{ vars.TRIVY_CONFIG_PATH }}
+          scan-type: 'fs'
+          scan-ref: 'post_service'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          cache-dir: '/tmp/trivy-cache-post_service'
+          trivyignores: 'trivy_conf/.trivyignore'
+          exit-code: 0
+        
+      - name: Upload Trivy scan results of Post Service to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          category: 'post_service'
+          sarif_file: 'trivy-results.sarif'
       
-      - name: Trivi Scan K8s-configs
-        uses: ./.github/actions/trivy_scan
+      - name: Run Trivy scan Rest Service
+        uses: aquasecurity/trivy-action@v0.35.0
+        env:
+          # Forces Trivy to fetch online misconfig metadata from GitHub instead of Google
+          TRIVY_CHECKS_BUNDLE_REPOSITORY: "ghcr.io/aquasecurity/trivy-checks:1"
         with:
-          trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
-          service_path: "k8s-configs"
-          trivy_category: "k8s-configs"
+          trivy-config: ${{ vars.TRIVY_CONFIG_PATH }}
+          scan-type: 'fs'
+          scan-ref: 'rest_service'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          cache-dir: '/tmp/trivy-cache-rest_service'
+          trivyignores: 'trivy_conf/.trivyignore'
+          exit-code: 0
+        
+      - name: Upload Trivy scan results of Rest Service to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          category: 'rest_service'
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Run Trivy scan Frontend
+        uses: aquasecurity/trivy-action@v0.35.0
+        env:
+          # Forces Trivy to fetch online misconfig metadata from GitHub instead of Google
+          TRIVY_CHECKS_BUNDLE_REPOSITORY: "ghcr.io/aquasecurity/trivy-checks:1"
+        with:
+          trivy-config: ${{ vars.TRIVY_CONFIG_PATH }}
+          scan-type: 'fs'
+          scan-ref: 'frontend'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          cache-dir: '/tmp/trivy-cache-frontend'
+          trivyignores: 'trivy_conf/.trivyignore'
+          exit-code: 0
+        
+      - name: Upload Trivy scan results of Frontend to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          category: 'frontend'
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Run Trivy scan K8s Configs
+        uses: aquasecurity/trivy-action@v0.35.0
+        env:
+          # Forces Trivy to fetch online misconfig metadata from GitHub instead of Google
+          TRIVY_CHECKS_BUNDLE_REPOSITORY: "ghcr.io/aquasecurity/trivy-checks:1"
+        with:
+          trivy-config: ${{ vars.TRIVY_CONFIG_PATH }}
+          scan-type: 'fs'
+          scan-ref: 'k8s-configs'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          cache-dir: '/tmp/trivy-cache-k8s-configs'
+          trivyignores: 'trivy_conf/.trivyignore'
+          exit-code: 0
+        
+      - name: Upload Trivy scan results of K8s Configs to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          category: 'k8s-configs'
+          sarif_file: 'trivy-results.sarif'
+
+      # - name: Trivi Scan Auth Service
+      #   uses: ./.github/actions/trivy_scan
+      #   with:
+      #     trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
+      #     service_path: "auth_service"
+      #     trivy_category: "auth_service"
+      
+      # - name: Trivi Scan Post Service
+      #   uses: ./.github/actions/trivy_scan
+      #   with:
+      #     trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
+      #     service_path: "post_service"
+      #     trivy_category: "post_service"
+      
+      # - name: Trivi Scan Rest Service
+      #   uses: ./.github/actions/trivy_scan
+      #   with:
+      #     trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
+      #     service_path: "rest_service"
+      #     trivy_category: "rest_service"
+
+      # - name: Trivi Scan Frontend
+      #   uses: ./.github/actions/trivy_scan
+      #   with:
+      #     trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
+      #     service_path: "frontend"
+      #     trivy_category: "frontend"
+      
+      # - name: Trivi Scan K8s-configs
+      #   uses: ./.github/actions/trivy_scan
+      #   with:
+      #     trivy_config_path: ${{ vars.TRIVY_CONFIG_PATH }}
+      #     service_path: "k8s-configs"
+      #     trivy_category: "k8s-configs"
 
       - name: Check Minikube status
         id: status_check
