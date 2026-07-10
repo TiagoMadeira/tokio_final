@@ -206,7 +206,7 @@ jobs:
      
       - name: Wait for observability server to be up and running
         run: |
-          kubectl wait --namespace observability \
+          minikube kubectl -- wait --namespace observability \
           --for=condition=ready pod \
           --all \
           --timeout=240s
