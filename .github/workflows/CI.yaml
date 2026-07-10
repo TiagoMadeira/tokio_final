@@ -187,7 +187,7 @@ jobs:
 
       - name: Wait for Ingress Controller
         run: |
-          kubectl wait --namespace ingress-nginx \
+          minikube kubectl -- wait --namespace ingress-nginx \
           --for=condition=ready pod \
           --selector=app.kubernetes.io/component=controller \
           --timeout=120s
@@ -353,7 +353,7 @@ jobs:
       - name: Clean staging enviroment for next run
         if: always()
         run: |
-          kubectl delete namespace staging
+          minikube kubectl -- delete namespace staging
 
 
   production:
