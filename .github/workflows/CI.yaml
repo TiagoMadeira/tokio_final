@@ -70,17 +70,10 @@ jobs:
           trivy-config: ${{ vars.TRIVY_CONFIG_PATH }}
           scan-type: 'fs'
           scan-ref: 'auth_service'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
+          format: 'table'
           cache-dir: '/tmp/trivy-cache-auth_service'
           trivyignores: 'trivy_conf/.trivyignore'
-          exit-code: 0
-        
-      - name: Upload Trivy scan results of Auth Service to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v4
-        with:
-          category: 'auth_service'
-          sarif_file: 'trivy-results.sarif'
+          exit-code: 1
 
       - name: Run Trivy scan Post Service
         uses: aquasecurity/trivy-action@v0.35.0
@@ -91,17 +84,10 @@ jobs:
           trivy-config: ${{ vars.TRIVY_CONFIG_PATH }}
           scan-type: 'fs'
           scan-ref: 'post_service'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
+          format: 'table'
           cache-dir: '/tmp/trivy-cache-post_service'
           trivyignores: 'trivy_conf/.trivyignore'
-          exit-code: 0
-        
-      - name: Upload Trivy scan results of Post Service to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v4
-        with:
-          category: 'post_service'
-          sarif_file: 'trivy-results.sarif'
+          exit-code: 1
       
       - name: Run Trivy scan Rest Service
         uses: aquasecurity/trivy-action@v0.35.0
@@ -112,17 +98,10 @@ jobs:
           trivy-config: ${{ vars.TRIVY_CONFIG_PATH }}
           scan-type: 'fs'
           scan-ref: 'rest_service'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
+          format: 'table'
           cache-dir: '/tmp/trivy-cache-rest_service'
           trivyignores: 'trivy_conf/.trivyignore'
-          exit-code: 0
-        
-      - name: Upload Trivy scan results of Rest Service to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v4
-        with:
-          category: 'rest_service'
-          sarif_file: 'trivy-results.sarif'
+          exit-code: 1
 
       - name: Run Trivy scan Frontend
         uses: aquasecurity/trivy-action@v0.35.0
@@ -133,18 +112,11 @@ jobs:
           trivy-config: ${{ vars.TRIVY_CONFIG_PATH }}
           scan-type: 'fs'
           scan-ref: 'frontend'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
+          format: 'table'
           cache-dir: '/tmp/trivy-cache-frontend'
           trivyignores: 'trivy_conf/.trivyignore'
-          exit-code: 0
+          exit-code: 1
         
-      - name: Upload Trivy scan results of Frontend to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v4
-        with:
-          category: 'frontend'
-          sarif_file: 'trivy-results.sarif'
-
       - name: Run Trivy scan K8s Configs
         uses: aquasecurity/trivy-action@v0.35.0
         env:
@@ -154,11 +126,10 @@ jobs:
           trivy-config: ${{ vars.TRIVY_CONFIG_PATH }}
           scan-type: 'fs'
           scan-ref: 'k8s-configs'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
+          format: 'table'
           cache-dir: '/tmp/trivy-cache-k8s-configs'
           trivyignores: 'trivy_conf/.trivyignore'
-          exit-code: 0
+          exit-code: 1
         
       - name: Upload Trivy scan results of K8s Configs to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v4
