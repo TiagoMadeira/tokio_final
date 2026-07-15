@@ -26,7 +26,6 @@ export default defineConfig({
   reporter: 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    ignoreHTTPSErrors: true,
     baseURL: 'http://localhost:3000',
     browserName: 'chromium',
     headless: true,
