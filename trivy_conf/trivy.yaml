@@ -1,4 +1,6 @@
 
+ignorefile: trivy_conf/.trivyignore
+
 rego:
   # Same as '--config-data'
   data:

@@ -62,74 +62,24 @@ jobs:
       #     pip-audit -r requirements-prd.txt
 
       - name: Run Trivy scan Auth Service
-        uses: aquasecurity/trivy-action@v0.35.0
-        env:
-          # Forces Trivy to fetch online misconfig metadata from GitHub instead of Google
-          TRIVY_CHECKS_BUNDLE_REPOSITORY: "ghcr.io/aquasecurity/trivy-checks:1"
-        with:
-          trivy-config: ${{ vars.TRIVY_CONFIG_PATH }}
-          trivyignores: 'trivy_conf/.trivyignore' 
-          scan-type: 'fs'
-          scan-ref: 'auth_service'
-          format: 'table'
-          cache-dir: '/tmp/trivy-cache-auth_service'
-          exit-code: 1
+        run: |
+          trivy fs --config trivy_conf/trivy.yaml --format table auth_service
 
       - name: Run Trivy scan Post Service
-        uses: aquasecurity/trivy-action@v0.35.0
-        env:
-          # Forces Trivy to fetch online misconfig metadata from GitHub instead of Google
-          TRIVY_CHECKS_BUNDLE_REPOSITORY: "ghcr.io/aquasecurity/trivy-checks:1"
-        with:
-          trivy-config: ${{ vars.TRIVY_CONFIG_PATH }}
-          trivyignores: 'trivy_conf/.trivyignore' 
-          scan-type: 'fs'
-          scan-ref: 'post_service'
-          format: 'table'
-          cache-dir: '/tmp/trivy-cache-post_service'
-          exit-code: 1
-      
+        run: | 
+          trivy fs --config trivy_conf/trivy.yaml --format table post_service
+
       - name: Run Trivy scan Rest Service
-        uses: aquasecurity/trivy-action@v0.35.0
-        env:
-          # Forces Trivy to fetch online misconfig metadata from GitHub instead of Google
-          TRIVY_CHECKS_BUNDLE_REPOSITORY: "ghcr.io/aquasecurity/trivy-checks:1"
-        with:
-          trivy-config: ${{ vars.TRIVY_CONFIG_PATH }}
-          trivyignores: 'trivy_conf/.trivyignore' 
-          scan-type: 'fs'
-          scan-ref: 'rest_service'
-          format: 'table'
-          cache-dir: '/tmp/trivy-cache-rest_service'
-          exit-code: 1
+        run: |
+          trivy fs --config trivy_conf/trivy.yaml --format table rest_service
 
       - name: Run Trivy scan Frontend
-        uses: aquasecurity/trivy-action@v0.35.0
-        env:
-          # Forces Trivy to fetch online misconfig metadata from GitHub instead of Google
-          TRIVY_CHECKS_BUNDLE_REPOSITORY: "ghcr.io/aquasecurity/trivy-checks:1"
-        with:
-          trivy-config: ${{ vars.TRIVY_CONFIG_PATH }}
-          trivyignores: 'trivy_conf/.trivyignore' 
-          scan-type: 'fs'
-          scan-ref: 'frontend'
-          format: 'table'
-          cache-dir: '/tmp/trivy-cache-frontend'
-          exit-code: 1
+        run: |
+          trivy fs --config trivy_conf/trivy.yaml --format table frontend
         
       - name: Run Trivy scan K8s Configs
-        uses: aquasecurity/trivy-action@v0.35.0
-        env:
-          # Forces Trivy to fetch online misconfig metadata from GitHub instead of Google
-          TRIVY_CHECKS_BUNDLE_REPOSITORY: "ghcr.io/aquasecurity/trivy-checks:1"
-        with:
-          trivy-config: ${{ vars.TRIVY_CONFIG_PATH }}
-          trivyignores: 'trivy_conf/.trivyignore' 
-          scan-type: 'fs'
-          scan-ref: 'k8s-configs'
-          format: 'table'
-          cache-dir: '/tmp/trivy-cache-k8s-configs'
-          exit-code: 1
+        run: |
+          trivy fs --config trivy_conf/trivy.yaml --format table k8s-configs
 
       - name: Check Minikube status
         id: status_check
