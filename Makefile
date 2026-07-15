@@ -163,10 +163,10 @@ launch_staging:
 	@trap 'echo "\nInterrupted! Cleaning up..."; $(MAKE) clear_staging; exit 130' INT; \
 	trap '$(MAKE) clear_staging' EXIT TERM; \
 	$(MAKE) start_and_prepare_staging; \
-	$(MAKE) run_tests
-	
-#$(MAKE) sonar_scan
-#$(MAKE) run_vulnerability_tests; \
+	$(MAKE) run_vulnerability_tests; \
+	$(MAKE) run_tests; \
+	$(MAKE) sonar_scan
+
 stop_staging: 
 	minikube kubectl -- delete namespace staging
 
@@ -273,8 +273,8 @@ trivy_scan_k8s_configs_service:
 	@echo "Starting trivy scan for k8s-configs service..."
 	trivy fs --config trivy_conf/trivy.yaml --format table k8s-configs
 
-#rest_service_tests post_service_tests auth_service_tests
-run_tests:  frontend_tests
+
+run_tests: rest_service_tests post_service_tests auth_service_tests frontend_tests
 
 rest_service_tests:
 	python3 -m venv "rest_service/.venv"
