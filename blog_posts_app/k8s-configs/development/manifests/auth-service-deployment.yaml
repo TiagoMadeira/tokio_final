@@ -21,7 +21,7 @@ spec:
           type: RuntimeDefault
       containers:
       - name: auth-service
-        image: tokio-auth-service:latest
+        image: localhost:5000/tokio-auth-service:dev
         imagePullPolicy: Never
         workingDir: /home/appuser
         securityContext:

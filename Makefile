@@ -1,9 +1,6 @@
 -include .make_env
 
 # 2. Export them so they are visible to sub-shells and docker commands
-export DOCKER_USERNAME
-export DOCKERHUB_ACCESS_TOKEN
-export DOCKER_EMAIL
 export JWT_SECRET
 export SONAR_HOST_URL
 export SONAR_TOKEN
@@ -14,7 +11,7 @@ PIP_VERSION ?= 26.1.2
 
 #########################################################################Initial Setup###################################################################
 
-setup: install_basic_deps install_python install_node install_CI_dependencies install_docker install_minikube install_trivy add_hosts
+setup: install_basic_deps install_python install_node install_CI_dependencies install_trivy
 
 install_basic_deps:
 	@echo "Updating packages and installing basic dependencies..."
@@ -22,41 +19,20 @@ install_basic_deps:
 	sudo apt-get install -y curl software-properties-common apt-transport-https ca-certificates gnupg lsb-release
 
 install_python:
+	@echo "installing python v3.12..."
 	sudo add-apt-repository ppa:deadsnakes/ppa -y
 	sudo apt update
 	sudo apt install python3.12 python3.12-venv python3.12-dev -y
 
 install_node:
+	@echo "installing node v22"
 	curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
 	sudo apt-get install -y nodejs
-
-install_docker:
-	@if [ -x /usr/bin/docker ]; then \
-		echo "Docker is already installed. Skipping installation steps."; \
-	else \
-		echo "Docker not found. Installing via standard apt-get repository..."; \
-		sudo apt-get update -y; \
-		sudo apt-get install -y docker.io docker-buildx; \
-		echo "Ensuring user $(CURRENT_USER) is in docker group..."; \
-		sudo usermod -aG docker $(CURRENT_USER); \
-	fi
-	sudo systemctl enable docker
-	sudo systemctl start docker
-
-install_minikube:
-	@if command -v minikube >/dev/null 2>&1; then \
-		echo "Minikube is already installed. Skipping installation steps."; \
-	else \
-		echo "Minikube not found. Fetching and installing Debian package..."; \
-		curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube_latest_amd64.deb; \
-		sudo apt-get install -y ./minikube_latest_amd64.deb; \
-		rm minikube_latest_amd64.deb; \
-	fi
 
 install_CI_dependencies:
 	@echo installing CI dependencies 
 	sudo apt-get update
-	sudo apt-get install -y libnspr4 libnss3 libgbm1 libasound2 unzip
+	sudo apt-get install -y libnspr4 libnss3 libgbm1 libasound2t64
 
 install_trivy:
 	sudo apt-get install wget gnupg
@@ -77,21 +53,36 @@ add_hosts:
 	done \
 	'
 
-
 #########################################################################Development######################################################################
 
-start_development: start_minikube start_jaeger_server build_images start_development_server expose_ingress_controller
+start_development: start_minikube start_jaeger_server build_dev_images start_development_server expose_ingress_controller
 
 stop_development: 
 	minikube kubectl -- delete namespace development
 
-build_images:
-	@echo "Building images directly inside Minikube..."
-	@eval $$(minikube -p minikube docker-env) && \
-	docker build --no-cache --build-arg APP_ENV=dev -t tokio-rest-service:latest rest_service && \
-	docker build --no-cache --build-arg APP_ENV=dev -t tokio-post-service:latest post_service && \
-	docker build --no-cache --build-arg APP_ENV=dev -t tokio-auth-service:latest auth_service && \
-	docker build --no-cache -t frontend:latest frontend
+build_dev_images:
+	@echo "Building development images and pushing to Minikube Registry..."
+
+	docker build --no-cache --build-arg APP_ENV=dev -t localhost:32780/tokio-rest-service:dev rest_service
+	docker push localhost:32780/tokio-rest-service:dev
+	
+	docker build --no-cache --build-arg APP_ENV=dev -t localhost:32780/tokio-post-service:dev post_service
+	docker push localhost:32780/tokio-post-service:dev
+	
+	docker build --no-cache --build-arg APP_ENV=dev -t localhost:32780/tokio-auth-service:dev auth_service
+	docker push localhost:32780/tokio-auth-service:dev
+	
+	docker build --no-cache -t localhost:32780/tokio-frontend:dev frontend
+	docker push localhost:32780/tokio-frontend:dev
+
+
+start_or_update_development_server:
+	@echo "Checking for development namespace..."
+	@if ! minikube kubectl -- get namespace development >/dev/null 2>&1; then \
+		$(MAKE) start_development_server; \
+	else \
+		$(MAKE) rollout_development; \
+	fi
 
 start_development_server:
 	@echo create development namespace
@@ -99,35 +90,28 @@ start_development_server:
 	@echo appling pods secrets
 	minikube kubectl -- create secret tls backend-tls-secret --namespace development --cert=backend-tls.crt --key=backend-tls.key
 	minikube kubectl -- create secret tls frontend-development-posts-com-tls --namespace development --cert=dev-tls.crt --key=dev-tls.key
-	minikube kubectl -- apply -f k8s-configs/development/secrets/auth-service-secrets.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/development/secrets/auth-service-secrets.yaml
 	@echo applying config files
-	minikube kubectl -- apply -f k8s-configs/development/configmaps/frontend-configmap.yaml
-	minikube kubectl -- apply -f k8s-configs/development/configmaps/auth-service-configmap.yaml
-	minikube kubectl -- apply -f k8s-configs/development/configmaps/post-service-configmap.yaml
-	minikube kubectl -- apply -f k8s-configs/development/configmaps/rest-service-configmap.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/development/configmaps/frontend-configmap.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/development/configmaps/auth-service-configmap.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/development/configmaps/post-service-configmap.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/development/configmaps/rest-service-configmap.yaml
 	@echo applying deployments
-	minikube kubectl -- apply -f k8s-configs/development/manifests/frontend-deployment.yaml
-	minikube kubectl -- apply -f k8s-configs/development/manifests/rest-service-deployment.yaml
-	minikube kubectl -- apply -f k8s-configs/development/manifests/post-service-deployment.yaml
-	minikube kubectl -- apply -f k8s-configs/development/manifests/auth-service-deployment.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/development/manifests/frontend-deployment.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/development/manifests/rest-service-deployment.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/development/manifests/post-service-deployment.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/development/manifests/auth-service-deployment.yaml
 	@echo applying ingresses
-	minikube kubectl -- apply -f k8s-configs/development/ingress/frontend-posts-ingress.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/development/ingress/frontend-posts-ingress.yaml
 
 rollout_development:
-	@echo Building images this might take a few minutes when runing for the first time
-	@echo "Building images directly inside Minikube..."
-	@eval $$(minikube -p minikube docker-env) && \
-	docker build --build-arg APP_ENV=dev -t tokio-rest-service:latest rest_service && \
-	docker build --build-arg APP_ENV=dev -t tokio-post-service:latest post_service && \
-	docker build --build-arg APP_ENV=dev -t tokio-auth-service:latest auth_service && \
-	docker build -t frontend:latest frontend
 	@echo appling pods secrets
-	minikube kubectl -- apply -f k8s-configs/development/secrets/auth-service-secrets.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/development/secrets/auth-service-secrets.yaml
 	@echo applying config files
-	minikube kubectl -- apply -f k8s-configs/development/configmaps/frontend-configmap.yaml
-	minikube kubectl -- apply -f k8s-configs/development/configmaps/auth-service-configmap.yaml
-	minikube kubectl -- apply -f k8s-configs/development/configmaps/post-service-configmap.yaml
-	minikube kubectl -- apply -f k8s-configs/development/configmaps/rest-service-configmap.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/development/configmaps/frontend-configmap.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/development/configmaps/auth-service-configmap.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/development/configmaps/post-service-configmap.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/development/configmaps/rest-service-configmap.yaml
 	@echo rollout deployments
 	minikube kubectl -- rollout restart deployment frontend-deployment -n development
 	minikube kubectl -- rollout restart deployment auth-service-deployment -n development
@@ -137,21 +121,22 @@ rollout_development:
 ###########################################################################Build##########################################################################
 
 launch_build:
-	@echo "Logging into Docker Hub..."
-	@docker login -u "$(DOCKER_USERNAME)" --password "$(DOCKERHUB_ACCESS_TOKEN)"
+	@echo "Verifying local registry port-forward..."
+	@lsof -i :32780 >/dev/null 2>&1 || (echo "Error: Run 'make start_minikube' first to open port 32780." && exit 1)
+
+	@echo "Building and pushing images to Minikube Registry..."
 	
-	@echo "Building and pushing images to private Docker Hub..."
-	docker build --no-cache --build-arg APP_ENV=prd -t $(DOCKER_USERNAME)/tokio-rest-service:latest rest_service
-	docker push $(DOCKER_USERNAME)/tokio-rest-service:latest
+	docker build --no-cache --build-arg APP_ENV=prd -t localhost:32780/tokio-rest-service:latest blog_posts_app/rest_service
+	docker push localhost:32780/tokio-rest-service:latest
 	
-	docker build --no-cache --build-arg APP_ENV=prd -t $(DOCKER_USERNAME)/tokio-post-service:latest post_service
-	docker push $(DOCKER_USERNAME)/tokio-post-service:latest
+	docker build --no-cache --build-arg APP_ENV=prd -t localhost:32780/tokio-post-service:latest blog_posts_app/post_service
+	docker push localhost:32780/tokio-post-service:latest
 	
-	docker build --no-cache --build-arg APP_ENV=prd -t $(DOCKER_USERNAME)/tokio-auth-service:latest auth_service
-	docker push $(DOCKER_USERNAME)/tokio-auth-service:latest
+	docker build --no-cache --build-arg APP_ENV=prd -t localhost:32780/tokio-auth-service:latest blog_posts_app/auth_service
+	docker push localhost:32780/tokio-auth-service:latest
 	
-	docker build --no-cache -t $(DOCKER_USERNAME)/tokio-frontend:latest frontend
-	docker push $(DOCKER_USERNAME)/tokio-frontend:latest
+	docker build --no-cache -t localhost:32780/tokio-frontend:latest blog_posts_app/frontend
+	docker push localhost:32780/tokio-frontend:latest
 
 
 
@@ -178,37 +163,33 @@ wait_for_staging_pods:
 
 prepare_staging_for_integration_testing:
 	@echo "preparing staging for integration testing"
-	minikube kubectl -- port-forward service/rest-internal-service 8000:80 -n staging > /dev/null 2>&1 &
-	minikube kubectl -- port-forward service/frontend-internal-service 3000:80 -n staging > /dev/null 2>&1 &
+	minikube kubectl -- port-forward service/rest-internal-service 8000:80 -n staging > /dev/null 2>&1 & echo $$! >> .ports.pids
+	minikube kubectl -- port-forward service/frontend-internal-service 3000:80 -n staging > /dev/null 2>&1 & echo $$! >> .ports.pids
 	sleep 5 # Wait for the tunnel to initialize
 
 start_staging_environment:
 	@echo create staging namespace
 	minikube kubectl -- create namespace staging
 	@echo appling pods secrets
-	@minikube kubectl -- create secret docker-registry regcred --namespace staging --docker-server=https://index.docker.io/v1/ --docker-username=$(DOCKER_USERNAME) --docker-password=$(DOCKERHUB_ACCESS_TOKEN) --docker-email=$(DOCKER_EMAIL)
-	minikube kubectl -- create secret tls backend-tls-secret --namespace staging --cert=staging-backend-tls.crt --key=staging-backend-tls.key
-	minikube kubectl -- create secret tls frontend-staging-posts-com-tls --namespace staging --cert=staging-frontend-tls.crt --key=staging-frontend-tls.key
-	minikube kubectl -- apply -f k8s-configs/staging/secrets/auth-service-secrets.yaml
+	minikube kubectl -- create secret tls backend-tls-secret --namespace staging --cert=blog_posts_app/tls/certs/staging-backend-tls.crt --key=blog_posts_app/tls/keys/staging-backend-tls.key
+	minikube kubectl -- create secret tls frontend-staging-posts-com-tls --namespace staging --cert=blog_posts_app/tls/certs/staging-frontend-tls.crt --key=blog_posts_app/tls/keys/staging-frontend-tls.key
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/staging/secrets/auth-service-secrets.yaml
 	@echo applying config files
-	minikube kubectl -- apply -f k8s-configs/staging/configmaps/frontend-configmap.yaml
-	minikube kubectl -- apply -f k8s-configs/staging/configmaps/auth-service-configmap.yaml
-	minikube kubectl -- apply -f k8s-configs/staging/configmaps/post-service-configmap.yaml
-	minikube kubectl -- apply -f k8s-configs/staging/configmaps/rest-service-configmap.yaml
-	@echo applying deployments
-	minikube kubectl -- apply -f k8s-configs/staging/manifests/frontend-deployment.yaml
-	minikube kubectl -- apply -f k8s-configs/staging/manifests/rest-service-deployment.yaml
-	minikube kubectl -- apply -f k8s-configs/staging/manifests/post-service-deployment.yaml
-	minikube kubectl -- apply -f k8s-configs/staging/manifests/auth-service-deployment.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/staging/configmaps/frontend-configmap.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/staging/configmaps/auth-service-configmap.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/staging/configmaps/post-service-configmap.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/staging/configmaps/rest-service-configmap.yaml
+	@echo "applying deployments using kustomize..."
+	minikube kubectl -- apply -k blog_posts_app/k8s-configs/staging
 	@echo applying ingresses
-	minikube kubectl -- apply -f k8s-configs/staging/ingress/frontend-posts-ingress.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/staging/ingress/frontend-posts-ingress.yaml
 
 rollout_staging:
 	@echo applying config files
-	minikube kubectl -- apply -f k8s-configs/staging/configmaps/frontend-configmap.yaml
-	minikube kubectl -- apply -f k8s-configs/staging/configmaps/auth-service-configmap.yaml
-	minikube kubectl -- apply -f k8s-configs/staging/configmaps/post-service-configmap.yaml
-	minikube kubectl -- apply -f k8s-configs/staging/configmaps/rest-service-configmap.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/staging/configmaps/frontend-configmap.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/staging/configmaps/auth-service-configmap.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/staging/configmaps/post-service-configmap.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/staging/configmaps/rest-service-configmap.yaml
 	@echo rollout deployments
 	minikube kubectl -- rollout restart deployment frontend-deployment -n staging
 	minikube kubectl -- rollout restart deployment auth-service-deployment -n staging
@@ -225,7 +206,7 @@ audit_rest_service:
 	@stty sane || true
 	@tput init || true
 	@echo "Starting security compliance audit for Rest Service..."
-	@cd rest_service && \
+	@cd blog_posts_app/rest_service && \
 	python3 -m venv .venv && \
 	. .venv/bin/activate && \
 	python3 -m pip install --upgrade pip==$(PIP_VERSION) > /dev/null && \
@@ -235,7 +216,7 @@ audit_rest_service:
 
 audit_auth_service:
 	@echo "Starting security compliance audit for Auth Service..."
-	@cd auth_service && \
+	@cd blog_posts_app/auth_service && \
 	python3 -m venv .venv && \
 	. .venv/bin/activate && \
 	python3 -m pip install --upgrade pip==$(PIP_VERSION) > /dev/null && \
@@ -245,7 +226,7 @@ audit_auth_service:
 
 audit_post_service:
 	@echo "Starting security compliance audit for Post Service..."
-	@cd post_service && \
+	@cd blog_posts_app/post_service && \
 	python3 -m venv .venv && \
 	. .venv/bin/activate && \
 	python3 -m pip install --upgrade pip==$(PIP_VERSION) > /dev/null && \
@@ -255,46 +236,46 @@ audit_post_service:
 
 trivy_scan_rest_service:
 	@echo "Starting trivy scan for rest service..."
-	trivy fs --config trivy_conf/trivy.yaml --format table rest_service
+	trivy fs --config blog_posts_app/trivy_conf/trivy.yaml --format table blog_posts_app/rest_service
 
 trivy_scan_auth_service:
 	@echo "Starting trivy scan for auth service..."
-	trivy fs --config trivy_conf/trivy.yaml --format table auth_service
+	trivy fs --config blog_posts_app/trivy_conf/trivy.yaml --format table blog_posts_app/auth_service
 
 trivy_scan_post_service:
 	@echo "Starting trivy scan for post service..."
-	trivy fs --config trivy_conf/trivy.yaml --format table post_service
+	trivy fs --config blog_posts_app/trivy_conf/trivy.yaml --format table blog_posts_app/post_service
 
 trivy_scan_frontend_service:
 	@echo "Starting trivy scan for frotend service..."
-	trivy fs --config trivy_conf/trivy.yaml --format table frontend
+	trivy fs --config blog_posts_app/trivy_conf/trivy.yaml --format table blog_posts_app/frontend
 
 trivy_scan_k8s_configs_service:
 	@echo "Starting trivy scan for k8s-configs service..."
-	trivy fs --config trivy_conf/trivy.yaml --format table k8s-configs
+	trivy fs --config blog_posts_app/trivy_conf/trivy.yaml --format table blog_posts_app/k8s-configs
 
 
 run_tests: rest_service_tests post_service_tests auth_service_tests frontend_tests
 
 rest_service_tests:
-	python3 -m venv "rest_service/.venv"
-	rest_service/.venv/bin/pip install -r rest_service/requirements-stg.txt
-	PYTHONPATH=rest_service ENABLE_MONOTORING=False rest_service/.venv/bin/pytest rest_service/tests/ --cov=rest_service/app -W ignore --cov-report=xml:rest_service/coverage.xml --cov-config=.coveragerc
+	python3 -m venv "blog_posts_app/rest_service/.venv"
+	blog_posts_app/rest_service/.venv/bin/pip install -r blog_posts_app/rest_service/requirements-stg.txt
+	PYTHONPATH=blog_posts_app/rest_service ENABLE_MONOTORING=False blog_posts_app/rest_service/.venv/bin/pytest blog_posts_app/rest_service/tests/ --cov=blog_posts_app/rest_service/app -W ignore --cov-report=xml:blog_posts_app/rest_service/coverage.xml --cov-config=blog_posts_app/.coveragerc
 
 post_service_tests:
-	python3 -m venv "post_service/.venv"
-	post_service/.venv/bin/pip install -r post_service/requirements-stg.txt
-	PYTHONPATH=post_service ENABLE_MONOTORING=False post_service/.venv/bin/pytest post_service/tests/ --cov=post_service/app -W ignore --cov-report=xml:post_service/coverage.xml --cov-config=.coveragerc
+	python3 -m venv "blog_posts_app/post_service/.venv"
+	blog_posts_app/post_service/.venv/bin/pip install -r blog_posts_app/post_service/requirements-stg.txt
+	PYTHONPATH=blog_posts_app/post_service ENABLE_MONOTORING=False blog_posts_app/post_service/.venv/bin/pytest blog_posts_app/post_service/tests/ --cov=blog_posts_app/post_service/app -W ignore --cov-report=xml:blog_posts_app/post_service/coverage.xml --cov-config=blog_posts_app/.coveragerc
 
 auth_service_tests:
-	python3 -m venv "auth_service/.venv"
-	auth_service/.venv/bin/pip install -r auth_service/requirements-stg.txt
-	PYTHONPATH=auth_service ENABLE_MONOTORING=False SECRET_KEY=$(JWT_SECRET) auth_service/.venv/bin/pytest auth_service/tests/ -W ignore --cov=auth_service/app --cov-report=xml:auth_service/coverage.xml --cov-config=.coveragerc
+	python3 -m venv "blog_posts_app/auth_service/.venv"
+	blog_posts_app/auth_service/.venv/bin/pip install -r blog_posts_app/auth_service/requirements-stg.txt
+	PYTHONPATH=blog_posts_app/auth_service ENABLE_MONOTORING=False SECRET_KEY=$(JWT_SECRET) blog_posts_app/auth_service/.venv/bin/pytest blog_posts_app/auth_service/tests/ -W ignore --cov=blog_posts_app/auth_service/app --cov-report=xml:blog_posts_app/auth_service/coverage.xml --cov-config=blog_posts_app/.coveragerc
 
 frontend_tests:
 	@stty sane || true
 	@tput init || true
-	cd frontend && \
+	cd blog_posts_app/frontend && \
 	npm ci && \
 	npx playwright install chromium && \
 	npm run test -- --coverage --watch=false && \
@@ -311,9 +292,6 @@ sonar_scan:
 		-Dsonar.projectBaseDir=/usr/src
 
 clear_staging:
-	#Kill background port-forward processes
-	-pkill -f "port-forward service/rest-internal-service"
-	-pkill -f "port-forward service/frontend-internal-service"
 	#Delete staging namespace
 	minikube kubectl -- delete namespace staging
 
@@ -340,31 +318,29 @@ wait_for_production_pods:
 start_production_environment:
 	@echo create production namespace
 	minikube kubectl -- create namespace production
-	@echo creating docker registry secret
-	@minikube kubectl -- create secret docker-registry regcred --namespace production --docker-server=https://index.docker.io/v1/ --docker-username=$(DOCKER_USERNAME) --docker-password=$(DOCKERHUB_ACCESS_TOKEN) --docker-email=$(DOCKER_EMAIL)
 	@echo appling pods secrets
-	minikube kubectl -- apply -f k8s-configs/production/secrets/auth-service-secrets.yaml
-	minikube kubectl -- create secret tls backend-tls-secret --namespace production --cert=prod-backend-tls.crt --key=prod-backend-tls.key
-	minikube kubectl -- create secret tls frontend-production-posts-com-tls --namespace production --cert=prod-frontend-tls.crt --key=prod-frontend-tls.key
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/production/secrets/auth-service-secrets.yaml
+	minikube kubectl -- create secret tls backend-tls-secret --namespace production --cert=blog_posts_app/tls/certs/prod-backend-tls.crt --key=blog_posts_app/tls/keys/prod-backend-tls.key
+	minikube kubectl -- create secret tls frontend-production-posts-com-tls --namespace production --cert=blog_posts_app/tls/certs/prod-frontend-tls.crt --key=blog_posts_app/tls/keys/prod-frontend-tls.key
 	@echo applying config files
-	minikube kubectl -- apply -f k8s-configs/production/configmaps/frontend-configmap.yaml
-	minikube kubectl -- apply -f k8s-configs/production/configmaps/auth-service-configmap.yaml
-	minikube kubectl -- apply -f k8s-configs/production/configmaps/post-service-configmap.yaml
-	minikube kubectl -- apply -f k8s-configs/production/configmaps/rest-service-configmap.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/production/configmaps/frontend-configmap.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/production/configmaps/auth-service-configmap.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/production/configmaps/post-service-configmap.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/production/configmaps/rest-service-configmap.yaml
 	@echo applying deployments
-	minikube kubectl -- apply -f k8s-configs/production/manifests/frontend-deployment.yaml
-	minikube kubectl -- apply -f k8s-configs/production/manifests/rest-service-deployment.yaml
-	minikube kubectl -- apply -f k8s-configs/production/manifests/post-service-deployment.yaml
-	minikube kubectl -- apply -f k8s-configs/production/manifests/auth-service-deployment.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/production/manifests/frontend-deployment.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/production/manifests/rest-service-deployment.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/production/manifests/post-service-deployment.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/production/manifests/auth-service-deployment.yaml
 	@echo applying ingresses
-	minikube kubectl -- apply -f k8s-configs/production/ingress/frontend-posts-ingress.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/production/ingress/frontend-posts-ingress.yaml
 
 rollout_production:
 	@echo applying config files
-	minikube kubectl -- apply -f k8s-configs/production/configmaps/frontend-configmap.yaml
-	minikube kubectl -- apply -f k8s-configs/production/configmaps/auth-service-configmap.yaml
-	minikube kubectl -- apply -f k8s-configs/production/configmaps/post-service-configmap.yaml
-	minikube kubectl -- apply -f k8s-configs/production/configmaps/rest-service-configmap.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/production/configmaps/frontend-configmap.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/production/configmaps/auth-service-configmap.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/production/configmaps/post-service-configmap.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/production/configmaps/rest-service-configmap.yaml
 	@echo rollout deployments
 	minikube kubectl -- rollout restart deployment frontend-deployment -n production
 	minikube kubectl -- rollout restart deployment auth-service-deployment -n production
@@ -380,10 +356,10 @@ start_jaeger_server:
 		minikube kubectl -- create namespace observability; \
 	fi
 	@echo "Applying configurations (idempotent)..."
-	minikube kubectl -- apply -f k8s-configs/observability/configmaps/jaeger-configmap.yaml
-	minikube kubectl -- apply -f k8s-configs/observability/configmaps/jaeger-ui-config.yaml
-	minikube kubectl -- apply -f k8s-configs/observability/manifests/jaeger-deployment.yaml
-	minikube kubectl -- apply -f k8s-configs/observability/ingress/jaeger-ingress.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/observability/configmaps/jaeger-configmap.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/observability/configmaps/jaeger-ui-config.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/observability/manifests/jaeger-deployment.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/observability/ingress/jaeger-ingress.yaml
 
 
 ################################################################################Utils################################################################################
@@ -397,39 +373,55 @@ start_minikube:
 		minikube start --driver=docker; \
 		echo "Enabling Ingress addon..."; \
 		minikube addons enable ingress; \
+		echo "Enabling Registry addon..."; \
+		minikube addons enable registry; \
 	fi
 	@echo "Waiting for nginx ingress readiness..."
 	minikube kubectl -- wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=120s
-
+	@echo "Checking registry port-forward..."
+	@( \
+		if ! lsof -i :32780 >/dev/null 2>&1; then \
+			echo "Starting background port-forward for local registry (localhost:32780)..."; \
+			minikube kubectl -- port-forward --namespace kube-system service/registry 32780:80 > /dev/null 2>&1 & \
+			echo $$! >> .ports.pids; \
+		else \
+			echo "Registry port 32780 is already mapped."; \
+		fi \
+	)
 
 expose_ingress_controller:
 	@echo "Checking if Ingress Controller port-forward is already active..."
-	@if sudo lsof -i :80 -i :443 >/dev/null 2>&1; then \
-		echo "Ports 80/443 are already occupied. Skipping port-forward."; \
-	else \
-		echo "Ports are free. Exposing Ingress Controller to all interfaces..."; \
-		sudo -E minikube kubectl -- port-forward service/ingress-nginx-controller -n ingress-nginx 80:80 443:443 >/dev/null 2>&1 & \
-		sleep 5 # Wait for the tunnel to initialize \
-	fi
+	@( \
+		if lsof -i :8080 -i :8443 >/dev/null 2>&1; then \
+			echo "Ports 8080/8443 are already occupied. Skipping port-forward."; \
+		else \
+			echo "Ports are free. Exposing Ingress Controller to all interfaces..."; \
+			minikube kubectl -- port-forward service/ingress-nginx-controller -n ingress-nginx 8080:80 8443:443 >/dev/null 2>&1 & \
+			echo $$! >> .ports.pids; \
+			sleep 5; \
+		fi \
+	)
 
 clean:
 	@echo "Killing background port-forward processes..."
-	-pkill -f "port-forward service/rest-internal-service"
-	-pkill -f "port-forward service/frontend-internal-service"
-	-sudo pkill -f "port-forward service/ingress-nginx-controller"
+	-@test -f .ports.pids && kill $$(cat .ports.pids) && rm .ports.pids
 	@echo "Deleting minikube cluster and profile..."
 	minikube delete --all --purge
+	@echo docker stop running images
+	docker stop $$(docker ps -qa) || true
 	@echo "Removing locally built Docker images..."
 	docker rmi $(DOCKER_USERNAME)/tokio-rest-service:latest || true
 	docker rmi $(DOCKER_USERNAME)/tokio-post-service:latest || true
 	docker rmi $(DOCKER_USERNAME)/tokio-auth-service:latest || true
 	docker rmi $(DOCKER_USERNAME)/tokio-frontend:latest || true
-	@echo "Cleaning up build caches..."
-	docker builder prune -f
-	@echo "Removing SonarQube scanner image..."
 	docker rmi sonarsource/sonar-scanner-cli:latest || true
-	@echo "Remove added domains from hosts file"
-	sudo sed -i.bak -E '/127\.0\.0\.1 +(posts\.com|tokio\.observability\.jaeger\.com|frontend\.development\.posts\.com|frontend\.staging\.posts\.com)/d' /etc/hosts
+	@echo "Cleaning docker system"
+	docker system prune -af --volumes
+	docker builder prune -af
+	docker network prune -f
+	docker volume prune -af
+	@echo docker check resources
+	docker system df
 
 fetch-sonar:
 	@python get-sonar-summary.py

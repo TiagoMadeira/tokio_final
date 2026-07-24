@@ -23,7 +23,7 @@ spec:
           type: RuntimeDefault
       containers:
       - name: frontend
-        image: frontend:latest
+        image: localhost:5000/tokio-frontend:dev
         imagePullPolicy: Never
         securityContext:
           runAsUser: 10005

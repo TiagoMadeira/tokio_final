@@ -21,7 +21,7 @@
     "@opentelemetry/sdk-trace-web": "^2.7.1",
     "@opentelemetry/semantic-conventions": "^1.40.0",
     "@types/react-router-dom": "^5.3.3",
-    "axios": "^1.16.0",
+    "axios": "^1.18.0",
     "bootstrap": "^5.3.8",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",

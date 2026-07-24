@@ -1,10 +1,10 @@
 
-ignorefile: trivy_conf/.trivyignore
+ignorefile: blog_posts_app/trivy_conf/.trivyignore
 
 rego:
   # Same as '--config-data'
   data:
-    - "./trivy_data"
+    - "blog_posts_app/trivy_data"
 
 scan:
   scanners:

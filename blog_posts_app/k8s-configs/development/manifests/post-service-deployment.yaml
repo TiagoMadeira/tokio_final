@@ -1,38 +1,42 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-    name: rest-service-deployment
+    name: post-service-deployment
     namespace: development
     labels:
-      app: rest-service
+      app: post-service
 spec:
   selector:
     matchLabels:
-      app: rest-service
+      app: post-service
   template:
     metadata:
       labels:
-        app: rest-service
+        app: post-service
     spec:
       automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
         seccompProfile:
           type: RuntimeDefault
-        fsGroup: 10001 
       containers:
-      - name: rest-service
-        image: tokio-rest-service:latest
+      - name: post-service
+        image: localhost:5000/tokio-post-service:dev
         imagePullPolicy: Never
+        workingDir: /home/appuser   
         securityContext:
           runAsUser: 10001     # Matches the UID 10001 from your Dockerfile
-          runAsGroup: 10001    # Matches the GID 10001 from your Dockerfile
+          runAsGroup: 10001 
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
           capabilities:
             drop:
               - ALL
-              
+
+        volumeMounts:
+          - name: app-write-space
+            mountPath: /home/appuser/app/data
+
         resources:
           limits:
             memory: 512Mi
@@ -43,73 +47,73 @@ spec:
             cpu: "0.1"
             ephemeral-storage: "256Mi"
 
-        volumeMounts:
-          - name: certs
-            mountPath: "/etc/tls"
-            readOnly: true
         ports:
-          - containerPort: 8000
+          - name: http
+            protocol: TCP
+            containerPort: 8000
         env:
           - name: DEBUG
             valueFrom:
              configMapKeyRef:
-                name: rest-service-configmap
+                name: post-service-configmap
                 key: debug
           - name: AUTH_SERVICE_URL
             valueFrom:
              configMapKeyRef:
-                name: rest-service-configmap
+                name: post-service-configmap
                 key: auth_service_url
-          - name: POST_SERVICE_URL
+
+          - name: DATABASE_URL
             valueFrom:
              configMapKeyRef:
-                name: rest-service-configmap
-                key: post_service_url
+                name: post-service-configmap
+                key: database-url
+
           - name: OTEL_SERVICE_NAME
             valueFrom:
              configMapKeyRef:
-                name: rest-service-configmap
+                name: post-service-configmap
                 key: otel-service-name
 
           - name: OTEL_EXPORTER_OTLP_ENDPOINT
             valueFrom:
              configMapKeyRef:
-                name: rest-service-configmap
+                name: post-service-configmap
                 key: otel-exporter-endpoint
           
           - name: OTEL_EXPORTER_OTLP_INSECURE 
             valueFrom:
              configMapKeyRef:
-                name: rest-service-configmap
+                name: post-service-configmap
                 key: otel-exporter-insecure
 
           - name: OTEL_METRICS_EXPORTER
             valueFrom:
              configMapKeyRef:
-                name: rest-service-configmap
+                name: post-service-configmap
                 key: otel-metrics-exporter
 
           - name: OTEL_LOGS_EXPORTER
             valueFrom:
              configMapKeyRef:
-                name: rest-service-configmap
+                name: post-service-configmap
                 key: otel-logs-exporter
+
       volumes:
-      - name: certs
-        secret:
-          secretName: backend-tls-secret
+        - name: app-write-space
+          emptyDir: {}
               
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: rest-internal-service
+  name: post-internal-service
   namespace: development
 spec:
   selector:
-    app: rest-service
+    app: post-service
   type: ClusterIP
   ports:
-    - port: 80
+    - port: 8080
       protocol: TCP
-      targetPort: 8000
+      targetPort: http

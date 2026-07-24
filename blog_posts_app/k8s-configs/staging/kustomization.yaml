@@ -1,0 +1,50 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - manifests/auth-service-deployment.yaml
+  - manifests/frontend-deployment.yaml
+  - manifests/post-service-deployment.yaml
+  - manifests/rest-service-deployment.yaml
+
+
+patches:
+  - target:
+      kind: Deployment
+      name: auth-service-deployment
+    patch: |-
+      - op: remove
+        path: /spec/template/spec/imagePullSecrets
+  - target:
+      kind: Deployment
+      name: rest-service-deployment
+    patch: |-
+      - op: remove
+        path: /spec/template/spec/imagePullSecrets  
+  - target:
+      kind: Deployment
+      name: post-service-deployment
+    patch: |-
+      - op: remove
+        path: /spec/template/spec/imagePullSecrets  
+  - target:
+      kind: Deployment
+      name: frontend-deployment
+    patch: |-
+      - op: remove
+        path: /spec/template/spec/imagePullSecrets
+
+
+images:
+  - name: docker.io/tiagomadeiradock/tokio-rest-service
+    newName: localhost:5000/tokio-rest-service
+    newTag: latest
+  - name: docker.io/tiagomadeiradock/tokio-post-service
+    newName: localhost:5000/tokio-post-service
+    newTag: latest
+  - name: docker.io/tiagomadeiradock/tokio-auth-service
+    newName: localhost:5000/tokio-auth-service
+    newTag: latest
+  - name: docker.io/tiagomadeiradock/tokio-frontend
+    newName: localhost:5000/tokio-frontend
+    newTag: latest

@@ -36,7 +36,7 @@ jobs:
 
       - name: Pip audit Auth Service  # Uses python version in .python-version file
         run: |
-          cd  auth_service
+          cd  blog_posts_app/auth_service
           python -m venv .venv
           source .venv/bin/activate
           python -m pip install pip==${{vars.PIP_VERSION}}
@@ -45,7 +45,7 @@ jobs:
       
       - name: Pip audit Post Service  # Uses python version in .python-version file
         run: |
-          cd  post_service
+          cd  blog_posts_app/post_service
           python -m venv .venv
           source .venv/bin/activate
           python -m pip install pip==${{vars.PIP_VERSION}}
@@ -54,7 +54,7 @@ jobs:
       
       - name: Pip audit Rest Service # Uses python version in .python-version file
         run: |
-          cd  rest_service
+          cd  blog_posts_app/rest_service
           python -m venv .venv
           source .venv/bin/activate
           python -m pip install pip==${{vars.PIP_VERSION}}
@@ -63,23 +63,23 @@ jobs:
 
       - name: Run Trivy scan Auth Service
         run: |
-          trivy fs --config trivy_conf/trivy.yaml --format table auth_service
+          trivy fs --config blog_posts_app/trivy_conf/trivy.yaml --format table blog_posts_app/auth_service
 
       - name: Run Trivy scan Post Service
         run: | 
-          trivy fs --config trivy_conf/trivy.yaml --format table post_service
+          trivy fs --config blog_posts_app/trivy_conf/trivy.yaml --format table blog_posts_app/post_service
 
       - name: Run Trivy scan Rest Service
         run: |
-          trivy fs --config trivy_conf/trivy.yaml --format table rest_service
+          trivy fs --config blog_posts_app/trivy_conf/trivy.yaml --format table blog_posts_app/rest_service
 
       - name: Run Trivy scan Frontend
         run: |
-          trivy fs --config trivy_conf/trivy.yaml --format table frontend
+          trivy fs --config blog_posts_app/trivy_conf/trivy.yaml --format table blog_posts_app/frontend
         
       - name: Run Trivy scan K8s Configs
         run: |
-          trivy fs --config trivy_conf/trivy.yaml --format table k8s-configs
+          trivy fs --config blog_posts_app/trivy_conf/trivy.yaml --format table blog_posts_app/k8s-configs
 
       - name: Check Minikube status
         id: status_check
@@ -113,10 +113,10 @@ jobs:
             minikube kubectl -- create namespace observability
           fi
           echo "Applying configurations (idempotent)..."
-          minikube kubectl -- apply -f k8s-configs/observability/configmaps/jaeger-configmap.yaml
-          minikube kubectl -- apply -f k8s-configs/observability/configmaps/jaeger-ui-config.yaml
-          minikube kubectl -- apply -f k8s-configs/observability/manifests/jaeger-deployment.yaml
-          minikube kubectl -- apply -f k8s-configs/observability/ingress/jaeger-ingress.yaml
+          minikube kubectl -- apply -f blog_posts_app/k8s-configs/observability/configmaps/jaeger-configmap.yaml
+          minikube kubectl -- apply -f blog_posts_app/k8s-configs/observability/configmaps/jaeger-ui-config.yaml
+          minikube kubectl -- apply -f blog_posts_app/k8s-configs/observability/manifests/jaeger-deployment.yaml
+          minikube kubectl -- apply -f blog_posts_app/k8s-configs/observability/ingress/jaeger-ingress.yaml
      
       - name: Wait for observability server to be up and running
         run: |
@@ -135,10 +135,10 @@ jobs:
         run: |
           if  minikube kubectl -- get namespace staging ; then
             echo applying config files
-            minikube kubectl -- apply -f k8s-configs/staging/configmaps/frontend-configmap.yaml
-            minikube kubectl -- apply -f k8s-configs/staging/configmaps/auth-service-configmap.yaml
-            minikube kubectl -- apply -f k8s-configs/staging/configmaps/post-service-configmap.yaml
-            minikube kubectl -- apply -f k8s-configs/staging/configmaps/rest-service-configmap.yaml
+            minikube kubectl -- apply -f blog_posts_app/k8s-configs/staging/configmaps/frontend-configmap.yaml
+            minikube kubectl -- apply -f blog_posts_app/k8s-configs/staging/configmaps/auth-service-configmap.yaml
+            minikube kubectl -- apply -f blog_posts_app/k8s-configs/staging/configmaps/post-service-configmap.yaml
+            minikube kubectl -- apply -f blog_posts_app/k8s-configs/staging/configmaps/rest-service-configmap.yaml
             echo rollout deployments
             minikube kubectl -- rollout restart deployment frontend-deployment -n staging
             minikube kubectl -- rollout restart deployment auth-service-deployment -n staging
@@ -159,17 +159,17 @@ jobs:
             minikube kubectl -- create secret tls frontend-staging-posts-com-tls --namespace staging --cert=staging-frontend-tls.crt --key=staging-frontend-tls.key
             minikube kubectl -- apply -f k8s-configs/staging/secrets/auth-service-secrets.yaml
             echo applying config files
-            minikube kubectl -- apply -f k8s-configs/staging/configmaps/frontend-configmap.yaml
-            minikube kubectl -- apply -f k8s-configs/staging/configmaps/auth-service-configmap.yaml
-            minikube kubectl -- apply -f k8s-configs/staging/configmaps/post-service-configmap.yaml
-            minikube kubectl -- apply -f k8s-configs/staging/configmaps/rest-service-configmap.yaml
+            minikube kubectl -- apply -f blog_posts_app/k8s-configs/staging/configmaps/frontend-configmap.yaml
+            minikube kubectl -- apply -f blog_posts_app/k8s-configs/staging/configmaps/auth-service-configmap.yaml
+            minikube kubectl -- apply -f blog_posts_app/k8s-configs/staging/configmaps/post-service-configmap.yaml
+            minikube kubectl -- apply -f blog_posts_app/k8s-configs/staging/configmaps/rest-service-configmap.yaml
             echo applying deployments
-            minikube kubectl -- apply -f k8s-configs/staging/manifests/frontend-deployment.yaml
-            minikube kubectl -- apply -f k8s-configs/staging/manifests/rest-service-deployment.yaml
-            minikube kubectl -- apply -f k8s-configs/staging/manifests/post-service-deployment.yaml
-            minikube kubectl -- apply -f k8s-configs/staging/manifests/auth-service-deployment.yaml
+            minikube kubectl -- apply -f blog_posts_app/k8s-configs/staging/manifests/frontend-deployment.yaml
+            minikube kubectl -- apply -f blog_posts_app/k8s-configs/staging/manifests/rest-service-deployment.yaml
+            minikube kubectl -- apply -f blog_posts_app/k8s-configs/staging/manifests/post-service-deployment.yaml
+            minikube kubectl -- apply -f blog_posts_app/k8s-configs/staging/manifests/auth-service-deployment.yaml
             echo applying ingresses
-            minikube kubectl -- apply -f k8s-configs/staging/ingress/frontend-posts-ingress.yaml
+            minikube kubectl -- apply -f blog_posts_app/k8s-configs/staging/ingress/frontend-posts-ingress.yaml
 
             # 3. Cleanup sensitive temporary files
             rm staging-backend-tls.crt staging-backend-tls.key staging-frontend-tls.crt staging-frontend-tls.key
@@ -200,56 +200,56 @@ jobs:
         shell: bash
         run: |
           echo "SECRET_KEY=$JWT_SECRET" >> $GITHUB_ENV
-          python -m venv "$GITHUB_WORKSPACE/auth_service/.venv"
-          source "$GITHUB_WORKSPACE/auth_service/.venv/bin/activate"
+          python -m venv "$GITHUB_WORKSPACE/blog_posts_app/auth_service/.venv"
+          source "$GITHUB_WORKSPACE/blog_posts_app/auth_service/.venv/bin/activate"
         
-          pip install -r "$GITHUB_WORKSPACE/auth_service/requirements-stg.txt"
+          pip install -r "$GITHUB_WORKSPACE/blog_posts_app/auth_service/requirements-stg.txt"
         
-          export PYTHONPATH="$GITHUB_WORKSPACE/auth_service"
+          export PYTHONPATH="$GITHUB_WORKSPACE/blog_posts_app/auth_service"
         
-          pytest "$GITHUB_WORKSPACE/auth_service/tests/" \
-            --cov="$GITHUB_WORKSPACE/auth_service/app" \
-            --cov-report=xml:"$GITHUB_WORKSPACE/auth_service/coverage.xml"
+          pytest "$GITHUB_WORKSPACE/blog_posts_app/auth_service/tests/" \
+            --cov="$GITHUB_WORKSPACE/blog_posts_app/auth_service/app" \
+            --cov-report=xml:"$GITHUB_WORKSPACE/blog_posts_app/auth_service/coverage.xml"
 
       - name: post service unit testing
         shell: bash
         run: |
-          python -m venv "$GITHUB_WORKSPACE/post_service/.venv"
-          source "$GITHUB_WORKSPACE/post_service/.venv/bin/activate"
+          python -m venv "$GITHUB_WORKSPACE/blog_posts_app/post_service/.venv"
+          source "$GITHUB_WORKSPACE/blog_posts_app/post_service/.venv/bin/activate"
         
-          pip install -r "$GITHUB_WORKSPACE/post_service/requirements-stg.txt"
+          pip install -r "$GITHUB_WORKSPACE/blog_posts_app/post_service/requirements-stg.txt"
         
-          export PYTHONPATH="$GITHUB_WORKSPACE/post_service"
+          export PYTHONPATH="$GITHUB_WORKSPACE/blog_posts_app/post_service"
         
-          pytest "$GITHUB_WORKSPACE/post_service/tests/" \
-            --cov="$GITHUB_WORKSPACE/post_service/app" \
-            --cov-report=xml:"$GITHUB_WORKSPACE/post_service/coverage.xml"
+          pytest "$GITHUB_WORKSPACE/blog_posts_app/post_service/tests/" \
+            --cov="$GITHUB_WORKSPACE/blog_posts_app/post_service/app" \
+            --cov-report=xml:"$GITHUB_WORKSPACE/blog_posts_app/post_service/coverage.xml"
 
       - name: rest service unit and integration testing
         shell: bash
         run: |
-          python -m venv "$GITHUB_WORKSPACE/rest_service/.venv"
-          source "$GITHUB_WORKSPACE/rest_service/.venv/bin/activate"
+          python -m venv "$GITHUB_WORKSPACE/blog_posts_app/rest_service/.venv"
+          source "$GITHUB_WORKSPACE/blog_posts_app/rest_service/.venv/bin/activate"
         
-          pip install -r "$GITHUB_WORKSPACE/rest_service/requirements-stg.txt"
+          pip install -r "$GITHUB_WORKSPACE/blog_posts_app/rest_service/requirements-stg.txt"
         
-          export PYTHONPATH="$GITHUB_WORKSPACE/rest_service"
+          export PYTHONPATH="$GITHUB_WORKSPACE/blog_posts_app/rest_service"
         
-          pytest "$GITHUB_WORKSPACE/rest_service/tests/" \
-            --cov="$GITHUB_WORKSPACE/rest_service/app" \
-            --cov-report=xml:"$GITHUB_WORKSPACE/rest_service/coverage.xml"
+          pytest "$GITHUB_WORKSPACE/blog_posts_app/rest_service/tests/" \
+            --cov="$GITHUB_WORKSPACE/blog_posts_app/rest_service/app" \
+            --cov-report=xml:"$GITHUB_WORKSPACE/blog_posts_app/rest_service/coverage.xml"
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'npm'
-          cache-dependency-path: './frontend/package-lock.json'
+          cache-dependency-path: './blog_posts_app/frontend/package-lock.json'
 
       - name: frontend unit and integration testing and E2E
         shell: bash
         run: |
-          cd  frontend
+          cd  blog_posts_app/frontend
           npm ci
           npx playwright install chromium
           npm run test -- --coverage --watch=false
@@ -301,10 +301,10 @@ jobs:
         run: |
           if  minikube kubectl -- get namespace production; then
             echo applying config files
-            minikube kubectl -- apply -f k8s-configs/production/configmaps/frontend-configmap.yaml
-            minikube kubectl -- apply -f k8s-configs/production/configmaps/auth-service-configmap.yaml
-            minikube kubectl -- apply -f k8s-configs/production/configmaps/post-service-configmap.yaml
-            minikube kubectl -- apply -f k8s-configs/production/configmaps/rest-service-configmap.yaml
+            minikube kubectl -- apply -f blog_posts_app/k8s-configs/production/configmaps/frontend-configmap.yaml
+            minikube kubectl -- apply -f blog_posts_app/k8s-configs/production/configmaps/auth-service-configmap.yaml
+            minikube kubectl -- apply -f blog_posts_app/k8s-configs/production/configmaps/post-service-configmap.yaml
+            minikube kubectl -- apply -f blog_posts_app/k8s-configs/production/configmaps/rest-service-configmap.yaml
             echo rollout deployments
             minikube kubectl -- rollout restart deployment frontend-deployment -n production
             minikube kubectl -- rollout restart deployment auth-service-deployment -n production
@@ -322,21 +322,21 @@ jobs:
             echo creating docker registry secret
             minikube kubectl -- create secret docker-registry regcred --namespace production --docker-server=https://index.docker.io/v1/ --docker-username=${{vars.DOCKER_USERNAME}} --docker-password=$DOCKERHUB_ACCESS_TOKEN --docker-email=${{vars.DOCKER_EMAIL}} > /dev/null 2>&1
             echo appling pods secrets
-            minikube kubectl -- apply -f k8s-configs/production/secrets/auth-service-secrets.yaml
+            minikube kubectl -- apply -f blog_posts_app/k8s-configs/production/secrets/auth-service-secrets.yaml
             minikube kubectl -- create secret tls backend-tls-secret --namespace production --cert=prod-backend-tls.crt --key=prod-backend-tls.key
             minikube kubectl -- create secret tls frontend-production-posts-com-tls --namespace production --cert=prod-frontend-tls.crt --key=prod-frontend-tls.key
             echo applying config files
-            minikube kubectl -- apply -f k8s-configs/production/configmaps/frontend-configmap.yaml
-            minikube kubectl -- apply -f k8s-configs/production/configmaps/auth-service-configmap.yaml
-            minikube kubectl -- apply -f k8s-configs/production/configmaps/post-service-configmap.yaml
-            minikube kubectl -- apply -f k8s-configs/production/configmaps/rest-service-configmap.yaml
+            minikube kubectl -- apply -f blog_posts_app/k8s-configs/production/configmaps/frontend-configmap.yaml
+            minikube kubectl -- apply -f blog_posts_app/k8s-configs/production/configmaps/auth-service-configmap.yaml
+            minikube kubectl -- apply -f blog_posts_app/k8s-configs/production/configmaps/post-service-configmap.yaml
+            minikube kubectl -- apply -f blog_posts_app/k8s-configs/production/configmaps/rest-service-configmap.yaml
             echo applying deployments
-            minikube kubectl -- apply -f k8s-configs/production/manifests/frontend-deployment.yaml
-            minikube kubectl -- apply -f k8s-configs/production/manifests/rest-service-deployment.yaml
-            minikube kubectl -- apply -f k8s-configs/production/manifests/post-service-deployment.yaml
-            minikube kubectl -- apply -f k8s-configs/production/manifests/auth-service-deployment.yaml
+            minikube kubectl -- apply -f blog_posts_app/k8s-configs/production/manifests/frontend-deployment.yaml
+            minikube kubectl -- apply -f blog_posts_app/k8s-configs/production/manifests/rest-service-deployment.yaml
+            minikube kubectl -- apply -f blog_posts_app/k8s-configs/production/manifests/post-service-deployment.yaml
+            minikube kubectl -- apply -f blog_posts_app/k8s-configs/production/manifests/auth-service-deployment.yaml
             echo applying ingresses
-            minikube kubectl -- apply -f k8s-configs/production/ingress/frontend-posts-ingress.yaml
+            minikube kubectl -- apply -f blog_posts_app/k8s-configs/production/ingress/frontend-posts-ingress.yaml
             # 3. Cleanup sensitive temporary files
             rm prod-backend-tls.crt prod-backend-tls.key prod-frontend-tls.crt prod-frontend-tls.key
           fi

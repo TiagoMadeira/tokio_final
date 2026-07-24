@@ -10,6 +10,8 @@
 *.crt
 /test_results
 .make_env
+.ports.pids
+
 
 **/coverage
 .coverage
@@ -17,6 +19,8 @@ coverage.xml
 .coveragerc
 
 /actions-runner
+/vulnerability_tests_results
+/tls
 
 #playwright
 frontend/test-results/
@@ -27,8 +31,8 @@ frontend/playwright/.auth/
 frontend/state.json
 
 #frontend
-frontend/.env
-frontend/node_modules
+**/.env
+**/node_modules
 
 #Results
 get-sonar-summary.py
