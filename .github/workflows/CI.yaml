@@ -157,7 +157,7 @@ jobs:
             minikube kubectl -- create secret docker-registry regcred --namespace staging --docker-server=https://index.docker.io/v1/ --docker-username=${{vars.DOCKER_USERNAME}} --docker-password=$DOCKERHUB_ACCESS_TOKEN --docker-email=${{vars.DOCKER_EMAIL}} > /dev/null 2>&1
             minikube kubectl -- create secret tls backend-tls-secret --namespace staging --cert=staging-backend-tls.crt --key=staging-backend-tls.key
             minikube kubectl -- create secret tls frontend-staging-posts-com-tls --namespace staging --cert=staging-frontend-tls.crt --key=staging-frontend-tls.key
-            minikube kubectl -- apply -f k8s-configs/staging/secrets/auth-service-secrets.yaml
+            minikube kubectl -- apply -f blog_posts_app/k8s-configs/staging/secrets/auth-service-secrets.yaml
             echo applying config files
             minikube kubectl -- apply -f blog_posts_app/k8s-configs/staging/configmaps/frontend-configmap.yaml
             minikube kubectl -- apply -f blog_posts_app/k8s-configs/staging/configmaps/auth-service-configmap.yaml
