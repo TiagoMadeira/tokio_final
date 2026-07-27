@@ -261,6 +261,8 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: "https://sonarcloud.io"
+        with:
+          projectBaseDir: blog_posts_app
 
       - name: Clean staging enviroment for next run
         if: always()
