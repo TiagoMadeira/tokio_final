@@ -287,7 +287,7 @@ sonar_scan:
 	@docker run --rm \
 		-e SONAR_TOKEN=$(SONAR_TOKEN) \
 		-e SONAR_HOST_URL=$(SONAR_HOST_URL) \
-		-v "$(shell pwd):/usr/src" \
+		-v "$(shell pwd)/blog_posts_app:/usr/src" \
 		sonarsource/sonar-scanner-cli \
 		-Dsonar.projectBaseDir=/usr/src
 
@@ -404,7 +404,7 @@ expose_ingress_controller:
 
 clean:
 	@echo "Killing background port-forward processes..."
-	-@test -f .ports.pids && kill $$(cat .ports.pids) && rm .ports.pids
+	-@test -f .ports.pids && { kill $$(cat .ports.pids) 2>/dev/null || true; } && rm -f .ports.pids
 	@echo "Deleting minikube cluster and profile..."
 	minikube delete --all --purge
 	@echo docker stop running images
@@ -424,4 +424,4 @@ clean:
 	docker system df
 
 fetch-sonar:
-	@python get-sonar-summary.py
+	@python3.12 blog_posts_app/get-sonar-summary.py
