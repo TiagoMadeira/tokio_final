@@ -63,23 +63,23 @@ jobs:
 
       - name: Run Trivy scan Auth Service
         run: |
-          trivy fs --config blog_posts_app/trivy_conf/trivy.yaml --format table blog_posts_app/auth_service
+          trivy fs --config blog_posts_app/trivy_conf/trivy.yaml --format table --exit-code 1 blog_posts_app/auth_service
 
       - name: Run Trivy scan Post Service
         run: | 
-          trivy fs --config blog_posts_app/trivy_conf/trivy.yaml --format table blog_posts_app/post_service
+          trivy fs --config blog_posts_app/trivy_conf/trivy.yaml --format table --exit-code 1 blog_posts_app/post_service
 
       - name: Run Trivy scan Rest Service
         run: |
-          trivy fs --config blog_posts_app/trivy_conf/trivy.yaml --format table blog_posts_app/rest_service
+          trivy fs --config blog_posts_app/trivy_conf/trivy.yaml --format table --exit-code 1 blog_posts_app/rest_service
 
       - name: Run Trivy scan Frontend
         run: |
-          trivy fs --config blog_posts_app/trivy_conf/trivy.yaml --format table blog_posts_app/frontend
+          trivy fs --config blog_posts_app/trivy_conf/trivy.yaml --format table --exit-code 1 blog_posts_app/frontend
         
       - name: Run Trivy scan K8s Configs
         run: |
-          trivy fs --config blog_posts_app/trivy_conf/trivy.yaml --format table blog_posts_app/k8s-configs
+          trivy fs --config blog_posts_app/trivy_conf/trivy.yaml --format table --exit-code 1 blog_posts_app/k8s-configs
 
       - name: Check Minikube status
         id: status_check
