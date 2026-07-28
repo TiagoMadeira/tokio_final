@@ -1,6 +1,6 @@
 import React, { useState, type ChangeEvent, type SubmitEvent } from 'react';
 import axios from 'axios';
-import {useNavigate} from "react-router-dom"
+import {useNavigate} from "react-router"
 
 // Define the registration state
 interface RegisterState {
