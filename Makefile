@@ -55,7 +55,7 @@ add_hosts:
 
 #########################################################################Development######################################################################
 
-start_development: start_minikube start_jaeger_server build_dev_images start_development_server expose_ingress_controller
+start_development: build_dev_images start_development_server expose_ingress_controller
 
 stop_development: 
 	minikube kubectl -- delete namespace development
@@ -155,7 +155,7 @@ launch_staging:
 stop_staging: 
 	minikube kubectl -- delete namespace staging
 
-start_and_prepare_staging: start_minikube start_jaeger_server start_staging_environment wait_for_staging_pods prepare_staging_for_integration_testing expose_ingress_controller
+start_and_prepare_staging: start_staging_environment wait_for_staging_pods prepare_staging_for_integration_testing expose_ingress_controller
 
 wait_for_staging_pods:
 	@echo "waiting for staging pods to be up and running"
