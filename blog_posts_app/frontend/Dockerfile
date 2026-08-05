@@ -2,15 +2,11 @@ FROM node:22-alpine AS build
 
 WORKDIR /app
 
-ARG NODE_ENV=development
-
 COPY package*.json ./
 
-RUN if [ "$NODE_ENV" = "production" ]; then \
-      npm ci --omit=dev; \
-    else \
-      npm ci; \
-    fi
+RUN npm ci
+
+ARG NODE_ENV=production
 
 COPY src/ ./src
 COPY public/ ./public

@@ -36,3 +36,5 @@ frontend/state.json
 
 #Results
 get-sonar-summary.py
+
+shell_output.txt
