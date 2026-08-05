@@ -55,28 +55,7 @@ add_hosts:
 
 #########################################################################Development######################################################################
 
-start_development: build_dev_images start_development_server expose_ingress_controller
-
-stop_development: 
-	minikube kubectl -- delete namespace development
-
-build_dev_images:
-	@echo "Building development images and pushing to Minikube Registry..."
-
-	docker build --no-cache --build-arg APP_ENV=dev -t localhost:32780/tokio-rest-service:dev rest_service
-	docker push localhost:32780/tokio-rest-service:dev
-	
-	docker build --no-cache --build-arg APP_ENV=dev -t localhost:32780/tokio-post-service:dev post_service
-	docker push localhost:32780/tokio-post-service:dev
-	
-	docker build --no-cache --build-arg APP_ENV=dev -t localhost:32780/tokio-auth-service:dev auth_service
-	docker push localhost:32780/tokio-auth-service:dev
-	
-	docker build --no-cache -t localhost:32780/tokio-frontend:dev frontend
-	docker push localhost:32780/tokio-frontend:dev
-
-
-start_or_update_development_server:
+start_or_rollout_development_server:
 	@echo "Checking for development namespace..."
 	@if ! minikube kubectl -- get namespace development >/dev/null 2>&1; then \
 		$(MAKE) start_development_server; \
@@ -84,12 +63,30 @@ start_or_update_development_server:
 		$(MAKE) rollout_development; \
 	fi
 
+stop_development: 
+	minikube kubectl -- delete namespace development
+
+build_dev_images:
+	@echo "Building development images and pushing to Minikube Registry..."
+
+	docker build --no-cache --build-arg APP_ENV=dev -t localhost:32780/tokio-rest-service:dev blog_posts_app/rest_service
+	docker push localhost:32780/tokio-rest-service:dev
+	
+	docker build --no-cache --build-arg APP_ENV=dev -t localhost:32780/tokio-post-service:dev blog_posts_app/post_service
+	docker push localhost:32780/tokio-post-service:dev
+	
+	docker build --no-cache --build-arg APP_ENV=dev -t localhost:32780/tokio-auth-service:dev blog_posts_app/auth_service
+	docker push localhost:32780/tokio-auth-service:dev
+	
+	docker build --no-cache --build-arg NODE_ENV=development -t localhost:32780/tokio-frontend:dev blog_posts_app/frontend
+	docker push localhost:32780/tokio-frontend:dev
+
 start_development_server:
 	@echo create development namespace
 	minikube kubectl -- create namespace development
 	@echo appling pods secrets
-	minikube kubectl -- create secret tls backend-tls-secret --namespace development --cert=backend-tls.crt --key=backend-tls.key
-	minikube kubectl -- create secret tls frontend-development-posts-com-tls --namespace development --cert=dev-tls.crt --key=dev-tls.key
+	minikube kubectl -- create secret tls backend-tls-secret --namespace development --cert=blog_posts_app/tls/certs/backend-tls.crt --key=blog_posts_app/tls/keys/backend-tls.key
+	minikube kubectl -- create secret tls frontend-development-posts-com-tls --namespace development --cert=blog_posts_app/tls/certs/dev-tls.crt --key=blog_posts_app/tls/keys/dev-tls.key
 	minikube kubectl -- apply -f blog_posts_app/k8s-configs/development/secrets/auth-service-secrets.yaml
 	@echo applying config files
 	minikube kubectl -- apply -f blog_posts_app/k8s-configs/development/configmaps/frontend-configmap.yaml
@@ -155,7 +152,7 @@ launch_staging:
 stop_staging: 
 	minikube kubectl -- delete namespace staging
 
-start_and_prepare_staging: start_staging_environment wait_for_staging_pods prepare_staging_for_integration_testing expose_ingress_controller
+start_and_prepare_staging: start_staging_environment wait_for_staging_pods prepare_staging_for_integration_testing
 
 wait_for_staging_pods:
 	@echo "waiting for staging pods to be up and running"
@@ -278,8 +275,8 @@ frontend_tests:
 	cd blog_posts_app/frontend && \
 	npm ci && \
 	npx playwright install chromium && \
-	npm run test -- --coverage --watch=false && \
-	@echo "starting E2E tests" && \
+	npm run test -- --coverage --coverage.reporter=lcov --watch=false && \
+	echo "starting E2E tests" && \
 	npx playwright test
 
 sonar_scan:
@@ -287,6 +284,7 @@ sonar_scan:
 	@docker run --rm \
 		-e SONAR_TOKEN=$(SONAR_TOKEN) \
 		-e SONAR_HOST_URL=$(SONAR_HOST_URL) \
+		-e SONAR_SCANNER_SKIP_NODE_PROVISIONING=true \
 		-v "$(shell pwd)/blog_posts_app:/usr/src" \
 		sonarsource/sonar-scanner-cli \
 		-Dsonar.projectBaseDir=/usr/src
@@ -346,6 +344,13 @@ rollout_production:
 	minikube kubectl -- rollout restart deployment auth-service-deployment -n production
 	minikube kubectl -- rollout restart deployment post-service-deployment -n production
 	minikube kubectl -- rollout restart deployment rest-service-deployment -n production
+
+rollback_production:
+	@echo rolloing back production to previous revison
+	minikube kubectl -- rollout undo deployment/rest-service-deployment -n production
+	minikube kubectl -- rollout undo deployment/auth-service-deployment -n production
+	minikube kubectl -- rollout undo deployment/post-service-deployment -n production
+	minikube kubectl -- rollout undo deployment/frontend-deployment  -n production
 
 #######################################################################Oberservability#######################################################################
 
@@ -409,11 +414,17 @@ clean:
 	minikube delete --all --purge
 	@echo docker stop running images
 	docker stop $$(docker ps -qa) || true
-	@echo "Removing locally built Docker images..."
-	docker rmi $(DOCKER_USERNAME)/tokio-rest-service:latest || true
-	docker rmi $(DOCKER_USERNAME)/tokio-post-service:latest || true
-	docker rmi $(DOCKER_USERNAME)/tokio-auth-service:latest || true
-	docker rmi $(DOCKER_USERNAME)/tokio-frontend:latest || true
+	@echo "Removing production Docker images..."
+	docker rmi localhost:32780/tokio-rest-service:latest || true
+	docker rmi localhost:32780/tokio-post-service:latest || true
+	docker rmi localhost:32780/tokio-auth-service:latest || true
+	docker rmi localhost:32780/tokio-frontend:latest || true
+	@echo "Removing development Docker images..."
+	docker rmi localhost:32780/tokio-rest-service:dev || true
+	docker rmi localhost:32780/tokio-post-service:dev || true
+	docker rmi localhost:32780/tokio-auth-service:dev || true
+	docker rmi localhost:32780/tokio-frontend:dev || true
+	@echo "removing sonar-qube docker image"
 	docker rmi sonarsource/sonar-scanner-cli:latest || true
 	@echo "Cleaning docker system"
 	docker system prune -af --volumes
