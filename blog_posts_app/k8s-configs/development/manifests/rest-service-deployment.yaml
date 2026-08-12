@@ -23,7 +23,7 @@ spec:
       containers:
       - name: rest-service
         image: localhost:5000/tokio-rest-service:dev
-        imagePullPolicy: Never
+        imagePullPolicy: Always
         securityContext:
           runAsUser: 10001     # Matches the UID 10001 from your Dockerfile
           runAsGroup: 10001    # Matches the GID 10001 from your Dockerfile

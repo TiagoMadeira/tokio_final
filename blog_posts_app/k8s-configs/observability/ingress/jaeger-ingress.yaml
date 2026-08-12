@@ -4,8 +4,12 @@ metadata:
   name: jaeger-ingress
   namespace: observability
 spec:
+  tls:
+    - secretName: observability-tls-secret
+      hosts:
+        - observability.jaeger.blog-posts.com
   rules:
-  - host: tokio.observability.jaeger.com
+  - host: observability.jaeger.blog-posts.com
     http:
       paths:
       - pathType: Prefix

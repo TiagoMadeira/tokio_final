@@ -24,7 +24,7 @@ spec:
       containers:
       - name: frontend
         image: localhost:5000/tokio-frontend:dev
-        imagePullPolicy: Never
+        imagePullPolicy: Always
         securityContext:
           runAsUser: 10005
           allowPrivilegeEscalation: false

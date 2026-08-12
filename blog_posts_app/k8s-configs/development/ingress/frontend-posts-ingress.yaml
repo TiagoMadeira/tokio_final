@@ -7,9 +7,9 @@ spec:
   tls:
     - secretName: frontend-development-posts-com-tls
       hosts:
-        - frontend.development.posts.com
+        - development.blog-posts.com
   rules:
-  - host: frontend.development.posts.com
+  - host: development.blog-posts.com
     http:
       paths:
       - pathType: Prefix

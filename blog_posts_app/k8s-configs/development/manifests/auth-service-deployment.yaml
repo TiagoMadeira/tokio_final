@@ -22,7 +22,7 @@ spec:
       containers:
       - name: auth-service
         image: localhost:5000/tokio-auth-service:dev
-        imagePullPolicy: Never
+        imagePullPolicy: Always
         workingDir: /home/appuser
         securityContext:
           runAsUser: 10001     # Matches the UID 10001 from your Dockerfile
