@@ -9,49 +9,58 @@ export SONAR_TOKEN
 CURRENT_USER := $(shell whoami)
 PIP_VERSION ?= 26.1.2
 
-#########################################################################Initial Setup###################################################################
+#########################################################################Initial Setup####################################################################
+start_minikube:
+	@echo "Checking Minikube status..."
+	@if minikube status >/dev/null 2>&1; then \
+		echo "Minikube is already running."; \
+	else \
+		echo "Starting Minikube..."; \
+		minikube start --driver=docker; \
+		echo "Enabling Ingress addon..."; \
+		minikube addons enable ingress; \
+		echo "Enabling Registry addon..."; \
+		minikube addons enable registry; \
+	fi
+	@echo "Waiting for nginx ingress readiness..."
+	minikube kubectl -- wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=120s
+	@echo "Checking registry port-forward..."
+	@( \
+		if ! lsof -i :32780 >/dev/null 2>&1; then \
+			echo "Starting background port-forward for local registry (localhost:32780)..."; \
+			minikube kubectl -- port-forward --namespace kube-system service/registry 32780:80 > /dev/null 2>&1 & \
+		else \
+			echo "Registry port 32780 is already mapped."; \
+		fi \
+	)
 
-setup: install_basic_deps install_python install_node install_CI_dependencies install_trivy
+start_jaeger_server:
+	@echo "Checking for observability namespace..."
+	@if ! minikube kubectl -- get namespace observability >/dev/null 2>&1; then \
+		echo "Creating observability namespace..."; \
+		minikube kubectl -- create namespace observability; \
+		echo "Creating observability tls secret..."; \
+		minikube kubectl -- create secret tls observability-tls-secret --namespace observability --cert=blog_posts_app/tls/certs/observability-tls.crt --key=blog_posts_app/tls/keys/observability-tls.key;\
+	fi
+	@echo "Applying configurations (idempotent)..."
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/observability/configmaps/jaeger-configmap.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/observability/configmaps/jaeger-ui-config.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/observability/manifests/jaeger-deployment.yaml
+	minikube kubectl -- apply -f blog_posts_app/k8s-configs/observability/ingress/jaeger-ingress.yaml
 
-install_basic_deps:
-	@echo "Updating packages and installing basic dependencies..."
-	sudo apt-get update -y
-	sudo apt-get install -y curl software-properties-common apt-transport-https ca-certificates gnupg lsb-release
+expose_ingress_controller:
+	@echo "Checking if Ingress Controller port-forward is already active..."
+	@( \
+		if lsof -i :8080 -i :8443 >/dev/null 2>&1; then \
+			echo "Ports 8080/8443 are already occupied. Skipping port-forward."; \
+		else \
+			echo "Ports are free. Exposing Ingress Controller to all interfaces..."; \
+			minikube kubectl -- port-forward service/ingress-nginx-controller -n ingress-nginx 8080:80 8443:443 >/dev/null 2>&1 & \
+			sleep 5; \
+		fi \
+	)
 
-install_python:
-	@echo "installing python v3.12..."
-	sudo add-apt-repository ppa:deadsnakes/ppa -y
-	sudo apt update
-	sudo apt install python3.12 python3.12-venv python3.12-dev -y
 
-install_node:
-	@echo "installing node v22"
-	curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
-	sudo apt-get install -y nodejs
-
-install_CI_dependencies:
-	@echo installing CI dependencies 
-	sudo apt-get update
-	sudo apt-get install -y libnspr4 libnss3 libgbm1 libasound2t64
-
-install_trivy:
-	sudo apt-get install wget gnupg
-	wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor | sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
-	echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
-	sudo apt-get update
-	sudo apt-get install trivy
-
-add_hosts:
-	@echo the following domains will be added to your host file
-	@echo 127.0.0.1 posts.com //this is the production server
-	@echo 127.0.0.1 tokio.observability.jaeger.com
-	@echo 127.0.0.1 frontend.development.posts.com
-	@echo 127.0.0.1 frontend.staging.posts.com
-	@sudo bash -c '\
-	for domain in "posts.com" "tokio.observability.jaeger.com" "frontend.development.posts.com" frontend.staging.posts.com; do \
-		grep -qF "127.0.0.1 $$domain" /etc/hosts || echo "127.0.0.1 $$domain" >> /etc/hosts; \
-	done \
-	'
 
 #########################################################################Development######################################################################
 
@@ -85,8 +94,8 @@ start_development_server:
 	@echo create development namespace
 	minikube kubectl -- create namespace development
 	@echo appling pods secrets
-	minikube kubectl -- create secret tls backend-tls-secret --namespace development --cert=blog_posts_app/tls/certs/backend-tls.crt --key=blog_posts_app/tls/keys/backend-tls.key
-	minikube kubectl -- create secret tls frontend-development-posts-com-tls --namespace development --cert=blog_posts_app/tls/certs/dev-tls.crt --key=blog_posts_app/tls/keys/dev-tls.key
+	minikube kubectl -- create secret tls backend-tls-secret --namespace development --cert=blog_posts_app/tls/certs/dev-backend-tls.crt --key=blog_posts_app/tls/keys/dev-backend-tls.key
+	minikube kubectl -- create secret tls frontend-development-posts-com-tls --namespace development --cert=blog_posts_app/tls/certs/dev-frontend-tls.crt --key=blog_posts_app/tls/keys/dev-frontend-tls.key
 	minikube kubectl -- apply -f blog_posts_app/k8s-configs/development/secrets/auth-service-secrets.yaml
 	@echo applying config files
 	minikube kubectl -- apply -f blog_posts_app/k8s-configs/development/configmaps/frontend-configmap.yaml
@@ -160,16 +169,16 @@ wait_for_staging_pods:
 
 prepare_staging_for_integration_testing:
 	@echo "preparing staging for integration testing"
-	minikube kubectl -- port-forward service/rest-internal-service 8000:80 -n staging > /dev/null 2>&1 & echo $$! >> .ports.pids
-	minikube kubectl -- port-forward service/frontend-internal-service 3000:80 -n staging > /dev/null 2>&1 & echo $$! >> .ports.pids
+	minikube kubectl -- port-forward service/rest-internal-service 8000:80 -n staging > /dev/null 2>&1 &
+	minikube kubectl -- port-forward service/frontend-internal-service 3000:80 -n staging > /dev/null 2>&1 &
 	sleep 5 # Wait for the tunnel to initialize
 
 start_staging_environment:
 	@echo create staging namespace
 	minikube kubectl -- create namespace staging
 	@echo appling pods secrets
-	minikube kubectl -- create secret tls backend-tls-secret --namespace staging --cert=blog_posts_app/tls/certs/staging-backend-tls.crt --key=blog_posts_app/tls/keys/staging-backend-tls.key
-	minikube kubectl -- create secret tls frontend-staging-posts-com-tls --namespace staging --cert=blog_posts_app/tls/certs/staging-frontend-tls.crt --key=blog_posts_app/tls/keys/staging-frontend-tls.key
+	minikube kubectl -- create secret tls backend-tls-secret --namespace staging --cert=blog_posts_app/tls/certs/stg-backend-tls.crt --key=blog_posts_app/tls/keys/stg-backend-tls.key
+	minikube kubectl -- create secret tls frontend-staging-posts-com-tls --namespace staging --cert=blog_posts_app/tls/certs/stg-frontend-tls.crt --key=blog_posts_app/tls/keys/stg-frontend-tls.key
 	minikube kubectl -- apply -f blog_posts_app/k8s-configs/staging/secrets/auth-service-secrets.yaml
 	@echo applying config files
 	minikube kubectl -- apply -f blog_posts_app/k8s-configs/staging/configmaps/frontend-configmap.yaml
@@ -290,12 +299,15 @@ sonar_scan:
 		-Dsonar.projectBaseDir=/usr/src
 
 clear_staging:
-	#Delete staging namespace
-	minikube kubectl -- delete namespace staging
+	@echo "Clearing staging..."
+	minikube kubectl -- delete namespace staging --wait=true
+	@echo "Killing background staging port-forward processes..."
+	kill $$(pgrep -f "[p]ort-forward service/rest-internal-service 8000:80") 2>/dev/null || true
+	kill $$(pgrep -f "[p]ort-forward service/frontend-internal-service 3000:80") 2>/dev/null || true
 
 #########################################################################Production#######################################################################
 
-deploy_production: start_minikube start_jaeger_server start_or_update_production wait_for_production_pods
+deploy_production: start_or_update_production wait_for_production_pods
 
 stop_production: 
 	minikube kubectl -- delete namespace production
@@ -318,8 +330,8 @@ start_production_environment:
 	minikube kubectl -- create namespace production
 	@echo appling pods secrets
 	minikube kubectl -- apply -f blog_posts_app/k8s-configs/production/secrets/auth-service-secrets.yaml
-	minikube kubectl -- create secret tls backend-tls-secret --namespace production --cert=blog_posts_app/tls/certs/prod-backend-tls.crt --key=blog_posts_app/tls/keys/prod-backend-tls.key
-	minikube kubectl -- create secret tls frontend-production-posts-com-tls --namespace production --cert=blog_posts_app/tls/certs/prod-frontend-tls.crt --key=blog_posts_app/tls/keys/prod-frontend-tls.key
+	minikube kubectl -- create secret tls backend-tls-secret --namespace production --cert=blog_posts_app/tls/certs/prd-backend-tls.crt --key=blog_posts_app/tls/keys/prd-backend-tls.key
+	minikube kubectl -- create secret tls frontend-production-posts-com-tls --namespace production --cert=blog_posts_app/tls/certs/prd-frontend-tls.crt --key=blog_posts_app/tls/keys/prd-frontend-tls.key
 	@echo applying config files
 	minikube kubectl -- apply -f blog_posts_app/k8s-configs/production/configmaps/frontend-configmap.yaml
 	minikube kubectl -- apply -f blog_posts_app/k8s-configs/production/configmaps/auth-service-configmap.yaml
@@ -352,64 +364,15 @@ rollback_production:
 	minikube kubectl -- rollout undo deployment/post-service-deployment -n production
 	minikube kubectl -- rollout undo deployment/frontend-deployment  -n production
 
-#######################################################################Oberservability#######################################################################
-
-start_jaeger_server:
-	@echo "Checking for observability namespace..."
-	@if ! minikube kubectl -- get namespace observability >/dev/null 2>&1; then \
-		echo "Creating observability namespace..."; \
-		minikube kubectl -- create namespace observability; \
-	fi
-	@echo "Applying configurations (idempotent)..."
-	minikube kubectl -- apply -f blog_posts_app/k8s-configs/observability/configmaps/jaeger-configmap.yaml
-	minikube kubectl -- apply -f blog_posts_app/k8s-configs/observability/configmaps/jaeger-ui-config.yaml
-	minikube kubectl -- apply -f blog_posts_app/k8s-configs/observability/manifests/jaeger-deployment.yaml
-	minikube kubectl -- apply -f blog_posts_app/k8s-configs/observability/ingress/jaeger-ingress.yaml
-
-
 ################################################################################Utils################################################################################
-
-start_minikube:
-	@echo "Checking Minikube status..."
-	@if minikube status >/dev/null 2>&1; then \
-		echo "Minikube is already running."; \
-	else \
-		echo "Starting Minikube..."; \
-		minikube start --driver=docker; \
-		echo "Enabling Ingress addon..."; \
-		minikube addons enable ingress; \
-		echo "Enabling Registry addon..."; \
-		minikube addons enable registry; \
-	fi
-	@echo "Waiting for nginx ingress readiness..."
-	minikube kubectl -- wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=120s
-	@echo "Checking registry port-forward..."
-	@( \
-		if ! lsof -i :32780 >/dev/null 2>&1; then \
-			echo "Starting background port-forward for local registry (localhost:32780)..."; \
-			minikube kubectl -- port-forward --namespace kube-system service/registry 32780:80 > /dev/null 2>&1 & \
-			echo $$! >> .ports.pids; \
-		else \
-			echo "Registry port 32780 is already mapped."; \
-		fi \
-	)
-
-expose_ingress_controller:
-	@echo "Checking if Ingress Controller port-forward is already active..."
-	@( \
-		if lsof -i :8080 -i :8443 >/dev/null 2>&1; then \
-			echo "Ports 8080/8443 are already occupied. Skipping port-forward."; \
-		else \
-			echo "Ports are free. Exposing Ingress Controller to all interfaces..."; \
-			minikube kubectl -- port-forward service/ingress-nginx-controller -n ingress-nginx 8080:80 8443:443 >/dev/null 2>&1 & \
-			echo $$! >> .ports.pids; \
-			sleep 5; \
-		fi \
-	)
 
 clean:
 	@echo "Killing background port-forward processes..."
-	-@test -f .ports.pids && { kill $$(cat .ports.pids) 2>/dev/null || true; } && rm -f .ports.pids
+	@kill $$(pgrep -f "[p]ort-forward service/rest-internal-service 8000:80") 2>/dev/null || true
+	@kill $$(pgrep -f "[p]ort-forward service/frontend-internal-service 3000:80") 2>/dev/null || true
+	@kill $$(pgrep -f "[p]ort-forward service/ingress-nginx-controller") 2>/dev/null || true
+	@kill $$(pgrep -f "[p]ort-forward --namespace kube-system service/registry 32780:80") 2>/dev/null || true
+	@kill $$(pgrep -f "[p]ort-forward --cluster=minikube --namespace kube-system service/registry 32780:80") 2>/dev/null || true
 	@echo "Deleting minikube cluster and profile..."
 	minikube delete --all --purge
 	@echo docker stop running images
