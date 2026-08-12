@@ -10,8 +10,6 @@
 *.crt
 /test_results
 .make_env
-.ports.pids
-
 
 **/coverage
 .coverage
@@ -23,12 +21,12 @@ coverage.xml
 /tls
 
 #playwright
-frontend/test-results/
-frontend/playwright-report/
-frontend/blob-report/
-frontend/playwright/.cache/
-frontend/playwright/.auth/
-frontend/state.json
+blog_posts_app/frontend/test-results/
+blog_posts_app/frontend/playwright-report/
+blog_posts_app/frontend/blob-report/
+blog_posts_app/frontend/playwright/.cache/
+blog_posts_app/frontend/playwright/.auth/
+blog_posts_app/frontend/state.json
 
 #frontend
 **/.env
