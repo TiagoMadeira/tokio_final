@@ -205,8 +205,9 @@ jobs:
         
           pip install -r "$GITHUB_WORKSPACE/blog_posts_app/auth_service/requirements-stg.txt"
         
+          export SECRET_KEY="$JWT_SECRET"
           export PYTHONPATH="$GITHUB_WORKSPACE/blog_posts_app/auth_service"
-        
+
           pytest "$GITHUB_WORKSPACE/blog_posts_app/auth_service/tests/" \
             --cov="$GITHUB_WORKSPACE/blog_posts_app/auth_service/app" \
             --cov-report=xml:"$GITHUB_WORKSPACE/blog_posts_app/auth_service/coverage.xml"
