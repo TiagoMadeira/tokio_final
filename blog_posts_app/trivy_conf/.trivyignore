@@ -1,2 +1,2 @@
-# Ignore missing image tags for third-party infrastructure components
+# Ignore "latest" tag warnings
 KSV-0013
