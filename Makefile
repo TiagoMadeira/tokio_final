@@ -1,15 +1,9 @@
--include .make_env
-
-# 2. Export them so they are visible to sub-shells and docker commands
-export JWT_SECRET
-export SONAR_HOST_URL
-export SONAR_TOKEN
-
-
-CURRENT_USER := $(shell whoami)
 PIP_VERSION ?= 26.1.2
 
 #########################################################################Initial Setup####################################################################
+
+init_cluster: start_minikube start_jaeger_server expose_ingress_controller
+
 start_minikube:
 	@echo "Checking Minikube status..."
 	@if minikube status >/dev/null 2>&1; then \
@@ -60,14 +54,12 @@ expose_ingress_controller:
 		fi \
 	)
 
-
-
 #########################################################################Development######################################################################
 
-start_or_rollout_development_server:
+start_development_server:
 	@echo "Checking for development namespace..."
 	@if ! minikube kubectl -- get namespace development >/dev/null 2>&1; then \
-		$(MAKE) start_development_server; \
+		$(MAKE) apply_development_server; \
 	else \
 		$(MAKE) rollout_development; \
 	fi
@@ -75,7 +67,7 @@ start_or_rollout_development_server:
 stop_development: 
 	minikube kubectl -- delete namespace development
 
-build_dev_images:
+build_development_images:
 	@echo "Building development images and pushing to Minikube Registry..."
 
 	docker build --no-cache --build-arg APP_ENV=dev -t localhost:32780/tokio-rest-service:dev blog_posts_app/rest_service
@@ -90,7 +82,7 @@ build_dev_images:
 	docker build --no-cache --build-arg NODE_ENV=development -t localhost:32780/tokio-frontend:dev blog_posts_app/frontend
 	docker push localhost:32780/tokio-frontend:dev
 
-start_development_server:
+apply_development_server:
 	@echo create development namespace
 	minikube kubectl -- create namespace development
 	@echo appling pods secrets
@@ -143,7 +135,6 @@ launch_build:
 	
 	docker build --no-cache -t localhost:32780/tokio-frontend:latest blog_posts_app/frontend
 	docker push localhost:32780/tokio-frontend:latest
-
 
 
 ##########################################################################Staging#########################################################################
@@ -276,7 +267,7 @@ post_service_tests:
 auth_service_tests:
 	python3 -m venv "blog_posts_app/auth_service/.venv"
 	blog_posts_app/auth_service/.venv/bin/pip install -r blog_posts_app/auth_service/requirements-stg.txt
-	PYTHONPATH=blog_posts_app/auth_service ENABLE_MONOTORING=False SECRET_KEY=$(JWT_SECRET) blog_posts_app/auth_service/.venv/bin/pytest blog_posts_app/auth_service/tests/ -W ignore --cov=blog_posts_app/auth_service/app --cov-report=xml:blog_posts_app/auth_service/coverage.xml --cov-config=blog_posts_app/.coveragerc
+	PYTHONPATH=blog_posts_app/auth_service ENABLE_MONOTORING=False blog_posts_app/auth_service/.venv/bin/pytest blog_posts_app/auth_service/tests/ -W ignore --cov=blog_posts_app/auth_service/app --cov-report=xml:blog_posts_app/auth_service/coverage.xml --cov-config=blog_posts_app/.coveragerc
 
 frontend_tests:
 	@stty sane || true
@@ -291,8 +282,8 @@ frontend_tests:
 sonar_scan:
 	@echo "Running local SonarQube scan via temporary Docker container..."
 	@docker run --rm \
-		-e SONAR_TOKEN=$(SONAR_TOKEN) \
-		-e SONAR_HOST_URL=$(SONAR_HOST_URL) \
+		-e SONAR_TOKEN=1b05662110e5d32559a48267d9ef4ab751f62a40 \
+		-e SONAR_HOST_URL="https://sonarcloud.io" \
 		-e SONAR_SCANNER_SKIP_NODE_PROVISIONING=true \
 		-v "$(shell pwd)/blog_posts_app:/usr/src" \
 		sonarsource/sonar-scanner-cli \
