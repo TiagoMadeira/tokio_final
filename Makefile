@@ -10,14 +10,14 @@ start_minikube:
 		echo "Minikube is already running."; \
 	else \
 		echo "Starting Minikube..."; \
-		minikube start --driver=docker; \
-		echo "Enabling Ingress addon..."; \
-		minikube addons enable ingress; \
-		echo "Enabling Registry addon..."; \
-		minikube addons enable registry; \
+		minikube start --driver=docker --cpus=3 --memory=3072; \
 	fi
+	@echo "Enabling Ingress addon..."; 
+	minikube addons enable ingress; 
 	@echo "Waiting for nginx ingress readiness..."
 	minikube kubectl -- wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=120s
+	@echo "Enabling Registry addon..."; 
+	minikube addons enable registry; 
 	@echo "Checking registry port-forward..."
 	@( \
 		if ! lsof -i :32780 >/dev/null 2>&1; then \
@@ -40,7 +40,10 @@ start_jaeger_server:
 	minikube kubectl -- apply -f blog_posts_app/k8s-configs/observability/configmaps/jaeger-configmap.yaml
 	minikube kubectl -- apply -f blog_posts_app/k8s-configs/observability/configmaps/jaeger-ui-config.yaml
 	minikube kubectl -- apply -f blog_posts_app/k8s-configs/observability/manifests/jaeger-deployment.yaml
-	minikube kubectl -- apply -f blog_posts_app/k8s-configs/observability/ingress/jaeger-ingress.yaml
+	minikube kubectl -- apply -k blog_posts_app/k8s-configs/observability
+	@echo "waiting for observability pods to be up and running"
+	minikube kubectl -- wait --namespace observability --for=condition=ready pod --all --timeout=500s
+	@echo "Production up and running at https://observability.jaeger.blog-posts.com.127.0.0.1.nip.io:8443"
 
 expose_ingress_controller:
 	@echo "Checking if Ingress Controller port-forward is already active..."
@@ -56,7 +59,14 @@ expose_ingress_controller:
 
 #########################################################################Development######################################################################
 
-start_development_server:
+start_development_server: start_rollout_development_server wait_development_pods
+
+wait_development_pods:
+	@echo "waiting for development pods to be up and running"
+	minikube kubectl -- wait --namespace development --for=condition=ready pod --all --timeout=500s
+	@echo "Development up and running at https://development.blog-posts.com.127.0.0.1.nip.io:8443"
+
+start_rollout_development_server:
 	@echo "Checking for development namespace..."
 	@if ! minikube kubectl -- get namespace development >/dev/null 2>&1; then \
 		$(MAKE) apply_development_server; \
@@ -157,6 +167,7 @@ start_and_prepare_staging: start_staging_environment wait_for_staging_pods prepa
 wait_for_staging_pods:
 	@echo "waiting for staging pods to be up and running"
 	minikube kubectl -- wait --namespace staging --for=condition=ready pod --all --timeout=500s
+	@echo "Staging up and running at https://staging.blog-posts.com.127.0.0.1.nip.io:8443"
 
 prepare_staging_for_integration_testing:
 	@echo "preparing staging for integration testing"
@@ -176,10 +187,9 @@ start_staging_environment:
 	minikube kubectl -- apply -f blog_posts_app/k8s-configs/staging/configmaps/auth-service-configmap.yaml
 	minikube kubectl -- apply -f blog_posts_app/k8s-configs/staging/configmaps/post-service-configmap.yaml
 	minikube kubectl -- apply -f blog_posts_app/k8s-configs/staging/configmaps/rest-service-configmap.yaml
-	@echo "applying deployments using kustomize..."
+	@echo "applying deployments and ingress using kustomize..."
 	minikube kubectl -- apply -k blog_posts_app/k8s-configs/staging
-	@echo applying ingresses
-	minikube kubectl -- apply -f blog_posts_app/k8s-configs/staging/ingress/frontend-posts-ingress.yaml
+
 
 rollout_staging:
 	@echo applying config files
@@ -314,6 +324,7 @@ start_or_update_production:
 wait_for_production_pods:
 	@echo "waiting for production pods to be up and running"
 	minikube kubectl -- wait --namespace production --for=condition=ready pod --all --timeout=500s
+	@echo "Production up and running at https://blog-posts.com.127.0.0.1.nip.io:8443"
 
 
 start_production_environment:
@@ -328,13 +339,8 @@ start_production_environment:
 	minikube kubectl -- apply -f blog_posts_app/k8s-configs/production/configmaps/auth-service-configmap.yaml
 	minikube kubectl -- apply -f blog_posts_app/k8s-configs/production/configmaps/post-service-configmap.yaml
 	minikube kubectl -- apply -f blog_posts_app/k8s-configs/production/configmaps/rest-service-configmap.yaml
-	@echo applying deployments
-	minikube kubectl -- apply -f blog_posts_app/k8s-configs/production/manifests/frontend-deployment.yaml
-	minikube kubectl -- apply -f blog_posts_app/k8s-configs/production/manifests/rest-service-deployment.yaml
-	minikube kubectl -- apply -f blog_posts_app/k8s-configs/production/manifests/post-service-deployment.yaml
-	minikube kubectl -- apply -f blog_posts_app/k8s-configs/production/manifests/auth-service-deployment.yaml
-	@echo applying ingresses
-	minikube kubectl -- apply -f blog_posts_app/k8s-configs/production/ingress/frontend-posts-ingress.yaml
+	@echo "applying deployments and ingress using kustomize..."
+	minikube kubectl -- apply -k blog_posts_app/k8s-configs/production
 
 rollout_production:
 	@echo applying config files
