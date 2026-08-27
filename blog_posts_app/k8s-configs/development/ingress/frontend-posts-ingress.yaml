@@ -7,9 +7,9 @@ spec:
   tls:
     - secretName: frontend-development-posts-com-tls
       hosts:
-        - development.blog-posts.com
+        - development.blog-posts.com.127.0.0.1.nip.io
   rules:
-  - host: development.blog-posts.com
+  - host: development.blog-posts.com.127.0.0.1.nip.io
     http:
       paths:
       - pathType: Prefix

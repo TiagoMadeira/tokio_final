@@ -6,7 +6,7 @@ resources:
   - manifests/frontend-deployment.yaml
   - manifests/post-service-deployment.yaml
   - manifests/rest-service-deployment.yaml
-
+  - ingress/frontend-posts-ingress.yaml
 
 patches:
   - target:
@@ -33,7 +33,16 @@ patches:
     patch: |-
       - op: remove
         path: /spec/template/spec/imagePullSecrets
-
+  - target:
+      kind: Ingress
+      name: frontend-posts-ingress # Ensure this matches your actual Ingress metadata.name
+    patch: |-
+      - op: replace
+        path: /spec/tls/0/hosts/0
+        value: blog-posts.com.127.0.0.1.nip.io
+      - op: replace
+        path: /spec/rules/0/host
+        value: blog-posts.com.127.0.0.1.nip.io
 
 images:
   - name: docker.io/tiagomadeiradock/tokio-rest-service
