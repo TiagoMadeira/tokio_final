@@ -39,21 +39,21 @@ patches:
     patch: |-
       - op: replace
         path: /spec/tls/0/hosts/0
-        value: blog-posts.com.127.0.0.1.nip.io
+        value: blog-posts.com.localhost
       - op: replace
         path: /spec/rules/0/host
-        value: blog-posts.com.127.0.0.1.nip.io
+        value: blog-posts.com.localhost
 
 images:
   - name: docker.io/tiagomadeiradock/tokio-rest-service
-    newName: localhost:5000/tokio-rest-service
+    newName: localhost:32000/tokio-rest-service
     newTag: latest
   - name: docker.io/tiagomadeiradock/tokio-post-service
-    newName: localhost:5000/tokio-post-service
+    newName: localhost:32000/tokio-post-service
     newTag: latest
   - name: docker.io/tiagomadeiradock/tokio-auth-service
-    newName: localhost:5000/tokio-auth-service
+    newName: localhost:32000/tokio-auth-service
     newTag: latest
   - name: docker.io/tiagomadeiradock/tokio-frontend
-    newName: localhost:5000/tokio-frontend
+    newName: localhost:32000/tokio-frontend
     newTag: latest

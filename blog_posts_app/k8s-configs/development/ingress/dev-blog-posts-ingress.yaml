@@ -1,15 +1,15 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: frontend-posts-ingress
-  namespace: production
+  name: dev-blog-posts-ingress
+  namespace: development
 spec:
   tls:
-    - secretName: frontend-production-posts-com-tls
+    - secretName: development-blog-posts-com-tls
       hosts:
-        - blog-posts.com
+        - development.blog-posts.com.localhost
   rules:
-  - host: blog-posts.com
+  - host: development.blog-posts.com.localhost
     http:
       paths:
       - pathType: Prefix

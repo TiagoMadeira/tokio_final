@@ -22,7 +22,7 @@ spec:
         fsGroup: 10001 
       containers:
       - name: rest-service
-        image: localhost:5000/tokio-rest-service:dev
+        image: localhost:32000/tokio-rest-service:dev
         imagePullPolicy: Always
         securityContext:
           runAsUser: 10001     # Matches the UID 10001 from your Dockerfile
