@@ -4,4 +4,4 @@ ksv0125:
     - "docker.io"
     - "registry-1.docker.io"
     - "index.docker.io/tiagomadeiradock"
-    - "localhost:5000"
+    - "localhost:32000"
