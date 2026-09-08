@@ -8,16 +8,18 @@
 *.db
 *.key
 *.crt
-/test_results
 .make_env
 
 **/coverage
 .coverage
 coverage.xml
+coverage-unit.xml
+coverage-integration.xml
 .coveragerc
 
 /actions-runner
 /vulnerability_tests_results
+/tests_results
 /tls
 
 #playwright
