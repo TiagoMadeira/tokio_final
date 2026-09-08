@@ -2,7 +2,7 @@ PIP_VERSION ?= 26.1.2
 
 #########################################################################Initial Setup####################################################################
 
-init_cluster: start_minikube start_jaeger_server expose_ingress_controller
+init_cluster: start_microk8s start_jaeger_server
 
 start_microk8s:
 	@echo "Checking MicroK8s status..."
@@ -39,21 +39,12 @@ start_jaeger_server:
 	microk8s kubectl apply -f blog_posts_app/k8s-configs/observability/configmaps/jaeger-ui-config.yaml
 	microk8s kubectl apply -f blog_posts_app/k8s-configs/observability/manifests/jaeger-deployment.yaml
 	microk8s kubectl apply -f blog_posts_app/k8s-configs/observability/ingress/jaeger-ingress.yaml
+	@echo "Waiting for Jaeger deployment to roll out..."
+	microk8s kubectl wait --namespace observability --for=condition=available deployment --all --timeout=500s
 	@echo "Waiting for observability pods to be up and running..."
 	microk8s kubectl wait --namespace observability --for=condition=ready pod --all --timeout=500s
-	@echo "Production up and running at https://nip.io"
+	@echo "Oberservability up and running at https://observability.jaeger.blog-posts.com.localhost"
 
-expose_ingress_controller:
-	@echo "Checking if Ingress Controller port-forward is already active..."
-	@( \
-		if lsof -i :8080 -i :8443 >/dev/null 2>&1; then \
-			echo "Ports 8080/8443 are already occupied. Skipping port-forward."; \
-		else \
-			echo "Ports are free. Exposing Ingress Controller to all interfaces..."; \
-			minikube kubectl -- port-forward service/ingress-nginx-controller -n ingress-nginx 8080:80 8443:443 >/dev/null 2>&1 & \
-			sleep 5; \
-		fi \
-	)
 
 #########################################################################Development######################################################################
 
@@ -201,6 +192,8 @@ rollout_staging:
 	microk8s kubectl rollout restart deployment post-service-deployment -n staging
 	microk8s kubectl rollout restart deployment rest-service-deployment -n staging
 
+
+######################################################Tests##############################################################
 run_vulnerability_tests: run_pip_audit run_trivy_scans
 
 run_pip_audit: audit_rest_service audit_auth_service audit_post_service 
@@ -216,7 +209,8 @@ audit_rest_service:
 	. .venv/bin/activate && \
 	python3 -m pip install --upgrade pip==$(PIP_VERSION) > /dev/null && \
 	pip install pip-audit && \
-	pip-audit --progress-spinner off -r requirements-stg.txt || true
+	(pip-audit --progress-spinner off -r requirements-stg.txt 2>&1) | tee ../../vulnerability_tests_results/pip_audit_results/rest_service_results.txt
+	@echo "results saved in file vulnerability_tests_results/pip_audit_results/rest_service_results.txt"
 	@stty sane
 
 audit_auth_service:
@@ -226,7 +220,8 @@ audit_auth_service:
 	. .venv/bin/activate && \
 	python3 -m pip install --upgrade pip==$(PIP_VERSION) > /dev/null && \
 	pip install pip-audit && \
-	pip-audit --progress-spinner off -r requirements-stg.txt || true
+	(pip-audit --progress-spinner off -r requirements-stg.txt 2>&1) | tee ../../vulnerability_tests_results/pip_audit_results/auth_service_results.txt
+	@echo "results saved in file vulnerability_tests_results/pip_audit_results/auth_service_results.txt"
 	@stty sane
 
 audit_post_service:
@@ -236,56 +231,108 @@ audit_post_service:
 	. .venv/bin/activate && \
 	python3 -m pip install --upgrade pip==$(PIP_VERSION) > /dev/null && \
 	pip install pip-audit && \
-	pip-audit --progress-spinner off -r requirements-stg.txt || true
+	(pip-audit --progress-spinner off -r requirements-stg.txt 2>&1) | tee ../../vulnerability_tests_results/pip_audit_results/post_service_results.txt
+	@echo "results saved in file vulnerability_tests_results/pip_audit_results/post_service_results.txt"
 	@stty sane
 
 trivy_scan_rest_service:
 	@echo "Starting trivy scan for rest service..."
-	trivy fs --config blog_posts_app/trivy_conf/trivy.yaml --format table blog_posts_app/rest_service
+	(trivy fs --config blog_posts_app/trivy_conf/trivy.yaml --format table blog_posts_app/rest_service 2>&1) | tee vulnerability_tests_results/trivy_results/trivy_rest_service_results.txt
+	@echo "results printed into file  vulnerability_tests_results/trivy_results/trivy_rest_service_results.txt"
 
 trivy_scan_auth_service:
 	@echo "Starting trivy scan for auth service..."
-	trivy fs --config blog_posts_app/trivy_conf/trivy.yaml --format table blog_posts_app/auth_service
+	(trivy fs --config blog_posts_app/trivy_conf/trivy.yaml --format table blog_posts_app/auth_service 2>&1) | tee vulnerability_tests_results/trivy_results/trivy_auth_service_results.txt
+	@echo "results printed into file  vulnerability_tests_results/trivy_results/trivy_auth_service_results.txt"
 
 trivy_scan_post_service:
 	@echo "Starting trivy scan for post service..."
-	trivy fs --config blog_posts_app/trivy_conf/trivy.yaml --format table blog_posts_app/post_service
+	(trivy fs --config blog_posts_app/trivy_conf/trivy.yaml --format table blog_posts_app/post_service 2>&1) | tee vulnerability_tests_results/trivy_results/trivy_post_service_results.txt
+	@echo "results printed into file  vulnerability_tests_results/trivy_results/trivy_post_service_results.txt"
 
 trivy_scan_frontend_service:
 	@echo "Starting trivy scan for frotend service..."
-	trivy fs --config blog_posts_app/trivy_conf/trivy.yaml --format table blog_posts_app/frontend
+	(trivy fs --config blog_posts_app/trivy_conf/trivy.yaml --format table blog_posts_app/frontend 2>&1) | tee vulnerability_tests_results/trivy_results/trivy_frontend_results.txt
+	@echo "results printed into file  vulnerability_tests_results/trivy_results/trivy_frontend_results.txt"
 
 trivy_scan_k8s_configs_service:
 	@echo "Starting trivy scan for k8s-configs service..."
-	trivy fs --config blog_posts_app/trivy_conf/trivy.yaml --format table blog_posts_app/k8s-configs
+	(trivy fs --config blog_posts_app/trivy_conf/trivy.yaml --format table blog_posts_app/k8s-configs 2>&1) | tee vulnerability_tests_results/trivy_results/trivy_k8s-configs_results.txt
+	@echo "results printed into file  vulnerability_tests_results/trivy_results/trivy_k8s-configs_results.txt"
 
 
-run_tests: rest_service_tests post_service_tests auth_service_tests frontend_tests
+run_tests: run_unit_tests run_integration_tests e2e_tests
 
-rest_service_tests:
+run_unit_tests: rest_service_unit_tests post_service_tests auth_service_tests frontend_unit_tests
+
+run_integration_tests: backend_integration_tests frontend_integration_tests
+
+rest_service_unit_tests:
 	python3 -m venv "blog_posts_app/rest_service/.venv"
 	blog_posts_app/rest_service/.venv/bin/pip install -r blog_posts_app/rest_service/requirements-stg.txt
-	PYTHONPATH=blog_posts_app/rest_service ENABLE_MONOTORING=False blog_posts_app/rest_service/.venv/bin/pytest blog_posts_app/rest_service/tests/ --cov=blog_posts_app/rest_service/app -W ignore --cov-report=xml:blog_posts_app/rest_service/coverage.xml --cov-config=blog_posts_app/.coveragerc
+	(PYTHONPATH=blog_posts_app/rest_service ENABLE_MONOTORING=False \
+		blog_posts_app/rest_service/.venv/bin/pytest \
+		blog_posts_app/rest_service/tests/posts_test.py \
+		blog_posts_app/rest_service/tests/auth_test.py \
+		--cov=blog_posts_app/rest_service/app \
+		-W ignore \
+		--cov-report=xml:blog_posts_app/rest_service/coverage-unit.xml \
+		--cov-config=blog_posts_app/.coveragerc 2>&1) | tee tests_results/unit_test_results/rest_service_tests_results.txt
+
+
+backend_integration_tests:
+	python3 -m venv "blog_posts_app/rest_service/.venv"
+	blog_posts_app/rest_service/.venv/bin/pip install -r blog_posts_app/rest_service/requirements-stg.txt
+	(PYTHONPATH=blog_posts_app/rest_service ENABLE_MONOTORING=False \
+		blog_posts_app/rest_service/.venv/bin/pytest \
+		blog_posts_app/rest_service/tests/integration_test.py \
+		--cov=blog_posts_app/rest_service/app \
+		-W ignore \
+		--cov-report=xml:blog_posts_app/rest_service/coverage-integration.xml \
+		--cov-config=blog_posts_app/.coveragerc 2>&1) | tee tests_results/integration_test_results/backend_tests_results.txt
+
 
 post_service_tests:
 	python3 -m venv "blog_posts_app/post_service/.venv"
 	blog_posts_app/post_service/.venv/bin/pip install -r blog_posts_app/post_service/requirements-stg.txt
-	PYTHONPATH=blog_posts_app/post_service ENABLE_MONOTORING=False blog_posts_app/post_service/.venv/bin/pytest blog_posts_app/post_service/tests/ --cov=blog_posts_app/post_service/app -W ignore --cov-report=xml:blog_posts_app/post_service/coverage.xml --cov-config=blog_posts_app/.coveragerc
+	(PYTHONPATH=blog_posts_app/post_service ENABLE_MONOTORING=False \
+		blog_posts_app/post_service/.venv/bin/pytest \
+		blog_posts_app/post_service/tests/ \
+		--cov=blog_posts_app/post_service/app \
+		-W ignore \
+		--cov-report=xml:blog_posts_app/post_service/coverage.xml \
+		--cov-config=blog_posts_app/.coveragerc 2>&1) | tee tests_results/unit_test_results/post_service_tests_results.txt
 
 auth_service_tests:
 	python3 -m venv "blog_posts_app/auth_service/.venv"
 	blog_posts_app/auth_service/.venv/bin/pip install -r blog_posts_app/auth_service/requirements-stg.txt
-	PYTHONPATH=blog_posts_app/auth_service ENABLE_MONOTORING=False blog_posts_app/auth_service/.venv/bin/pytest blog_posts_app/auth_service/tests/ -W ignore --cov=blog_posts_app/auth_service/app --cov-report=xml:blog_posts_app/auth_service/coverage.xml --cov-config=blog_posts_app/.coveragerc
+	(PYTHONPATH=blog_posts_app/auth_service ENABLE_MONOTORING=False \
+		blog_posts_app/auth_service/.venv/bin/pytest \
+		blog_posts_app/auth_service/tests/ \
+		--cov=blog_posts_app/auth_service/app \
+		-W ignore \
+		--cov-report=xml:blog_posts_app/post_service/coverage.xml \
+		--cov-config=blog_posts_app/.coveragerc 2>&1) | tee tests_results/unit_test_results/auth_service_tests_results.txt
 
-frontend_tests:
+
+frontend_unit_tests:
+	cd blog_posts_app/frontend && \
+	npm ci && \
+	(NO_COLOR=1 npm run test -- --coverage --coverage.reportsDirectory=coverage/unit  --coverage.reporter=lcov --watch=false tests/client tests/components tests/services 2>&1) | tee ../../tests_results/unit_test_results/frontend_unit_tests_results.txt
+
+frontend_integration_tests:
+	cd blog_posts_app/frontend && \
+	npm ci && \
+	(NO_COLOR=1 npm run test -- --silent --coverage --coverage.reportsDirectory=coverage/integration  --coverage.reporter=lcov --watch=false tests/integration 2>&1) | tee ../../tests_results/integration_test_results/frontend_integration_tests_results.txt
+
+e2e_tests:
 	@stty sane || true
 	@tput init || true
 	cd blog_posts_app/frontend && \
 	npm ci && \
 	npx playwright install chromium && \
-	npm run test -- --coverage --coverage.reporter=lcov --watch=false && \
 	echo "starting E2E tests" && \
-	npx playwright test
+	(NO_COLOR=1 npx playwright test 2>&1) | tee ../../tests_results/e2e_test_results/e2e_tests_results.txt
 
 sonar_scan:
 	@echo "Running local SonarQube scan via temporary Docker container..."
