@@ -97,7 +97,7 @@ spec:
       volumes:
       - name: certs
         secret:
-          secretName: backend-tls-secret
+          secretName: development-backend-tls-secret
               
 ---
 apiVersion: v1
@@ -105,6 +105,9 @@ kind: Service
 metadata:
   name: rest-internal-service
   namespace: development
+  annotations:
+    traefik.ingress.kubernetes.io/service.serversscheme: https
+    traefik.ingress.kubernetes.io/service.serverstransport: development-dev-secure-backend-transport@kubernetescrd
 spec:
   selector:
     app: rest-service

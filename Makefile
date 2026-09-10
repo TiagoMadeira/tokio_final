@@ -85,9 +85,12 @@ apply_development_server:
 	@echo create development namespace
 	microk8s kubectl create namespace development
 	@echo appling pods secrets
-	microk8s kubectl create secret tls backend-tls-secret --namespace development --cert=blog_posts_app/tls/certs/dev-backend-tls.crt --key=blog_posts_app/tls/keys/dev-backend-tls.key
+	microk8s kubectl create secret tls development-backend-tls-secret --namespace development --cert=blog_posts_app/tls/certs/dev-backend-tls.crt --key=blog_posts_app/tls/keys/dev-backend-tls.key
+	microk8s kubectl create secret generic dev-backend-ca -n development --from-file=ca.crt=blog_posts_app/tls/certs/dev-backend-tls.crt
 	microk8s kubectl create secret tls development-blog-posts-com-tls --namespace development --cert=blog_posts_app/tls/certs/dev-frontend-tls.crt --key=blog_posts_app/tls/keys/dev-frontend-tls.key
 	microk8s kubectl apply -f blog_posts_app/k8s-configs/development/secrets/auth-service-secrets.yaml
+	@echo backend server transport
+	microk8s kubectl apply -f blog_posts_app/k8s-configs/development/backend-server-transport.yaml
 	@echo applying config files
 	microk8s kubectl apply -f blog_posts_app/k8s-configs/development/configmaps/frontend-configmap.yaml
 	microk8s kubectl apply -f blog_posts_app/k8s-configs/development/configmaps/auth-service-configmap.yaml
@@ -99,7 +102,9 @@ apply_development_server:
 	microk8s kubectl apply -f blog_posts_app/k8s-configs/development/manifests/post-service-deployment.yaml
 	microk8s kubectl apply -f blog_posts_app/k8s-configs/development/manifests/auth-service-deployment.yaml
 	@echo applying ingresses
+	microk8s kubectl apply -f blog_posts_app/k8s-configs/development/ingress/dev-blog-posts-backend-ingress.yaml
 	microk8s kubectl apply -f blog_posts_app/k8s-configs/development/ingress/dev-blog-posts-ingress.yaml
+
 
 rollout_development:
 	@echo appling pods secrets
@@ -168,9 +173,12 @@ start_staging_environment:
 	@echo create staging namespace
 	microk8s kubectl create namespace staging
 	@echo appling pods secrets
-	microk8s kubectl create secret tls backend-tls-secret --namespace staging --cert=blog_posts_app/tls/certs/stg-backend-tls.crt --key=blog_posts_app/tls/keys/stg-backend-tls.key
+	microk8s kubectl create secret tls backend-staging-tls-secret --namespace staging --cert=blog_posts_app/tls/certs/stg-backend-tls.crt --key=blog_posts_app/tls/keys/stg-backend-tls.key
+	microk8s kubectl create secret generic stg-backend-ca -n staging --from-file=ca.crt=blog_posts_app/tls/certs/stg-backend-tls.crt
 	microk8s kubectl create secret tls frontend-staging-posts-com-tls --namespace staging --cert=blog_posts_app/tls/certs/stg-frontend-tls.crt --key=blog_posts_app/tls/keys/stg-frontend-tls.key
 	microk8s kubectl apply -f blog_posts_app/k8s-configs/staging/secrets/auth-service-secrets.yaml
+	@echo backend server transport
+	microk8s kubectl apply -f blog_posts_app/k8s-configs/staging/backend-server-trasnport.yaml
 	@echo applying config files
 	microk8s kubectl apply -f blog_posts_app/k8s-configs/staging/configmaps/frontend-configmap.yaml
 	microk8s kubectl apply -f blog_posts_app/k8s-configs/staging/configmaps/auth-service-configmap.yaml
@@ -378,8 +386,11 @@ start_production_environment:
 	microk8s kubectl create namespace production
 	@echo appling pods secrets
 	microk8s kubectl apply -f blog_posts_app/k8s-configs/production/secrets/auth-service-secrets.yaml
-	microk8s kubectl create secret tls backend-tls-secret --namespace production --cert=blog_posts_app/tls/certs/prd-backend-tls.crt --key=blog_posts_app/tls/keys/prd-backend-tls.key
+	microk8s kubectl create secret tls backend-production-posts-com-tls --namespace production --cert=blog_posts_app/tls/certs/prd-backend-tls.crt --key=blog_posts_app/tls/keys/prd-backend-tls.key
+	microk8s kubectl create secret generic prd-backend-ca -n production --from-file=ca.crt=blog_posts_app/tls/certs/prd-backend-tls.crt
 	microk8s kubectl create secret tls frontend-production-posts-com-tls --namespace production --cert=blog_posts_app/tls/certs/prd-frontend-tls.crt --key=blog_posts_app/tls/keys/prd-frontend-tls.key
+	@echo backend server transport
+	microk8s kubectl apply -f blog_posts_app/k8s-configs/production/backend-server-transport.yaml
 	@echo applying config files
 	microk8s kubectl apply -f blog_posts_app/k8s-configs/production/configmaps/frontend-configmap.yaml
 	microk8s kubectl apply -f blog_posts_app/k8s-configs/production/configmaps/auth-service-configmap.yaml

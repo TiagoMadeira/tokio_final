@@ -1,0 +1,10 @@
+apiVersion: traefik.io/v1alpha1
+kind: ServersTransport
+metadata:
+  name: stg-secure-backend-transport
+  namespace: staging
+spec:
+  # Overrides the Pod IP mismatch by forcing Traefik to validate against this domain
+  serverName: staging.backend.blog-posts.com.localhost
+  rootCAsSecrets:
+    - stg-backend-ca 

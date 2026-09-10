@@ -97,7 +97,7 @@ spec:
       volumes:
       - name: certs
         secret:
-          secretName: backend-tls-secret
+          secretName: backend-production-posts-com-tls
       imagePullSecrets:
       - name: regcred
               
@@ -107,6 +107,9 @@ kind: Service
 metadata:
   name: rest-internal-service
   namespace: production
+  annotations:
+    traefik.ingress.kubernetes.io/service.serversscheme: https
+    traefik.ingress.kubernetes.io/service.serverstransport: production-prd-secure-backend-transport@kubernetescrd
 spec:
   selector:
     app: rest-service

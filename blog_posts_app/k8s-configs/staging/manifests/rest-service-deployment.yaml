@@ -96,7 +96,7 @@ spec:
       volumes:
       - name: certs
         secret:
-          secretName: backend-tls-secret
+          secretName: backend-staging-tls-secret
       imagePullSecrets:
       - name: regcred
               
@@ -106,6 +106,9 @@ kind: Service
 metadata:
   name: rest-internal-service
   namespace: staging
+  annotations:
+    traefik.ingress.kubernetes.io/service.serversscheme: https
+    traefik.ingress.kubernetes.io/service.serverstransport: staging-stg-secure-backend-transport@kubernetescrd
 spec:
   selector:
     app: rest-service

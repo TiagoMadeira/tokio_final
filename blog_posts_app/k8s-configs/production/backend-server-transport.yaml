@@ -1,0 +1,10 @@
+apiVersion: traefik.io/v1alpha1
+kind: ServersTransport
+metadata:
+  name: prd-secure-backend-transport
+  namespace: production
+spec:
+  # Overrides the Pod IP mismatch by forcing Traefik to validate against this domain
+  serverName: backend.blog-posts.com.localhost
+  rootCAsSecrets:
+    - prd-backend-ca 

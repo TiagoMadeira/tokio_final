@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dev-blog-posts-backend-ingress
+  namespace: development
+spec:
+  tls:
+    - secretName: development-backend-tls-secret
+      hosts:
+        - development.backend.blog-posts.com.localhost
+  rules:
+  - host: development.backend.blog-posts.com.localhost
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: rest-internal-service
+            port: 
+              number: 80
+  ingressClassName: traefik 

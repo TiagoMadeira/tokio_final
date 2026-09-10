@@ -7,6 +7,7 @@ resources:
   - manifests/post-service-deployment.yaml
   - manifests/rest-service-deployment.yaml
   - ingress/frontend-posts-ingress.yaml
+  - ingress/backend-posts-ingress.yaml
 
 
 patches:
@@ -44,6 +45,16 @@ patches:
       - op: replace
         path: /spec/rules/0/host
         value: staging.blog-posts.com.localhost
+  - target:
+      kind: Ingress
+      name: backend-posts-ingress # Ensure this matches your actual Ingress metadata.name
+    patch: |-
+      - op: replace
+        path: /spec/tls/0/hosts/0
+        value: staging.backend.blog-posts.com.localhost
+      - op: replace
+        path: /spec/rules/0/host
+        value: staging.backend.blog-posts.com.localhost       
 
 
 images:
