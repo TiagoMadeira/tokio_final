@@ -39,13 +39,13 @@ spec:
 
         resources:
           limits:
-            memory: 512Mi
-            cpu: "1"
-            ephemeral-storage: "1Gi"
-          requests:
             memory: 256Mi
-            cpu: "0.1"
+            cpu: "300m"
             ephemeral-storage: "256Mi"
+          requests:
+            memory: 150Mi
+            cpu: "50m"
+            ephemeral-storage: "50Mi"
 
         ports:
           - name: http
