@@ -280,16 +280,16 @@ jobs:
         with:
           projectBaseDir: blog_posts_app
 
-      # - name: Clear Staging
-      #   if: always()
-      #   shell: bash
-      #   run: |
-      #     echo "Clearing staging..."
-      #     microk8s kubectl delete namespace staging --wait=true
+      - name: Clear Staging
+        if: always()
+        shell: bash
+        run: |
+          echo "Clearing staging..."
+          microk8s kubectl delete namespace staging --wait=true
         
-      #     echo "Killing background staging port-forward processes..."
-      #     kill $(pgrep -f "[p]ort-forward service/rest-internal-service 8000:80") 2>/dev/null || true
-      #     kill $(pgrep -f "[p]ort-forward service/frontend-internal-service 3000:80") 2>/dev/null || true
+          echo "Killing background staging port-forward processes..."
+          kill $(pgrep -f "[p]ort-forward service/rest-internal-service 8000:80") 2>/dev/null || true
+          kill $(pgrep -f "[p]ort-forward service/frontend-internal-service 3000:80") 2>/dev/null || true
 
 
   production:
