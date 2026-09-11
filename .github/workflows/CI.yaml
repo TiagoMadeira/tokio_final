@@ -166,9 +166,12 @@ jobs:
             microk8s kubectl create namespace staging
             echo appling pods secrets
             microk8s kubectl create secret docker-registry regcred --namespace staging --docker-server=https://index.docker.io/v1/ --docker-username=${{vars.DOCKER_USERNAME}} --docker-password=$DOCKERHUB_ACCESS_TOKEN --docker-email=${{vars.DOCKER_EMAIL}} > /dev/null 2>&1
-            microk8s kubectl create secret tls backend-tls-secret --namespace staging --cert=staging-backend-tls.crt --key=staging-backend-tls.key
+            microk8s kubectl create secret tls backend-staging-tls-secret --namespace staging --cert=staging-backend-tls.crt --key=staging-backend-tls.key
+            microk8s kubectl create secret generic stg-backend-ca -n staging --from-file=ca.crt=staging-backend-tls.crt
             microk8s kubectl create secret tls frontend-staging-posts-com-tls --namespace staging --cert=staging-frontend-tls.crt --key=staging-frontend-tls.key
             microk8s kubectl apply -f blog_posts_app/k8s-configs/staging/secrets/auth-service-secrets.yaml
+            echo backend server transport
+            microk8s kubectl apply -f blog_posts_app/k8s-configs/staging/backend-server-trasnport.yaml
             echo applying config files
             microk8s kubectl apply -f blog_posts_app/k8s-configs/staging/configmaps/frontend-configmap.yaml
             microk8s kubectl apply -f blog_posts_app/k8s-configs/staging/configmaps/auth-service-configmap.yaml
@@ -180,6 +183,7 @@ jobs:
             microk8s kubectl apply -f blog_posts_app/k8s-configs/staging/manifests/post-service-deployment.yaml
             microk8s kubectl apply -f blog_posts_app/k8s-configs/staging/manifests/auth-service-deployment.yaml
             echo applying ingresses
+            microk8s kubectl apply -f blog_posts_app/k8s-configs/staging/ingress/backend-posts-ingress.yaml
             microk8s kubectl apply -f blog_posts_app/k8s-configs/staging/ingress/frontend-posts-ingress.yaml
 
             # 3. Cleanup sensitive temporary files
@@ -276,16 +280,16 @@ jobs:
         with:
           projectBaseDir: blog_posts_app
 
-      - name: Clear Staging
-        if: always()
-        shell: bash
-        run: |
-          echo "Clearing staging..."
-          microk8s kubectl delete namespace staging --wait=true
+      # - name: Clear Staging
+      #   if: always()
+      #   shell: bash
+      #   run: |
+      #     echo "Clearing staging..."
+      #     microk8s kubectl delete namespace staging --wait=true
         
-          echo "Killing background staging port-forward processes..."
-          kill $(pgrep -f "[p]ort-forward service/rest-internal-service 8000:80") 2>/dev/null || true
-          kill $(pgrep -f "[p]ort-forward service/frontend-internal-service 3000:80") 2>/dev/null || true
+      #     echo "Killing background staging port-forward processes..."
+      #     kill $(pgrep -f "[p]ort-forward service/rest-internal-service 8000:80") 2>/dev/null || true
+      #     kill $(pgrep -f "[p]ort-forward service/frontend-internal-service 3000:80") 2>/dev/null || true
 
 
   production:
@@ -363,8 +367,11 @@ jobs:
             microk8s kubectl create secret docker-registry regcred --namespace production --docker-server=https://index.docker.io/v1/ --docker-username=${{vars.DOCKER_USERNAME}} --docker-password=$DOCKERHUB_ACCESS_TOKEN --docker-email=${{vars.DOCKER_EMAIL}} > /dev/null 2>&1
             echo appling pods secrets
             microk8s kubectl apply -f blog_posts_app/k8s-configs/production/secrets/auth-service-secrets.yaml
-            microk8s kubectl create secret tls backend-tls-secret --namespace production --cert=prod-backend-tls.crt --key=prod-backend-tls.key
+            microk8s kubectl create secret tls backend-production-posts-com-tls --namespace production --cert=prod-backend-tls.crt --key=prod-backend-tls.key
+            microk8s kubectl create secret generic prd-backend-ca -n production --from-file=ca.crt=prod-backend-tls.crt
             microk8s kubectl create secret tls frontend-production-posts-com-tls --namespace production --cert=prod-frontend-tls.crt --key=prod-frontend-tls.key
+            echo backend server transport
+            microk8s kubectl apply -f blog_posts_app/k8s-configs/production/backend-server-transport.yaml
             echo applying config files
             microk8s kubectl apply -f blog_posts_app/k8s-configs/production/configmaps/frontend-configmap.yaml
             microk8s kubectl apply -f blog_posts_app/k8s-configs/production/configmaps/auth-service-configmap.yaml
@@ -376,6 +383,7 @@ jobs:
             microk8s kubectl apply -f blog_posts_app/k8s-configs/production/manifests/post-service-deployment.yaml
             microk8s kubectl apply -f blog_posts_app/k8s-configs/production/manifests/auth-service-deployment.yaml
             echo applying ingresses
+            microk8s kubectl apply -f blog_posts_app/k8s-configs/production/ingress/backend-posts-ingress.yaml
             microk8s kubectl apply -f blog_posts_app/k8s-configs/production/ingress/frontend-posts-ingress.yaml
             # 3. Cleanup sensitive temporary files
             rm prod-backend-tls.crt prod-backend-tls.key prod-frontend-tls.crt prod-frontend-tls.key
