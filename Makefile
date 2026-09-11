@@ -124,7 +124,7 @@ rollout_development:
 
 launch_build:
 	@echo "Verifying MicroK8s registry service..."
-	@microk8s kubectl get service registry -n container-registry >/dev/null 2>&1 || { echo "Error: MicroK8s registry addon is not enabled. Run 'make start_microk8s' first."; exit 1; }
+	@microk8s kubectl get service registry -n container-registry >/dev/null 2>&1 || { echo "Error: MicroK8s registry addon is not enabled. Run 'make init_cluster' first."; exit 1; }
 
 	@echo "Building and pushing images to Minikube Registry..."
 	
@@ -148,7 +148,7 @@ launch_staging:
 	@# If interrupted by Ctrl+C, run cleanup and exit immediately with status 130
 	@trap 'echo "\nInterrupted! Cleaning up..."; $(MAKE) clear_staging; exit 130' INT; \
 	trap '$(MAKE) clear_staging' EXIT TERM; \
-	$(MAKE) start_and_prepare_staging; \
+	$(MAKE) start_staging_server; \
 	$(MAKE) run_vulnerability_tests; \
 	$(MAKE) run_tests; \
 	$(MAKE) sonar_scan
@@ -156,7 +156,7 @@ launch_staging:
 stop_staging: 
 	microk8s kubectl delete namespace staging
 
-start_and_prepare_staging: start_staging_environment wait_for_staging_pods prepare_staging_for_integration_testing
+start_staging_server: start_staging_environment wait_for_staging_pods prepare_staging_for_integration_testing
 
 wait_for_staging_pods:
 	@echo "waiting for staging pods to be up and running"
