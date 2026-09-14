@@ -435,7 +435,7 @@ clean:
 	-microk8s disable registry
 	@echo docker stop running images
 	docker stop $$(docker ps -qa) || true
-	@echo "Removing production Docker images..."
+	@echo "Removing staging/production Docker images..."
 	docker rmi localhost:32000/tokio-rest-service:latest || true
 	docker rmi localhost:32000/tokio-post-service:latest || true
 	docker rmi localhost:32000/tokio-auth-service:latest || true
