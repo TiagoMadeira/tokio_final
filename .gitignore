@@ -9,6 +9,7 @@
 *.key
 *.crt
 .make_env
+*.jpg
 
 **/coverage
 .coverage
