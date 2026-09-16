@@ -19,4 +19,4 @@ spec:
             name: frontend-internal-service
             port: 
               number: 80
-  ingressClassName: traefik 
+  ingressClassName: nginx 

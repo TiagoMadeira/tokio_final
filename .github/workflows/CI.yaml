@@ -170,8 +170,6 @@ jobs:
             microk8s kubectl create secret generic stg-backend-ca -n staging --from-file=ca.crt=staging-backend-tls.crt
             microk8s kubectl create secret tls frontend-staging-posts-com-tls --namespace staging --cert=staging-frontend-tls.crt --key=staging-frontend-tls.key
             microk8s kubectl apply -f blog_posts_app/k8s-configs/staging/secrets/auth-service-secrets.yaml
-            echo backend server transport
-            microk8s kubectl apply -f blog_posts_app/k8s-configs/staging/backend-server-trasnport.yaml
             echo applying config files
             microk8s kubectl apply -f blog_posts_app/k8s-configs/staging/configmaps/frontend-configmap.yaml
             microk8s kubectl apply -f blog_posts_app/k8s-configs/staging/configmaps/auth-service-configmap.yaml
@@ -399,8 +397,6 @@ jobs:
             microk8s kubectl create secret tls backend-production-posts-com-tls --namespace production --cert=prod-backend-tls.crt --key=prod-backend-tls.key
             microk8s kubectl create secret generic prd-backend-ca -n production --from-file=ca.crt=prod-backend-tls.crt
             microk8s kubectl create secret tls frontend-production-posts-com-tls --namespace production --cert=prod-frontend-tls.crt --key=prod-frontend-tls.key
-            echo backend server transport
-            microk8s kubectl apply -f blog_posts_app/k8s-configs/production/backend-server-transport.yaml
             echo applying config files
             microk8s kubectl apply -f blog_posts_app/k8s-configs/production/configmaps/frontend-configmap.yaml
             microk8s kubectl apply -f blog_posts_app/k8s-configs/production/configmaps/auth-service-configmap.yaml

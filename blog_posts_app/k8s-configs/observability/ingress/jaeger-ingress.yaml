@@ -19,4 +19,4 @@ spec:
             name: jaeger
             port: 
               number: 16686
-  ingressClassName: traefik 
+  ingressClassName: nginx 

@@ -54,6 +54,9 @@ patches:
       - op: replace
         path: /spec/rules/0/host
         value: backend.blog-posts.com.localhost
+      - op: replace
+        path: /metadata/annotations/nginx.ingress.kubernetes.io~1proxy-ssl-name
+        value: "backend.blog-posts.com.localhost"
 
 images:
   - name: docker.io/tiagomadeiradock/tokio-rest-service
