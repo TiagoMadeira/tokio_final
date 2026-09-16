@@ -352,12 +352,9 @@ jobs:
           
           echo "MicroK8s cluster is ready!"
 
-      - name: Wait for Traefik Ingress
+      - name: Wait for nginx Ingress
         run: |
-          microk8s kubectl wait --namespace ingress \
-          --for=condition=ready pod \
-          --selector=app.kubernetes.io/name=traefik \
-          --timeout=120s
+          microk8s kubectl rollout status daemonset/nginx-ingress-microk8s-controller -n ingress --timeout=120s 
       
       - name: start production server
         env: 
