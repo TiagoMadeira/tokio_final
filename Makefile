@@ -22,8 +22,8 @@ start_microk8s:
 	@microk8s enable hostpath-storage
 	@echo "Enabling Built-in Registry addon (Listening on localhost:32000)..."
 	@microk8s enable registry
-	@echo "Waiting for traefik Ingress readiness..."
-	microk8s kubectl wait --namespace ingress --for=condition=ready pod --selector=app.kubernetes.io/name=traefik --timeout=120s
+	@echo "Waiting for nginx Ingress readiness..."
+	microk8s kubectl rollout status daemonset/nginx-ingress-microk8s-controller -n ingress --timeout=120s
 	@echo "MicroK8s cluster is ready!"
 
 start_jaeger_server:
@@ -89,8 +89,6 @@ apply_development_server:
 	microk8s kubectl create secret generic dev-backend-ca -n development --from-file=ca.crt=blog_posts_app/tls/certs/dev-backend-tls.crt
 	microk8s kubectl create secret tls development-blog-posts-com-tls --namespace development --cert=blog_posts_app/tls/certs/dev-frontend-tls.crt --key=blog_posts_app/tls/keys/dev-frontend-tls.key
 	microk8s kubectl apply -f blog_posts_app/k8s-configs/development/secrets/auth-service-secrets.yaml
-	@echo backend server transport
-	microk8s kubectl apply -f blog_posts_app/k8s-configs/development/backend-server-transport.yaml
 	@echo applying config files
 	microk8s kubectl apply -f blog_posts_app/k8s-configs/development/configmaps/frontend-configmap.yaml
 	microk8s kubectl apply -f blog_posts_app/k8s-configs/development/configmaps/auth-service-configmap.yaml
@@ -149,6 +147,7 @@ launch_staging:
 	@trap 'echo "\nInterrupted! Cleaning up..."; $(MAKE) clear_staging; exit 130' INT; \
 	trap '$(MAKE) clear_staging' EXIT TERM; \
 	$(MAKE) start_staging_server; \
+	$(MAKE) build_frontend_test_image;\
 	$(MAKE) run_vulnerability_tests; \
 	$(MAKE) run_tests; \
 	$(MAKE) sonar_scan
@@ -177,8 +176,6 @@ start_staging_environment:
 	microk8s kubectl create secret generic stg-backend-ca -n staging --from-file=ca.crt=blog_posts_app/tls/certs/stg-backend-tls.crt
 	microk8s kubectl create secret tls frontend-staging-posts-com-tls --namespace staging --cert=blog_posts_app/tls/certs/stg-frontend-tls.crt --key=blog_posts_app/tls/keys/stg-frontend-tls.key
 	microk8s kubectl apply -f blog_posts_app/k8s-configs/staging/secrets/auth-service-secrets.yaml
-	@echo backend server transport
-	microk8s kubectl apply -f blog_posts_app/k8s-configs/staging/backend-server-trasnport.yaml
 	@echo applying config files
 	microk8s kubectl apply -f blog_posts_app/k8s-configs/staging/configmaps/frontend-configmap.yaml
 	microk8s kubectl apply -f blog_posts_app/k8s-configs/staging/configmaps/auth-service-configmap.yaml
@@ -322,25 +319,40 @@ auth_service_tests:
 		--cov-report=xml:blog_posts_app/post_service/coverage.xml \
 		--cov-config=blog_posts_app/.coveragerc 2>&1) | tee tests_results/unit_test_results/auth_service_tests_results.txt
 
+build_frontend_test_image:
+	docker build -t frontend_tests -f blog_posts_app/frontend/Dockerfile.tests blog_posts_app/frontend
 
 frontend_unit_tests:
-	cd blog_posts_app/frontend && \
-	npm ci && \
-	(NO_COLOR=1 npm run test -- --coverage --coverage.reportsDirectory=coverage/unit  --coverage.reporter=lcov --watch=false tests/client tests/components tests/services 2>&1) | tee ../../tests_results/unit_test_results/frontend_unit_tests_results.txt
+	mkdir -p tests_results/unit_test_results
+	mkdir -p blog_posts_app/frontend/coverage
+	docker run --rm \
+		-v $(shell pwd)/tests_results:/tests_results \
+		-v $(shell pwd)/blog_posts_app/frontend/coverage:/app/coverage \
+		frontend_tests \
+		sh -c "NO_COLOR=1 npm run test -- --coverage --coverage.reportsDirectory=coverage/unit  --coverage.reporter=lcov --watch=false tests/client tests/components tests/services 2>&1" \
+		| tee tests_results/unit_test_results/frontend_unit_tests_results.txt
+		
 
 frontend_integration_tests:
-	cd blog_posts_app/frontend && \
-	npm ci && \
-	(NO_COLOR=1 npm run test -- --silent --coverage --coverage.reportsDirectory=coverage/integration  --coverage.reporter=lcov --watch=false tests/integration 2>&1) | tee ../../tests_results/integration_test_results/frontend_integration_tests_results.txt
+	mkdir -p tests_results/integration_test_results
+	mkdir -p blog_posts_app/frontend/coverage
+	docker run --rm \
+		-v $(shell pwd)/tests_results:/tests_results \
+		-v $(shell pwd)/blog_posts_app/frontend/coverage:/app/coverage \
+		frontend_tests \
+		sh -c "NO_COLOR=1 npm run test -- --coverage --coverage.reportsDirectory=coverage/integration  --coverage.reporter=lcov --watch=false tests/integration 2>&1" \
+		| tee tests_results/integration_test_results/frontend_integration_tests_results.txt
 
 e2e_tests:
 	@stty sane || true
 	@tput init || true
-	cd blog_posts_app/frontend && \
-	npm ci && \
-	npx playwright install chromium && \
-	echo "starting E2E tests" && \
-	(NO_COLOR=1 npx playwright test 2>&1) | tee ../../tests_results/e2e_test_results/e2e_tests_results.txt
+	mkdir -p tests_results/e2e_test_results
+	docker run --rm \
+		-v $(shell pwd)/tests_results:/tests_results \
+		--network=host \
+		frontend_tests \
+		sh -c "NO_COLOR=1 npx playwright test 2>&1" \
+		| tee tests_results/e2e_test_results/e2e_tests_results.txt
 
 sonar_scan:
 	@echo "Running local SonarQube scan via temporary Docker container..."
@@ -389,8 +401,6 @@ start_production_environment:
 	microk8s kubectl create secret tls backend-production-posts-com-tls --namespace production --cert=blog_posts_app/tls/certs/prd-backend-tls.crt --key=blog_posts_app/tls/keys/prd-backend-tls.key
 	microk8s kubectl create secret generic prd-backend-ca -n production --from-file=ca.crt=blog_posts_app/tls/certs/prd-backend-tls.crt
 	microk8s kubectl create secret tls frontend-production-posts-com-tls --namespace production --cert=blog_posts_app/tls/certs/prd-frontend-tls.crt --key=blog_posts_app/tls/keys/prd-frontend-tls.key
-	@echo backend server transport
-	microk8s kubectl apply -f blog_posts_app/k8s-configs/production/backend-server-transport.yaml
 	@echo applying config files
 	microk8s kubectl apply -f blog_posts_app/k8s-configs/production/configmaps/frontend-configmap.yaml
 	microk8s kubectl apply -f blog_posts_app/k8s-configs/production/configmaps/auth-service-configmap.yaml
@@ -447,6 +457,8 @@ clean:
 	docker rmi localhost:32000/tokio-frontend:dev || true
 	@echo "removing sonar-qube docker image"
 	docker rmi sonarsource/sonar-scanner-cli:latest || true
+	@echo "removing frontend_tests docker image"
+	docker rmi frontend_tests || true
 	@echo "Cleaning docker system"
 	docker system prune -af --volumes
 	docker builder prune -af

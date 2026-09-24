@@ -1,0 +1,31 @@
+# Use official Ubuntu LTS base image
+FROM ubuntu:22.04
+
+# Avoid prompts during installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+WORKDIR /app
+
+# Install system dependencies, curl, and Node.js setup
+RUN apt-get update && apt-get install -y \
+    curl \
+    gnupg \
+    && curl -fsSL https://deb.nodesource.com/setup_22.x -o nodesource_setup.sh \
+    && bash nodesource_setup.sh \
+    && apt-get install -y nodejs \
+    && rm -f nodesource_setup.sh \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy package files to leverage Docker caching
+COPY package*.json ./
+
+# Install project dependencies
+RUN npm ci
+
+# Install Playwright browser binaries AND required Ubuntu system libraries
+RUN npx playwright install chromium \
+    && npx playwright install-deps chromium \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy the rest of your frontend code
+COPY . .

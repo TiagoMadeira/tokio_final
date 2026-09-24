@@ -35,8 +35,8 @@ test.describe('Register Page', () => {
     await page.getByRole('button', { name: 'Register' }).click();
   
     await page.waitForLoadState('networkidle'); 
-    // Verify redirection to login after the 2-second timeout in your code
-    await expect(page).toHaveURL(/\/login/, { timeout: 10000 });
+    // Verify redirection to login
+    await expect(page).toHaveURL(/\/login/, { timeout: 20000 });
   });
 
   test('should show error message from backend for duplicate registration', async ({ page }) => {
