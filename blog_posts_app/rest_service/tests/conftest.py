@@ -19,5 +19,5 @@ def api_client():
     ssl_context = ssl.create_default_context()
     ssl_context.check_hostname = False
     ssl_context.verify_mode = ssl.CERT_NONE
-    with httpx.Client(verify=ssl_context) as client:
+    with httpx.Client(verify=ssl_context, timeout=30.0) as client:
         yield client

@@ -324,23 +324,27 @@ build_frontend_test_image:
 
 frontend_unit_tests:
 	mkdir -p tests_results/unit_test_results
-	mkdir -p blog_posts_app/frontend/coverage
+	rm -rf blog_posts_app/frontend/coverage/unit
+	mkdir -p blog_posts_app/frontend/coverage/unit
+	chmod -R 777 blog_posts_app/frontend/coverage/unit
 	docker run --rm \
 		-v $(shell pwd)/tests_results:/tests_results \
 		-v $(shell pwd)/blog_posts_app/frontend/coverage:/app/coverage \
 		frontend_tests \
-		sh -c "NO_COLOR=1 npm run test -- --coverage --coverage.reportsDirectory=coverage/unit  --coverage.reporter=lcov --watch=false tests/client tests/components tests/services 2>&1" \
+		sh -c "NO_COLOR=1 npm run test -- --coverage --coverage.reportsDirectory=coverage/unit --coverage.clean=false --coverage.reporter=lcov --watch=false tests/client tests/components tests/services 2>&1" \
 		| tee tests_results/unit_test_results/frontend_unit_tests_results.txt
 		
 
 frontend_integration_tests:
 	mkdir -p tests_results/integration_test_results
-	mkdir -p blog_posts_app/frontend/coverage
+	rm -rf blog_posts_app/frontend/coverage/integration
+	mkdir -p blog_posts_app/frontend/coverage/integration
+	chmod -R 777 blog_posts_app/frontend/coverage/integration
 	docker run --rm \
 		-v $(shell pwd)/tests_results:/tests_results \
 		-v $(shell pwd)/blog_posts_app/frontend/coverage:/app/coverage \
 		frontend_tests \
-		sh -c "NO_COLOR=1 npm run test -- --coverage --coverage.reportsDirectory=coverage/integration  --coverage.reporter=lcov --watch=false tests/integration 2>&1" \
+		sh -c "NO_COLOR=1 npm run test -- --coverage --coverage.reportsDirectory=coverage/integration  --coverage.clean=false --coverage.reporter=lcov --watch=false tests/integration 2>&1" \
 		| tee tests_results/integration_test_results/frontend_integration_tests_results.txt
 
 e2e_tests:
