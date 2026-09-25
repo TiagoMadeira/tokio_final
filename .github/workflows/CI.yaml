@@ -108,7 +108,7 @@ jobs:
 
       - name: Wait for nginx Ingress
         run: |
-          microk8s kubectl rollout status daemonset/nginx-ingress-microk8s-controller -n ingress --timeout=120s 
+          microk8s kubectl rollout status daemonset/nginx-ingress-microk8s-controller -n ingress --timeout=200s 
       
       - name: start obeservability server
         run: |
@@ -354,7 +354,7 @@ jobs:
 
       - name: Wait for nginx Ingress
         run: |
-          microk8s kubectl rollout status daemonset/nginx-ingress-microk8s-controller -n ingress --timeout=120s 
+          microk8s kubectl rollout status daemonset/nginx-ingress-microk8s-controller -n ingress --timeout=200s 
       
       - name: start production server
         env: 

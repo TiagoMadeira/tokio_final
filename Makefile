@@ -23,7 +23,7 @@ start_microk8s:
 	@echo "Enabling Built-in Registry addon (Listening on localhost:32000)..."
 	@microk8s enable registry
 	@echo "Waiting for nginx Ingress readiness..."
-	microk8s kubectl rollout status daemonset/nginx-ingress-microk8s-controller -n ingress --timeout=120s
+	microk8s kubectl rollout status daemonset/nginx-ingress-microk8s-controller -n ingress --timeout=200s
 	@echo "MicroK8s cluster is ready!"
 
 start_jaeger_server:
