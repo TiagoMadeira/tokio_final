@@ -275,49 +275,53 @@ run_integration_tests: backend_integration_tests frontend_integration_tests
 rest_service_unit_tests:
 	python3 -m venv "blog_posts_app/rest_service/.venv"
 	blog_posts_app/rest_service/.venv/bin/pip install -r blog_posts_app/rest_service/requirements-stg.txt
-	(PYTHONPATH=blog_posts_app/rest_service ENABLE_MONOTORING=False \
-		blog_posts_app/rest_service/.venv/bin/pytest \
-		blog_posts_app/rest_service/tests/posts_test.py \
-		blog_posts_app/rest_service/tests/auth_test.py \
-		--cov=blog_posts_app/rest_service/app \
+	cd blog_posts_app && \
+	PYTHONPATH=rest_service ENABLE_MONOTORING=False \
+		./rest_service/.venv/bin/pytest \
+		rest_service/tests/posts_test.py \
+		rest_service/tests/auth_test.py \
+		--cov=rest_service/app \
 		-W ignore \
-		--cov-report=xml:blog_posts_app/rest_service/coverage-unit.xml \
-		--cov-config=blog_posts_app/.coveragerc 2>&1) | tee tests_results/unit_test_results/rest_service_tests_results.txt
+		--cov-report=xml:rest_service/coverage-unit.xml \
+		--cov-config=.coveragerc 2>&1 | tee ../tests_results/unit_test_results/rest_service_tests_results.txt
 
 
 backend_integration_tests:
 	python3 -m venv "blog_posts_app/rest_service/.venv"
 	blog_posts_app/rest_service/.venv/bin/pip install -r blog_posts_app/rest_service/requirements-stg.txt
-	(PYTHONPATH=blog_posts_app/rest_service ENABLE_MONOTORING=False \
-		blog_posts_app/rest_service/.venv/bin/pytest \
-		blog_posts_app/rest_service/tests/integration_test.py \
-		--cov=blog_posts_app/rest_service/app \
+	cd blog_posts_app && \
+	PYTHONPATH=rest_service ENABLE_MONOTORING=False \
+		./rest_service/.venv/bin/pytest \
+		rest_service/tests/integration_test.py \
+		--cov=rest_service/app \
 		-W ignore \
-		--cov-report=xml:blog_posts_app/rest_service/coverage-integration.xml \
-		--cov-config=blog_posts_app/.coveragerc 2>&1) | tee tests_results/integration_test_results/backend_tests_results.txt
+		--cov-report=xml:rest_service/coverage-integration.xml \
+		--cov-config=.coveragerc 2>&1 | tee ../tests_results/integration_test_results/backend_tests_results.txt
 
 
 post_service_tests:
 	python3 -m venv "blog_posts_app/post_service/.venv"
 	blog_posts_app/post_service/.venv/bin/pip install -r blog_posts_app/post_service/requirements-stg.txt
-	(PYTHONPATH=blog_posts_app/post_service ENABLE_MONOTORING=False \
-		blog_posts_app/post_service/.venv/bin/pytest \
-		blog_posts_app/post_service/tests/ \
-		--cov=blog_posts_app/post_service/app \
+	cd blog_posts_app && \
+		PYTHONPATH=post_service ENABLE_MONOTORING=False \
+		./post_service/.venv/bin/pytest \
+		post_service/tests/ \
+		--cov=post_service/app \
 		-W ignore \
-		--cov-report=xml:blog_posts_app/post_service/coverage.xml \
-		--cov-config=blog_posts_app/.coveragerc 2>&1) | tee tests_results/unit_test_results/post_service_tests_results.txt
+		--cov-report=xml:post_service/coverage.xml \
+		--cov-config=.coveragerc 2>&1 | tee ../tests_results/unit_test_results/post_service_tests_results.txt
 
 auth_service_tests:
 	python3 -m venv "blog_posts_app/auth_service/.venv"
 	blog_posts_app/auth_service/.venv/bin/pip install -r blog_posts_app/auth_service/requirements-stg.txt
-	(PYTHONPATH=blog_posts_app/auth_service ENABLE_MONOTORING=False \
-		blog_posts_app/auth_service/.venv/bin/pytest \
-		blog_posts_app/auth_service/tests/ \
-		--cov=blog_posts_app/auth_service/app \
+	cd blog_posts_app && \
+		PYTHONPATH=auth_service ENABLE_MONOTORING=False \
+		./auth_service/.venv/bin/pytest \
+		auth_service/tests/ \
+		--cov=auth_service/app \
 		-W ignore \
-		--cov-report=xml:blog_posts_app/post_service/coverage.xml \
-		--cov-config=blog_posts_app/.coveragerc 2>&1) | tee tests_results/unit_test_results/auth_service_tests_results.txt
+		--cov-report=xml:auth_service/coverage.xml \
+		--cov-config=.coveragerc 2>&1 | tee ../tests_results/unit_test_results/auth_service_tests_results.txt
 
 build_frontend_test_image:
 	docker build -t frontend_tests -f blog_posts_app/frontend/Dockerfile.tests blog_posts_app/frontend
@@ -329,9 +333,9 @@ frontend_unit_tests:
 	chmod -R 777 blog_posts_app/frontend/coverage/unit
 	docker run --rm \
 		-v $(shell pwd)/tests_results:/tests_results \
-		-v $(shell pwd)/blog_posts_app/frontend/coverage:/app/coverage \
+		-v $(shell pwd)/blog_posts_app/frontend/coverage/unit:/app/coverage/unit \
 		frontend_tests \
-		sh -c "NO_COLOR=1 npm run test -- --coverage --coverage.reportsDirectory=coverage/unit --coverage.clean=false --coverage.reporter=lcov --watch=false tests/client tests/components tests/services 2>&1" \
+		sh -c "NO_COLOR=1 npm run test -- --coverage --coverage.clean=false --coverage.reportsDirectory=coverage/unit --coverage.reporter=lcov --watch=false tests/client tests/components tests/services 2>&1" \
 		| tee tests_results/unit_test_results/frontend_unit_tests_results.txt
 		
 
@@ -342,9 +346,9 @@ frontend_integration_tests:
 	chmod -R 777 blog_posts_app/frontend/coverage/integration
 	docker run --rm \
 		-v $(shell pwd)/tests_results:/tests_results \
-		-v $(shell pwd)/blog_posts_app/frontend/coverage:/app/coverage \
+		-v $(shell pwd)/blog_posts_app/frontend/coverage/integration:/app/coverage/integration \
 		frontend_tests \
-		sh -c "NO_COLOR=1 npm run test -- --coverage --coverage.reportsDirectory=coverage/integration  --coverage.clean=false --coverage.reporter=lcov --watch=false tests/integration 2>&1" \
+		sh -c "NO_COLOR=1 npm run test -- --coverage --coverage.clean=false --coverage.reportsDirectory=coverage/integration --coverage.reporter=lcov --watch=false tests/integration 2>&1" \
 		| tee tests_results/integration_test_results/frontend_integration_tests_results.txt
 
 e2e_tests:
@@ -357,7 +361,7 @@ e2e_tests:
 		frontend_tests \
 		sh -c "NO_COLOR=1 npx playwright test 2>&1" \
 		| tee tests_results/e2e_test_results/e2e_tests_results.txt
-
+		
 sonar_scan:
 	@echo "Running local SonarQube scan via temporary Docker container..."
 	@docker run --rm \

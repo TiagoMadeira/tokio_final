@@ -1,43 +1,25 @@
-# Use official Ubuntu LTS base image
-FROM ubuntu:22.04
+# syntax=docker/dockerfile:1
 
-# Avoid prompts during installation
-ENV DEBIAN_FRONTEND=noninteractive
+FROM mcr.microsoft.com/playwright:v1.63.0-jammy
 
 WORKDIR /app
 
-# Install system dependencies, curl, and Node.js setup
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-    gnupg \
-    ca-certificates \
-    && curl -fsSL https://deb.nodesource.com/setup_22.x -o nodesource_setup.sh \
-    && bash nodesource_setup.sh \
-    && apt-get install -y --no-install-recommends nodejs \
-    && rm -f nodesource_setup.sh \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy package files to leverage Docker caching
+# Keep npm install cached unless package.json/package-lock.json changes.
 COPY package*.json ./
 
-# Install project dependencies
-RUN npm ci
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci
 
-ENV PLAYWRIGHT_BROWSERS_PATH=/app/.cache/ms-playwright
-
-# Install Playwright browser binaries AND required Ubuntu system libraries
-RUN npx playwright install chromium \
-    && npx playwright install-deps chromium \
-    && rm -rf /var/lib/apt/lists/*
-
-
-RUN groupadd -r pwuser && useradd -r -g pwuser -G audio,video -d /app pwuser \
-    && chown -R pwuser:pwuser /app
-
-
+# Copy source/tests with the correct ownership.
 COPY --chown=pwuser:pwuser . .
+
+# Vitest/Vite writes temporary files into /app.
+# Make sure pwuser owns the entire working directory.
+RUN chown -R pwuser:pwuser /app
 
 USER pwuser
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD node -e "require('fs').accessSync('.')" || exit 1
+    CMD node -e "require('fs').accessSync('.')"
+
+CMD ["npm", "test"]
